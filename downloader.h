@@ -26,7 +26,7 @@ public:
     downloader();
     ~downloader();
 
-    void fetch(QString str_url);
+    void fetch(const QString str_url);
 
 public slots:
     void replyReady(QNetworkReply *netReply);
@@ -45,7 +45,9 @@ private:
     QWaitCondition receiving;
     QMutex mutex;
 
-    void errorMsg(std::string msg);
+    QEventLoop loop;
+
+    void errorMsg(std::string msg, bool err = true);
 
 };
 

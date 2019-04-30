@@ -3,8 +3,6 @@
 downloader::downloader()
 {
 
-    //QSslConfiguration sslConfiguration(QSslConfiguration::defaultConfiguration());
-
     connect(&netManager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(replyReady(QNetworkReply*)));
 
@@ -12,7 +10,7 @@ downloader::downloader()
     connect(&netManager, &QNetworkAccessManager::authenticationRequired,
             this, [this]{errorMsg("authenticationRequired");});
     connect(&netManager, &QNetworkAccessManager::encrypted,
-            this, [this]{errorMsg("encrypted");});
+            this, [this]{errorMsg("encrypted", false);});
     connect(&netManager, &QNetworkAccessManager::networkAccessibleChanged,
             this, [this]{errorMsg("networkAccessibleChanged");});
     connect(&netManager, &QNetworkAccessManager::preSharedKeyAuthenticationRequired,
@@ -26,15 +24,13 @@ downloader::downloader()
     connect(&netManager, &QObject::destroyed,
             this, [this]{errorMsg("destroyed");});
 
-    //connect(this, &downloader::test, this, [this]{errorMsg("Test");});
-
 }
 
 downloader::~downloader()
 {
 }
 
-void downloader::fetch(QString str_url)
+void downloader::fetch(const QString str_url)
 {
 
     std::cout << QSslSocket::sslLibraryBuildVersionString().toStdString() << std::endl;
@@ -55,19 +51,9 @@ void downloader::fetch(QString str_url)
             SLOT(sslErrors(QList<QSslError>)));
 #endif
 
-    std::cout << "Before timer" << std::endl;
-    QTimer::singleShot(500, this, SLOT(timer()));
-    std::cout << "After timer call" << std::endl;
     currentDownloads.append(reply);
-    //connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
-    //            this, SLOT(error(QNetworkReply::NetworkError)));
-    //connect(reply, &QNetworkReply::finished,
-    //            this, [this]{errorMsg("finished reply");});
 
-    emit test("something");
-    //mutex.lock();
-    //receiving.wait(&mutex);
-    //mutex.unlock();
+    loop.exec();
 }
 
 void downloader::sslErrors(const QList<QSslError> &sslErrors)
@@ -78,12 +64,13 @@ void downloader::sslErrors(const QList<QSslError> &sslErrors)
 #else
     Q_UNUSED(sslErrors);
 #endif
+    QCoreApplication::instance()->quit();
 }
 
 void downloader::timer()
 {
     std::cout << "Timeout!" << std::endl;
-    receiving.wakeAll();
+    QCoreApplication::instance()->quit();
 }
 
 void downloader::replyReady(QNetworkReply* netReply)
@@ -100,20 +87,20 @@ void downloader::replyReady(QNetworkReply* netReply)
     file.close();
     netReply->deleteLater();
 
-    receiving.wakeAll();
+    loop.exit();
 }
 
 void downloader::error(QNetworkReply::NetworkError err)
 {
     errorMsg("network error");
     Q_UNUSED(err);
-    receiving.wakeAll();
+    QCoreApplication::instance()->quit();
 }
 
-void downloader::errorMsg(std::string msg)
+void downloader::errorMsg(std::string msg, bool err)
 {
     std::cout << msg << std::endl;
-    if (msg != "destroyed") {
-        receiving.wakeAll();
+    if (err) {
+        QCoreApplication::instance()->quit();
     }
 }

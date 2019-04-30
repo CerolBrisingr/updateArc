@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QCoreApplication app(argc, argv);
 
     downloader netSource;
 
@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-
-    return a.exec();
+    std::cout << "End of program" << std::endl;
+    return app.exec();
 
 
 }
