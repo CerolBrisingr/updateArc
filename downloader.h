@@ -22,14 +22,17 @@ class downloader : public QObject
 {
     Q_OBJECT
 
+
 public:
     downloader();
     ~downloader();
 
-    void fetch(const QString str_url);
+    int fetch(QString strUrl);
+    int fetch(QVector<QString> strUrlList);
+    void setTargetPath(QString filePath);
 
 public slots:
-    void replyReady(QNetworkReply *netReply);
+    void processReply(QNetworkReply *netReply);
     void error(QNetworkReply::NetworkError err);
     void sslErrors(const QList<QSslError> &sslErrors);
     void timer();
@@ -40,14 +43,14 @@ signals:
 private:
     QNetworkAccessManager netManager;
     QNetworkRequest request;
-    QNetworkReply* reply;
     QVector<QNetworkReply *> currentDownloads;
     QWaitCondition receiving;
     QMutex mutex;
+    QString targetPath = "";
 
-    QEventLoop loop;
+    QEventLoop waitLoop;
 
-    void errorMsg(std::string msg, bool err = true);
+    void errorMsg(std::string msg, bool bIsFatal = true);
 
 };
 
