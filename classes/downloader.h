@@ -3,14 +3,7 @@
 
 #include <QtCore>
 #include <QtNetwork>
-//#include <QObject>
-//#include <QNetworkAccessManager>
-//#include <QFile>
-//#include <QNetworkReply>
 #include <iostream>
-//#include <QSslConfiguration>
-//#include <QAuthenticator>
-//#include <openssl/opensslv.h>
 
 #include <cstdio>
 
@@ -35,17 +28,11 @@ public slots:
     void processReply(QNetworkReply *netReply);
     void error(QNetworkReply::NetworkError err);
     void sslErrors(const QList<QSslError> &sslErrors);
-    void timer();
-
-signals:
-    void test(std::string dummy);
 
 private:
     QNetworkAccessManager netManager;
     QNetworkRequest request;
     QVector<QNetworkReply *> currentDownloads;
-    QWaitCondition receiving;
-    QMutex mutex;
     QString targetPath = "";
 
     QEventLoop waitLoop;

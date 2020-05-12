@@ -20,7 +20,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    downloader.cpp
+    classes\\downloader.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -28,4 +28,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    downloader.h
+    classes\\downloader.h
+
+install_it.path = "D:/Games/Guild Wars 2"
+
+INSTALLS += install_it

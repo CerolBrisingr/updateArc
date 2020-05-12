@@ -91,12 +91,6 @@ void downloader::sslErrors(const QList<QSslError> &sslErrors)
     waitLoop.exit(1);
 }
 
-void downloader::timer()
-{
-    std::cout << "Timeout!" << std::endl;
-    waitLoop.exit(1);
-}
-
 void downloader::processReply(QNetworkReply* netReply)
 {
 

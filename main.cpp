@@ -1,18 +1,16 @@
 #include <QCoreApplication>
-#include <iostream>
 #include <QCryptographicHash>
 #include <QFile>
-#include <QTimer>
 #include <QString>
 #include <QTextStream>
-#include "downloader.h"
 
+#include <iostream>
+#include "classes/downloader.h"
 #include <chrono>
 #include <thread>
 
 int updater();
 int arcUninstaller();
-int selfUninstaller();
 
 bool verifyUpdaterLocation();
 bool verifyArcInstallation();
@@ -27,33 +25,40 @@ int main(int argc, char *argv[])
     QStringList args = app.instance()->arguments();
 
     QString command;
-
-    // Read input argument, ignore arguments following the first one
-    args.takeFirst(); // skip program name
-    if (args.isEmpty()) {
-        command = "-update";
-    } else {
-        command = args.takeFirst();
-    }
-
     int returnValue = 1;
-    if (command == "-update") {
-        returnValue = updater();
-        std::cout << "Updater finished" << std::endl;
-    } else if (command == "-remove") {
-        returnValue = arcUninstaller();
-        std::cout << "Uninstall finished" << std::endl;
+
+    if (verifyUpdaterLocation()) {
+
+        // Read input argument, ignore arguments following the first one
+        args.takeFirst(); // skip program name
+        if (args.isEmpty()) {
+            command = "-update";
+        } else {
+            command = args.takeFirst();
+        }
+
+        if (command == "-update") {
+            returnValue = updater();
+            std::cout << "Updater finished" << std::endl;
+        } else if (command == "-remove") {
+            returnValue = arcUninstaller();
+            std::cout << "Uninstall finished" << std::endl;
+        } else {
+            std::cout << "Invalid command, either use \"-update\" or \"-remove\"!" << std::endl;
+            returnValue = 1;
+        }
+
+        if (QDir("").exists("d3d9.dll.md5sum")) {
+            QFile md5sum("d3d9.dll.md5sum");
+            md5sum.remove();
+        }
+    }
+
+    if (returnValue == 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     } else {
-        std::cout << "Invalid command, either use \"-update\" or \"-remove\"!" << std::endl;
-        returnValue = 1;
+        std::this_thread::sleep_for(std::chrono::seconds(6));
     }
-
-    if (QDir("").exists("d3d9.dll.md5sum")) {
-        QFile md5sum("d3d9.dll.md5sum");
-        md5sum.remove();
-    }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     return returnValue;
 }
 
@@ -89,10 +94,6 @@ int updater() {
 
     downloader netSource;
     netSource.setTargetPath("");
-
-    if (!verifyUpdaterLocation()) {
-        return 1;
-    }
 
     QString sLocalHash;
     QString sRemoteHash = getRemoteHash(netSource);
@@ -166,16 +167,16 @@ bool verifyUpdaterLocation() {
 
 bool verifyArcInstallation() {
     bool existd3d9   = QDir("bin64").exists("d3d9.dll");
-    bool existBuilds = QDir("bin64").exists("d3d9_arcdps_buildtemplates.dll");
+    //bool existBuilds = QDir("bin64").exists("d3d9_arcdps_buildtemplates.dll");
 
-    return existd3d9 && existBuilds;
+    return existd3d9; //&& existBuilds;
 }
 
 bool downloadArc(downloader& netSource) {
 
     QVector<QString> arcFiles;
     arcFiles.append("https://www.deltaconnected.com/arcdps/x64/d3d9.dll");
-    arcFiles.append("https://www.deltaconnected.com/arcdps/x64/buildtemplates/d3d9_arcdps_buildtemplates.dll");
+    //arcFiles.append("https://www.deltaconnected.com/arcdps/x64/buildtemplates/d3d9_arcdps_buildtemplates.dll");
     if (0 != netSource.fetch(arcFiles)) {
         std::cout << "Download failed" << std::endl;
         return false;
@@ -194,7 +195,7 @@ QString getHashFromFile(QString sFile) {
         return "";
     }
     while(!currentDll.atEnd()){
-      crypto.addData(currentDll.read(8192));
+        crypto.addData(currentDll.read(8192));
     }
     return crypto.result().toHex();
 }
