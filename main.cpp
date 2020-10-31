@@ -15,8 +15,10 @@ int arcUninstaller();
 bool verifyUpdaterLocation();
 bool verifyArcInstallation();
 bool downloadArc(downloader& netSource);
-QString getHashFromFile(QString sFile);
+QString calculateHashFromFile(QString sFile);
 QString getRemoteHash(downloader& netSource);
+QString readFileString(QString filename);
+int removeFile(QString pathstring, QString filename);
 
 
 int main(int argc, char *argv[])
@@ -24,28 +26,34 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     QStringList args = app.instance()->arguments();
 
-    QString command;
+    QString argument;
+    bool doExit  = true;
+    bool undoInstall = false;
     int returnValue = 1;
 
     if (verifyUpdaterLocation()) {
 
         // Read input argument, ignore arguments following the first one
         args.takeFirst(); // skip program name
-        if (args.isEmpty()) {
-            command = "-update";
-        } else {
-            command = args.takeFirst();
+        while (!args.isEmpty()) {
+            argument = args.takeFirst();
+            if (argument == "-remove")
+                undoInstall = true;
+            else if (argument == "-keepOpen") {
+                doExit = false;
+            } else {
+                std::cout << "Invalid command \"" << argument.toStdString()
+                          << "\", either use \"-keepOpen\" or \"-remove\"!" << std::endl;
+            }
         }
 
-        if (command == "-update") {
-            returnValue = updater();
-            std::cout << "Updater finished" << std::endl;
-        } else if (command == "-remove") {
+        // Perform core functionality
+        if (undoInstall) {
             returnValue = arcUninstaller();
             std::cout << "Uninstall finished" << std::endl;
         } else {
-            std::cout << "Invalid command, either use \"-update\" or \"-remove\"!" << std::endl;
-            returnValue = 1;
+            returnValue = updater();
+            std::cout << "Updater finished" << std::endl;
         }
 
         if (QDir("").exists("d3d9.dll.md5sum")) {
@@ -54,36 +62,37 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (returnValue == 0) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    // Exit after timer or stay open at user command
+    if (doExit) {
+        if (returnValue == 0) {
+            std::cout << "Update completed successfully. Window closing in 10 seconds!" << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(10));
+        } else {
+            std::cout << "An error occured. Please close manually!" << std::endl;
+        }
+        return returnValue;
     } else {
-        std::this_thread::sleep_for(std::chrono::seconds(6));
+        std::cout << std::endl << "\"-keepOpen\" requested. Close at own leisure." << std::endl;
+        return app.exec();
     }
-    return returnValue;
 }
 
 
 int arcUninstaller() {
 
-    if (QDir("").exists("d3d9.dll.md5sum")) {
-        QFile md5sum("d3d9.dll.md5sum");
-        md5sum.remove();
-    }
+    removeFile("", "d3d9.dll.md5sum");
+    removeFile("../bin64", "d3d9.dll.md5sum");  // Only there if user put it there
+    removeFile("../bin64", "d3d9.dll");
+    removeFile("../bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
 
-    // In case the user put that file to the others
-    if (QDir("bin64").exists("d3d9.dll.md5sum")) {
-        QFile md5sum("bin64/d3d9.dll.md5sum");
-        md5sum.remove();
-    }
+    return 0;
+}
 
-    if (QDir("bin64").exists("d3d9.dll")) {
-        QFile md5sum("bin64/d3d9.dll");
-        md5sum.remove();
-    }
 
-    if (QDir("bin64").exists("d3d9_arcdps_buildtemplates.dll")) {
-        QFile md5sum("bin64/d3d9_arcdps_buildtemplates.dll");
-        md5sum.remove();
+int removeFile(QString pathstring, QString filename) {
+    if (QDir(pathstring).exists(filename)) {
+        QFile toRemove(pathstring + "/" + filename);
+        toRemove.remove();
     }
 
     return 0;
@@ -100,14 +109,15 @@ int updater() {
     if (sRemoteHash.isEmpty()) {
         return 1;
     }
-    netSource.setTargetPath("bin64");
+    netSource.setTargetPath("../bin64");
 
     if (verifyArcInstallation()) {
 
         std::cout << "ArcDPS is already installed, looking for updates" << std::endl;
 
-        sLocalHash = getHashFromFile("bin64/d3d9.dll");
+        sLocalHash = calculateHashFromFile("../bin64/d3d9.dll");
         if (sLocalHash.isEmpty()) {
+            std::cout << "Could not calculate hash value for ArcDPS library." << std::endl;
             return 1;
         }
 
@@ -132,13 +142,17 @@ int updater() {
     }
 
     // Verify correct download
-    sLocalHash = getHashFromFile("bin64/d3d9.dll");
+    sLocalHash = calculateHashFromFile("../bin64/d3d9.dll");
     if (sLocalHash.isEmpty()) {
+        std::cout << "Could not calculate hash value for downloaded ArcDPS library." << std::endl;
         return 1;
     }
     std::cout << "File: " << sLocalHash.toStdString() << std::endl;
     if (!sRemoteHash.contains(sLocalHash)) {
         std::cout << "Something is wrong, hashes do not match!" << std::endl;
+        if (arcUninstaller() == 1) {
+            std::cout << "Removing files somehow went wrong, too! Is Gw2 running?" << std::endl;
+        }
         return 1;
     } else {
         std::cout << "Hashes match, update successful!" << std::endl;
@@ -149,14 +163,14 @@ int updater() {
 
 bool verifyUpdaterLocation() {
 
-    bool existGw2_64 = QDir("").exists("Gw2-64.exe");
-    bool existGw2_32 = QDir("").exists("Gw2.exe");
+    bool existGw2_64 = QDir("../").exists("Gw2-64.exe");
+    bool existGw2_32 = QDir("../").exists("Gw2.exe");
     if (!(existGw2_32 ||  existGw2_64)){
         std::cout << "Could not find gw2 executable. Updater seems to be at wrong location" << std::endl;
         return false;
     }
 
-    bool existBin64  = QDir("bin64").exists();
+    bool existBin64  = QDir("../bin64").exists();
     if (!(existBin64)) {
         std::cout << "Missing target folder \"bin64\"" << std::endl;
         return false;
@@ -166,17 +180,16 @@ bool verifyUpdaterLocation() {
 }
 
 bool verifyArcInstallation() {
-    bool existd3d9   = QDir("bin64").exists("d3d9.dll");
-    //bool existBuilds = QDir("bin64").exists("d3d9_arcdps_buildtemplates.dll");
+    bool existd3d9   = QDir("../bin64").exists("d3d9.dll");
 
-    return existd3d9; //&& existBuilds;
+    return existd3d9;
 }
 
 bool downloadArc(downloader& netSource) {
 
     QVector<QString> arcFiles;
+    // Append all files you want to download
     arcFiles.append("https://www.deltaconnected.com/arcdps/x64/d3d9.dll");
-    //arcFiles.append("https://www.deltaconnected.com/arcdps/x64/buildtemplates/d3d9_arcdps_buildtemplates.dll");
     if (0 != netSource.fetch(arcFiles)) {
         std::cout << "Download failed" << std::endl;
         return false;
@@ -185,7 +198,7 @@ bool downloadArc(downloader& netSource) {
 }
 
 
-QString getHashFromFile(QString sFile) {
+QString calculateHashFromFile(QString sFile) {
 
     // Read hash of currently 'installed' arcdps
     QCryptographicHash crypto(QCryptographicHash::Md5);
@@ -208,7 +221,11 @@ QString getRemoteHash(downloader& netSource) {
         std::cout << "Download failed" << std::endl;
         return "";
     }
-    QFile referenceFile("d3d9.dll.md5sum");
+    return readFileString("d3d9.dll.md5sum");
+}
+
+QString readFileString(QString filename) {
+    QFile referenceFile(filename);
     if (!referenceFile.open(QFile::ReadOnly | QFile::Text)) {
         std::cout << "Could not open reference file" << std::endl;
         return "";

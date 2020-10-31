@@ -134,7 +134,7 @@ void downloader::processReply(QNetworkReply* netReply)
 void downloader::error(QNetworkReply::NetworkError err)
 {
     errorMsg("network error");
-    Q_UNUSED(err);
+    Q_UNUSED(err)
     waitLoop.exit(1);
 }
 
