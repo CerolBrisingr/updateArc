@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     QStringList args = app.instance()->arguments();
 
     QString argument;
-    bool doExit  = true;
+    bool doExit  = false;
     bool undoInstall = false;
     int returnValue = 1;
 
@@ -39,8 +39,8 @@ int main(int argc, char *argv[])
             argument = args.takeFirst();
             if (argument == "-remove")
                 undoInstall = true;
-            else if (argument == "-keepOpen") {
-                doExit = false;
+            else if (argument == "-closeAfter") {
+                doExit = true;
             } else {
                 std::cout << "Invalid command \"" << argument.toStdString()
                           << "\", either use \"-keepOpen\" or \"-remove\"!" << std::endl;
@@ -72,13 +72,21 @@ int main(int argc, char *argv[])
         }
         return returnValue;
     } else {
-        std::cout << std::endl << "\"-keepOpen\" requested. Close at own leisure." << std::endl;
+        std::cout << std::endl << "No \"-closeAfter\" requested. Close at own leisure." << std::endl;
         return app.exec();
     }
 }
 
 
 int arcUninstaller() {
+
+    std::cout << "Want to see the current hash? Type (y)!" << std::endl;
+    std::string test;
+    std::getline(std::cin, test);
+    if (test.compare("y") == 0) {
+        QString sLocalHash = calculateHashFromFile("../bin64/d3d9.dll");
+        std::cout << sLocalHash.toStdString() << std::endl;
+    }
 
     removeFile("", "d3d9.dll.md5sum");
     removeFile("../bin64", "d3d9.dll.md5sum");  // Only there if user put it there
