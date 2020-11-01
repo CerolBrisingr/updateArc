@@ -6,3 +6,5 @@ bin64/
 target/
 Gw2-64.exe
 UpdateArc.pro.user
+
+*.autosave
