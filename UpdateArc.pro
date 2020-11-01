@@ -18,8 +18,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 RC_ICONS = resources\arc.ico
 
 SOURCES += \
-        main.cpp \
-    classes\\downloader.cpp
+    classes/fileinteractions.cpp \
+    classes/downloader.cpp \
+    main.cpp
 
 # Default rules for deployment.
 #qnx: target.path = /tmp/$${TARGET}/bin
@@ -27,4 +28,5 @@ SOURCES += \
 #!isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    classes\\downloader.h
+    classes/fileinteractions.h \
+    classes/downloader.h

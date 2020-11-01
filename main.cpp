@@ -1,11 +1,8 @@
 #include <QCoreApplication>
-#include <QCryptographicHash>
-#include <QFile>
-#include <QString>
-#include <QTextStream>
 
 #include <iostream>
 #include "classes/downloader.h"
+#include "classes/fileinteractions.h"
 #include <chrono>
 #include <thread>
 
@@ -14,39 +11,24 @@ int arcUninstaller();
 
 bool verifyUpdaterLocation();
 bool verifyArcInstallation();
+bool blockerIsInstalled();
+bool isBlocked(QString sRemoteHash);
 bool downloadArc(downloader& netSource);
-QString calculateHashFromFile(QString sFile);
 QString getRemoteHash(downloader& netSource);
-QString readFileString(QString filename);
-int removeFile(QString pathstring, QString filename);
 
+void evaluateInput(QCoreApplication &app, bool &doExit, bool &undoInstall);
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    QStringList args = app.instance()->arguments();
 
-    QString argument;
-    bool doExit  = false;
-    bool undoInstall = false;
+    bool doExit;
+    bool undoInstall;
     int returnValue = 1;
 
+    evaluateInput(app, doExit, undoInstall);
+
     if (verifyUpdaterLocation()) {
-
-        // Read input argument, ignore arguments following the first one
-        args.takeFirst(); // skip program name
-        while (!args.isEmpty()) {
-            argument = args.takeFirst();
-            if (argument == "-remove")
-                undoInstall = true;
-            else if (argument == "-closeAfter") {
-                doExit = true;
-            } else {
-                std::cout << "Invalid command \"" << argument.toStdString()
-                          << "\", either use \"-keepOpen\" or \"-remove\"!" << std::endl;
-            }
-        }
-
         // Perform core functionality
         if (undoInstall) {
             returnValue = arcUninstaller();
@@ -56,10 +38,7 @@ int main(int argc, char *argv[])
             std::cout << "Updater finished" << std::endl;
         }
 
-        if (QDir("").exists("d3d9.dll.md5sum")) {
-            QFile md5sum("d3d9.dll.md5sum");
-            md5sum.remove();
-        }
+        fileInteractions::removeFile("", "d3d9.dll.md5sum");
     }
 
     // Exit after timer or stay open at user command
@@ -77,35 +56,65 @@ int main(int argc, char *argv[])
     }
 }
 
+void evaluateInput(QCoreApplication &app, bool &doExit, bool &undoInstall){
+
+    QStringList args = app.instance()->arguments();
+    QString argument;
+
+    doExit = false;
+    undoInstall = false;
+
+    // Read input argument, ignore arguments following the first one
+    args.takeFirst(); // skip program name
+    while (!args.isEmpty()) {
+        argument = args.takeFirst();
+        if (argument == "-remove")
+            undoInstall = true;
+        else if (argument == "-closeAfter") {
+            doExit = true;
+        } else {
+            std::cout << "Invalid command \"" << argument.toStdString()
+                      << "\", either use \"-closeAfter\" or \"-remove\"!" << std::endl;
+        }
+    }
+}
 
 int arcUninstaller() {
 
-    std::cout << "Want to see the current hash? Type (y)!" << std::endl;
-    std::string test;
-    std::getline(std::cin, test);
-    if (test.compare("y") == 0) {
-        QString sLocalHash = calculateHashFromFile("../bin64/d3d9.dll");
-        std::cout << sLocalHash.toStdString() << std::endl;
+    bool blockerIsFresh = false;
+
+    // ArcDPS still installed? Provide option to install blocker
+    if (verifyArcInstallation()) {
+        std::cout << "Do you want to block the current version from being re-installed? Enter (y)!" << std::endl;
+        std::string userInput;
+        std::getline(std::cin, userInput);
+        if (userInput.compare("y") == 0) {
+            QString sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
+            std::cout << "Blocking installation of version " << sLocalHash.toStdString() << std::endl;
+            fileInteractions::writeFileString("blocker.md5sum", sLocalHash + "  d3d9.dll");
+            blockerIsFresh = true;
+        } else {
+            fileInteractions::removeFile("", "blocker.md5sum");
+        }
     }
 
-    removeFile("", "d3d9.dll.md5sum");
-    removeFile("../bin64", "d3d9.dll.md5sum");  // Only there if user put it there
-    removeFile("../bin64", "d3d9.dll");
-    removeFile("../bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
+    // Is an old blocker in place? Provide option to remove blocker
+    if (blockerIsInstalled() && !blockerIsFresh) {
+        std::cout << "Blocker detected. Do you want to remove it? Enter (y)!" << std::endl;
+        std::string userInput;
+        std::getline(std::cin, userInput);
+        if (userInput.compare("y") == 0) {
+            std::cout << "Removing blocker!" << std::endl;
+            fileInteractions::removeFile("", "blocker.md5sum");
+        }
+    }
+
+    fileInteractions::removeFile("../bin64", "d3d9.dll.md5sum");  // Only there if user put it there
+    fileInteractions::removeFile("../bin64", "d3d9.dll");
+    fileInteractions::removeFile("../bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
 
     return 0;
 }
-
-
-int removeFile(QString pathstring, QString filename) {
-    if (QDir(pathstring).exists(filename)) {
-        QFile toRemove(pathstring + "/" + filename);
-        toRemove.remove();
-    }
-
-    return 0;
-}
-
 
 int updater() {
 
@@ -115,7 +124,15 @@ int updater() {
     QString sLocalHash;
     QString sRemoteHash = getRemoteHash(netSource);
     if (sRemoteHash.isEmpty()) {
+        std::cout << "Could not read source hash file" << std::endl;
         return 1;
+    }
+    if (isBlocked(sRemoteHash)) {
+        std::cout << "Curently available version is blocked. Run with \"-remove\" to remove blocker" << std::endl;
+        return 1;
+    } else {
+        // Remove previous blocker, if there is one
+        fileInteractions::removeFile("", "blocker.md5sum");
     }
     netSource.setTargetPath("../bin64");
 
@@ -123,7 +140,7 @@ int updater() {
 
         std::cout << "ArcDPS is already installed, looking for updates" << std::endl;
 
-        sLocalHash = calculateHashFromFile("../bin64/d3d9.dll");
+        sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
         if (sLocalHash.isEmpty()) {
             std::cout << "Could not calculate hash value for ArcDPS library." << std::endl;
             return 1;
@@ -150,7 +167,7 @@ int updater() {
     }
 
     // Verify correct download
-    sLocalHash = calculateHashFromFile("../bin64/d3d9.dll");
+    sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
     if (sLocalHash.isEmpty()) {
         std::cout << "Could not calculate hash value for downloaded ArcDPS library." << std::endl;
         return 1;
@@ -188,9 +205,24 @@ bool verifyUpdaterLocation() {
 }
 
 bool verifyArcInstallation() {
-    bool existd3d9   = QDir("../bin64").exists("d3d9.dll");
+    return QDir("../bin64").exists("d3d9.dll");
+}
 
-    return existd3d9;
+bool blockerIsInstalled() {
+    return QDir("").exists("blocker.md5sum");
+}
+
+bool isBlocked(QString sRemoteHash) {
+    if (!blockerIsInstalled()) {
+        return false;
+    }
+
+    QString blockedHash = fileInteractions::readFirstFileLine("blocker.md5sum");
+    if (sRemoteHash.compare(blockedHash) == 0) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool downloadArc(downloader& netSource) {
@@ -205,39 +237,12 @@ bool downloadArc(downloader& netSource) {
     return true;
 }
 
-
-QString calculateHashFromFile(QString sFile) {
-
-    // Read hash of currently 'installed' arcdps
-    QCryptographicHash crypto(QCryptographicHash::Md5);
-    QFile currentDll(sFile);
-    if (!currentDll.open(QFile::ReadOnly)) {
-        std::cout << "Unable to read \"" << sFile.toStdString() << "\"" << std::endl;
-        return "";
-    }
-    while(!currentDll.atEnd()){
-        crypto.addData(currentDll.read(8192));
-    }
-    return crypto.result().toHex();
-}
-
-
 QString getRemoteHash(downloader& netSource) {
 
-    // Read hash from online version
+    // Read md5 hash of online version
     if (0 != netSource.fetch("https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum")){
         std::cout << "Download failed" << std::endl;
         return "";
     }
-    return readFileString("d3d9.dll.md5sum");
-}
-
-QString readFileString(QString filename) {
-    QFile referenceFile(filename);
-    if (!referenceFile.open(QFile::ReadOnly | QFile::Text)) {
-        std::cout << "Could not open reference file" << std::endl;
-        return "";
-    }
-    QTextStream line(&referenceFile);
-    return line.readLine();
+    return fileInteractions::readFirstFileLine("d3d9.dll.md5sum");
 }

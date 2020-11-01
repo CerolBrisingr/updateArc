@@ -2,7 +2,6 @@
 
 downloader::downloader()
 {
-
     std::cout << QSslSocket::sslLibraryBuildVersionString().toStdString() << std::endl;
     if (QSslSocket::supportsSsl()) {
         std::cout << "Supporting SSL" << std::endl;
@@ -30,7 +29,6 @@ downloader::downloader()
             this, [this]{errorMsg("objectNameChanged");});
     connect(&netManager, &QObject::destroyed,
             this, [this]{errorMsg("network manager terminated", false);});
-
 }
 
 downloader::~downloader()
@@ -38,7 +36,6 @@ downloader::~downloader()
 }
 
 int downloader::fetch(QString strUrl) {
-
     // Pack link in list to call processing function
     QVector<QString> strUrlList;
     strUrlList.append(strUrl);
@@ -48,7 +45,6 @@ int downloader::fetch(QString strUrl) {
 
 int downloader::fetch(QVector<QString> strUrlList)
 {
-
     for (int i = 0; i < strUrlList.size(); i++) {
         QUrl url = QUrl(strUrlList[i]);
 
@@ -77,7 +73,6 @@ void downloader::setTargetPath(QString filePath)
     }
 
     this->targetPath = filePath;
-
 }
 
 void downloader::sslErrors(const QList<QSslError> &sslErrors)
@@ -93,7 +88,6 @@ void downloader::sslErrors(const QList<QSslError> &sslErrors)
 
 void downloader::processReply(QNetworkReply* netReply)
 {
-
     std::cout << "Recieved reply from URL: " << netReply->url().toString().toStdString() << std::endl;
 
     QUrl url = netReply->url();

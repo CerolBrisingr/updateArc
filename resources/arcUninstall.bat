@@ -1,2 +1,2 @@
 @echo off
-UpdateArc -remove
+%~dp0UpdateArc.exe -remove
