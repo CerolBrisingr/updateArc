@@ -51,11 +51,14 @@ int main(int argc, char *argv[])
             std::this_thread::sleep_for(std::chrono::seconds(10));
         } else {
             std::cout << "An error occured. Please close manually!" << std::endl;
+            std::cout << "Press <Enter>" << std::endl;
+            std::cin.ignore();
         }
         return returnValue;
     } else {
-        std::cout << std::endl << "No \"-closeAfter\" requested. Close at own leisure." << std::endl;
-        return app.exec();
+        std::cout << std::endl << "No \"-closeAfter\" requested. Press <Enter> to close." << std::endl;
+        std::cin.ignore();
+        return returnValue;
     }
 }
 
@@ -237,9 +240,10 @@ bool downloadArc(QString pathname) {
 QString getRemoteHash() {
 
     // Read md5 hash of online version
-    if (0 != downloader::singleDownload("https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum")){
+    QString output = "https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum";
+    if (0 != downloader::singleTextRequest(output)){
         std::cout << "Download failed" << std::endl;
         return "";
     }
-    return fileInteractions::readFirstFileLine("d3d9.dll.md5sum");
+    return output;
 }

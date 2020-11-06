@@ -228,15 +228,16 @@ int16_t downloader::singleDownload(QString address, QString pathname, QString fi
     return error_msg;
 }
 
-QString downloader::singleTextRequest(QString address)
+int16_t downloader::singleTextRequest(QString &address)
 {
     downloader netSource;
     Request* request = netSource.addTextRequest(address);
     netSource.fetch();
 
-    QString output = request->getResult();
+    address = request->getResult();
+    int16_t error_msg = request->getError();
     delete request;
-    return output;
+    return error_msg;
 }
 
 void downloader::error(QNetworkReply::NetworkError err)

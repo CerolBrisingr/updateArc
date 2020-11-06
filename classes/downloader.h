@@ -42,7 +42,7 @@ public:
     void dropRequests();
 
     static int16_t singleDownload(QString address, QString pathname = "", QString filename = "");
-    static QString singleTextRequest(QString address);
+    static int16_t singleTextRequest(QString &address);
 
 public slots:
     void processReply(QNetworkReply *netReply);
