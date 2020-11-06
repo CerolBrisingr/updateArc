@@ -13,8 +13,8 @@ bool verifyUpdaterLocation();
 bool verifyArcInstallation();
 bool blockerIsInstalled();
 bool isBlocked(QString sRemoteHash);
-bool downloadArc(downloader& netSource);
-QString getRemoteHash(downloader& netSource);
+bool downloadArc(QString pathname);
+QString getRemoteHash();
 
 void evaluateInput(QCoreApplication &app, bool &doExit, bool &undoInstall);
 
@@ -28,12 +28,15 @@ int main(int argc, char *argv[])
 
     evaluateInput(app, doExit, undoInstall);
 
+    std::cout << "Searching gw2 install" << std::endl;
     if (verifyUpdaterLocation()) {
         // Perform core functionality
         if (undoInstall) {
+            std::cout << "Running removal" << std::endl;
             returnValue = arcUninstaller();
             std::cout << "Uninstall finished" << std::endl;
         } else {
+            std::cout << "Running updater" << std::endl;
             returnValue = updater();
             std::cout << "Updater finished" << std::endl;
         }
@@ -118,11 +121,8 @@ int arcUninstaller() {
 
 int updater() {
 
-    downloader netSource;
-    netSource.setTargetPath("");
-
     QString sLocalHash;
-    QString sRemoteHash = getRemoteHash(netSource);
+    QString sRemoteHash = getRemoteHash();
     if (sRemoteHash.isEmpty()) {
         std::cout << "Could not read source hash file" << std::endl;
         return 1;
@@ -134,7 +134,7 @@ int updater() {
         // Remove previous blocker, if there is one
         fileInteractions::removeFile("", "blocker.md5sum");
     }
-    netSource.setTargetPath("../bin64");
+    QString targetpath = "../bin64";
 
     if (verifyArcInstallation()) {
 
@@ -154,14 +154,14 @@ int updater() {
             return 0;
         } else {
             std::cout << "No Match! Downloading new version!" << std::endl;
-            if (!downloadArc(netSource)) {
+            if (!downloadArc(targetpath)) {
                 return 1;
             }
         }
 
     } else {
         std::cout << "ArcDPS not (fully) installed, fixing that" << std::endl;
-        if (!downloadArc(netSource)) {
+        if (!downloadArc(targetpath)) {
             return 1;
         }
     }
@@ -225,22 +225,19 @@ bool isBlocked(QString sRemoteHash) {
     }
 }
 
-bool downloadArc(downloader& netSource) {
-
-    QVector<QString> arcFiles;
-    // Append all files you want to download
-    arcFiles.append("https://www.deltaconnected.com/arcdps/x64/d3d9.dll");
-    if (0 != netSource.fetch(arcFiles)) {
+bool downloadArc(QString pathname) {
+    // Only one download needed since build templates are gone
+    if (0 != downloader::singleDownload("https://www.deltaconnected.com/arcdps/x64/d3d9.dll", pathname)) {
         std::cout << "Download failed" << std::endl;
         return false;
     }
     return true;
 }
 
-QString getRemoteHash(downloader& netSource) {
+QString getRemoteHash() {
 
     // Read md5 hash of online version
-    if (0 != netSource.fetch("https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum")){
+    if (0 != downloader::singleDownload("https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum")){
         std::cout << "Download failed" << std::endl;
         return "";
     }
