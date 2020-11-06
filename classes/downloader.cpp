@@ -1,12 +1,20 @@
 #include "downloader.h"
 
-downloader::downloader()
+downloader::downloader(bool print_debug)
 {
+    _print_debug = print_debug;
+
+    if (print_debug) {
     std::cout << QSslSocket::sslLibraryBuildVersionString().toStdString() << std::endl;
+    }
     if (QSslSocket::supportsSsl()) {
-        std::cout << "Supporting SSL" << std::endl;
+        if (_print_debug) {
+            std::cout << "Supporting SSL" << std::endl;
+        }
     } else {
+        if (_print_debug) {
         std::cout << "No support for SSL!" << std::endl;
+        }
     }
 
     connect(&netManager, SIGNAL(finished(QNetworkReply*)),
@@ -33,23 +41,19 @@ downloader::downloader()
 
 downloader::~downloader()
 {
+    _will_shut_down = true;
 }
 
-int downloader::fetch(QString strUrl) {
-    // Pack link in list to call processing function
-    QVector<QString> strUrlList;
-    strUrlList.append(strUrl);
-
-    return this->fetch(strUrlList);
-}
-
-int downloader::fetch(QVector<QString> strUrlList)
+int downloader::fetch()
 {
-    for (int i = 0; i < strUrlList.size(); i++) {
-        QUrl url = QUrl(strUrlList[i]);
+    for (int i = 0; i < taskList.length(); i++) {
+        QUrl url = QUrl(taskList[i]->getRequestAddress());
 
-        std::cout << "Starting request: " << url.url().toStdString() << std::endl;
+        if (_print_debug) {
+            std::cout << "Starting request: " << url.url().toStdString() << std::endl;
+        }
         request = QNetworkRequest(url);
+        hasError = false;
         QNetworkReply* reply = netManager.get(request);
 
 #if QT_CONFIG(ssl)
@@ -86,43 +90,152 @@ void downloader::sslErrors(const QList<QSslError> &sslErrors)
     waitLoop.exit(1);
 }
 
+void downloader::addRequest(Request *newRequest)
+{
+    receivedFlags.append(false);
+    taskList.append(newRequest);
+}
+
 void downloader::processReply(QNetworkReply* netReply)
 {
-    std::cout << "Recieved reply from URL: " << netReply->url().toString().toStdString() << std::endl;
+    if (_print_debug) {
+        std::cout << "Recieved reply from URL: " << netReply->url().toString().toStdString() << std::endl;
+    }
+    int16_t _err = 0;
+
+    int gotId =  currentDownloads.indexOf(netReply);
+    receivedFlags[gotId] = true;
 
     QUrl url = netReply->url();
     if (netReply->error()) {
+        // Request failed
         fprintf(stderr, "Download of %s failed: %s\n",
                 url.toEncoded().constData(),
                 qPrintable(netReply->errorString()));
-        waitLoop.exit(1);
+        _err = 1;
+    } else {
+        // Request successful
+        QString targetFilename =taskList[gotId]->getTargetFilename();
+        if (taskList[gotId]->getRequestType() == type::htmlBody) {
+            // Write response to QString
+            QString _output;
+            QTextStream streamer(&_output);
+            streamer << netReply->read(netReply->bytesAvailable());
+            taskList[gotId]->setResult(_err, _output);
+        } else {
+            // Write response to file
+            if (targetFilename.isEmpty()) {
+                // Invalid target name
+                if (_print_debug) {
+                    std::cout << "Download requested but filename empty!" << std::endl;
+                }
+                _err = 1;
+            } else {
+                // Target name not empty
+                QString fullPath = this->targetPath;
+                fullPath.append(targetFilename);
+
+                QFile file(fullPath);
+                if (file.open(QFile::WriteOnly)) {
+                    file.write(netReply->read(netReply->bytesAvailable()));
+                    file.close();
+                    if (_print_debug) {
+                        std::cout << "File saved to: " << fullPath.toStdString() << std::endl;
+                    }
+                } else {
+                    if (_print_debug) {
+                        std::cout << "Cannot write target file" << std::endl;
+                    }
+                    _err = 1;
+                }
+            }
+            taskList[gotId]->setResult(_err);
+        }
     }
 
-    QString targetFilename = QFileInfo(url.path()).fileName();
-    if (targetFilename.isEmpty()) {
-        std::cout << "Cannot resolve target filename" << std::endl;
-        waitLoop.exit(1);
+    if (_err != 0) {
+        hasError = true;
     }
 
-    QString fullPath = this->targetPath;
-    fullPath.append(targetFilename);
-
-    QFile file(fullPath);
-    if (!file.open(QFile::WriteOnly)) {
-        std::cout << "Cannot write target file" << std::endl;
-        waitLoop.exit(1);
-    }
-
-    file.write(netReply->read(netReply->bytesAvailable()));
-    file.close();
-    std::cout << "File saved to: " << fullPath.toStdString() << std::endl;
-
-    currentDownloads.removeAll(netReply);
     netReply->deleteLater();
 
-    if (currentDownloads.isEmpty()) {
-        waitLoop.exit();
+    if (allDownloadsDone()) {
+        receivedFlags.clear();
+        currentDownloads.clear();
+        taskList.clear();
+        waitLoop.exit(hasError);
     }
+}
+
+bool downloader::allDownloadsDone() {
+    bool flag = true;
+     for(int count=0; count<receivedFlags.length(); count++) {
+         if(!receivedFlags[count]) {
+             flag = false;
+             break;
+         }
+     }
+     return flag;
+}
+
+Request *downloader::addFileRequest(QString address, QString filename)
+{
+    type requestType;
+    if (filename.isEmpty()) {
+        requestType = type::file;
+    } else {
+        requestType = type::fileNamed;
+    }
+
+    Request* newRequest = new Request(address, requestType, filename);
+    addRequest(newRequest);
+    return newRequest;
+}
+
+Request *downloader::addTextRequest(QString address)
+{
+    type requestType = type::htmlBody;
+    Request* newRequest = new Request(address, requestType, "");
+    addRequest(newRequest);
+    return newRequest;
+}
+
+void downloader::printRequests()
+{
+    for (int count = 0; count < taskList.length(); count++) {
+        std::cout << taskList[count]->getRequestString().toStdString() << std::endl;
+    }
+}
+
+void downloader::dropRequests()
+{
+    receivedFlags.clear();
+    for (int count = 0; count < taskList.length(); count++) {
+        delete(&taskList[count]);
+    }
+    taskList.clear();
+}
+
+int16_t downloader::singleDownload(QString address, QString filename)
+{
+    downloader netSource;
+    Request* request = netSource.addFileRequest(address, filename);
+    netSource.fetch();
+
+    int16_t error_msg = request->getError();
+    delete(&request);
+    return error_msg;
+}
+
+QString downloader::singleTextRequest(QString address)
+{
+    downloader netSource;
+    Request* request = netSource.addTextRequest(address);
+    netSource.fetch();
+
+    QString output = request->getResult();
+    delete(&request);
+    return output;
 }
 
 void downloader::error(QNetworkReply::NetworkError err)
@@ -134,8 +247,66 @@ void downloader::error(QNetworkReply::NetworkError err)
 
 void downloader::errorMsg(std::string msg, bool bIsFatal)
 {
-    std::cout << msg << std::endl;
+    if (!_will_shut_down) {
+        std::cout << msg << std::endl;
+    }
     if (bIsFatal) {
         waitLoop.exit(1);
     }
+}
+
+QString Request::getRequestString()
+{
+    switch(this->_requestType) {
+    case type::file: return "File";
+    case type::fileNamed: return "File with custom name";
+    case type::htmlBody: return "Text";
+    }
+    return "";
+}
+
+QString Request::getRequestAddress()
+{
+    return this->_address;
+}
+
+QString Request::getTargetFilename()
+{
+    switch (this->_requestType) {
+    case type::file:
+        return QFileInfo(this->_address).fileName();
+    case type::fileNamed:
+        return this->_filename;
+    case type::htmlBody:
+        return "";
+    }
+    return "";
+}
+
+type Request::getRequestType()
+{
+    return this->_requestType;
+}
+
+void Request::setResult(int16_t error, QString output)
+{
+    this->_error = error;
+    this->_output = output;
+}
+
+QString Request::getResult()
+{
+    if (_error == 0) {
+        QString retString;
+        QTextStream streamer(&retString);
+        streamer << _output;
+        return retString;
+    } else {
+        return "Error";
+    }
+}
+
+int16_t Request::getError()
+{
+    return this->_error;
 }
