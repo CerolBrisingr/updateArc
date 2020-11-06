@@ -216,14 +216,15 @@ void downloader::dropRequests()
     taskList.clear();
 }
 
-int16_t downloader::singleDownload(QString address, QString filename)
+int16_t downloader::singleDownload(QString address, QString pathname, QString filename)
 {
     downloader netSource;
+    netSource.setTargetPath(pathname);
     Request* request = netSource.addFileRequest(address, filename);
     netSource.fetch();
 
     int16_t error_msg = request->getError();
-    delete(&request);
+    delete request;
     return error_msg;
 }
 
@@ -234,7 +235,7 @@ QString downloader::singleTextRequest(QString address)
     netSource.fetch();
 
     QString output = request->getResult();
-    delete(&request);
+    delete request;
     return output;
 }
 

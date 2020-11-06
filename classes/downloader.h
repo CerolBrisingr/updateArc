@@ -41,7 +41,7 @@ public:
     void printRequests();
     void dropRequests();
 
-    static int16_t singleDownload(QString address, QString filename = "");
+    static int16_t singleDownload(QString address, QString pathname = "", QString filename = "");
     static QString singleTextRequest(QString address);
 
 public slots:
@@ -76,7 +76,7 @@ public:
         ,_requestType(requestType)
         ,_filename(filename)
     {}
-    ~Request();
+    ~Request() {}
 
     QString getRequestString();
     QString getRequestAddress();
