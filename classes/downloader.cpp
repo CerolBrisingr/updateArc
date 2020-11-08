@@ -53,6 +53,10 @@ int downloader::fetch()
             std::cout << "Starting request: " << url.url().toStdString() << std::endl;
         }
         request = QNetworkRequest(url);
+
+        request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, taskList[i]->getAllowedForwards() > 0);
+        request.setMaximumRedirectsAllowed(taskList[i]->getAllowedForwards());
+
         hasError = false;
         QNetworkReply* reply = netManager.get(request);
 
@@ -178,7 +182,7 @@ bool downloader::allDownloadsDone() {
      return flag;
 }
 
-Request *downloader::addFileRequest(QString address, QString filename)
+Request *downloader::addFileRequest(QString address, QString filename, uint16_t forwards)
 {
     type requestType;
     if (filename.isEmpty()) {
@@ -187,15 +191,15 @@ Request *downloader::addFileRequest(QString address, QString filename)
         requestType = type::fileNamed;
     }
 
-    Request* newRequest = new Request(address, requestType, filename);
+    Request* newRequest = new Request(address, requestType, filename, forwards);
     addRequest(newRequest);
     return newRequest;
 }
 
-Request *downloader::addTextRequest(QString address)
+Request *downloader::addTextRequest(QString address, uint16_t forwards)
 {
     type requestType = type::htmlBody;
-    Request* newRequest = new Request(address, requestType, "");
+    Request* newRequest = new Request(address, requestType, "", forwards);
     addRequest(newRequest);
     return newRequest;
 }
@@ -216,11 +220,11 @@ void downloader::dropRequests()
     taskList.clear();
 }
 
-int16_t downloader::singleDownload(QString address, QString pathname, QString filename)
+int16_t downloader::singleDownload(QString address, QString pathname, QString filename, uint16_t forwards)
 {
     downloader netSource;
     netSource.setTargetPath(pathname);
-    Request* request = netSource.addFileRequest(address, filename);
+    Request* request = netSource.addFileRequest(address, filename, forwards);
     netSource.fetch();
 
     int16_t error_msg = request->getError();
@@ -228,10 +232,10 @@ int16_t downloader::singleDownload(QString address, QString pathname, QString fi
     return error_msg;
 }
 
-int16_t downloader::singleTextRequest(QString &address)
+int16_t downloader::singleTextRequest(QString &address, uint16_t forwards)
 {
     downloader netSource;
-    Request* request = netSource.addTextRequest(address);
+    Request* request = netSource.addTextRequest(address, forwards);
     netSource.fetch();
 
     address = request->getResult();
@@ -311,4 +315,9 @@ QString Request::getResult()
 int16_t Request::getError()
 {
     return this->_error;
+}
+
+uint16_t Request::getAllowedForwards()
+{
+    return this->_forwards_allowed;
 }

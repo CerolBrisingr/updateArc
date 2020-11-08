@@ -36,13 +36,13 @@ public:
     void setTargetPath(QString filePath);
     bool allDownloadsDone();
 
-    Request *addFileRequest(QString address, QString filename = "");
-    Request *addTextRequest(QString address);
+    Request *addFileRequest(QString address, QString filename = "", uint16_t forwards = 3);
+    Request *addTextRequest(QString address, uint16_t forwards = 3);
     void printRequests();
     void dropRequests();
 
-    static int16_t singleDownload(QString address, QString pathname = "", QString filename = "");
-    static int16_t singleTextRequest(QString &address);
+    static int16_t singleDownload(QString address, QString pathname = "", QString filename = "", uint16_t forwards = 3);
+    static int16_t singleTextRequest(QString &address, uint16_t forwards = 3);
 
 public slots:
     void processReply(QNetworkReply *netReply);
@@ -71,10 +71,11 @@ private:
 class Request
 {
 public:
-    Request(QString address, type requestType, QString filename)
+    Request(QString address, type requestType, QString filename, uint16_t forwards = 3)
         :_address(address)
         ,_requestType(requestType)
         ,_filename(filename)
+        ,_forwards_allowed(forwards)
     {}
     ~Request() {}
 
@@ -85,6 +86,7 @@ public:
     void setResult(int16_t error, QString output = "Success");
     QString getResult();
     int16_t getError();
+    uint16_t getAllowedForwards();
 
 private:
     QString _address;
@@ -92,6 +94,7 @@ private:
     QString _output;
     QString _filename;
     int16_t _error;
+    uint16_t _forwards_allowed;
 };
 
 #endif // DOWNLOADER_H

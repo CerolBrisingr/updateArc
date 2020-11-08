@@ -19,6 +19,19 @@ QString fileInteractions::calculateHashFromFile(QString sFile) {
     return crypto.result().toHex();
 }
 
+QString fileInteractions::readFullFileString(QString filename)
+{
+    QFile referenceFile(filename);
+    if (!referenceFile.open(QFile::ReadOnly | QFile::Text)) {
+        std::cout << "Could not open reference file" << std::endl;
+        return "";
+    }
+    QTextStream streamer(&referenceFile);
+    QString output = streamer.readAll();
+    referenceFile.close();
+    return output;
+}
+
 QString fileInteractions::readFirstFileLine(QString filename) {
     QFile referenceFile(filename);
     if (!referenceFile.open(QFile::ReadOnly | QFile::Text)) {

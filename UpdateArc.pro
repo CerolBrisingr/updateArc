@@ -20,6 +20,7 @@ RC_ICONS = resources\arc.ico
 SOURCES += \
     classes/fileinteractions.cpp \
     classes/downloader.cpp \
+    classes/updater.cpp \
     main.cpp
 
 # Default rules for deployment.
@@ -29,4 +30,6 @@ SOURCES += \
 
 HEADERS += \
     classes/fileinteractions.h \
-    classes/downloader.h
+    classes/downloader.h \
+    classes/updater.h \
+    main.h
