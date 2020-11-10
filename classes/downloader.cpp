@@ -140,6 +140,9 @@ void downloader::processReply(QNetworkReply* netReply)
                 fullPath.append(targetFilename);
 
                 QFile file(fullPath);
+                if (_print_debug) {
+                    std::cout << "Saving file to: " << fullPath.toStdString() << std::endl;
+                }
                 if (file.open(QFile::WriteOnly)) {
                     file.write(netReply->read(netReply->bytesAvailable()));
                     file.close();

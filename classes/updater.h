@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QRegularExpression>
 #include <QVersionNumber>
+#include <QtZlib/zlib.h>
 
 #include "fileinteractions.h"
 #include "downloader.h"
@@ -16,20 +17,24 @@ public:
     ~UpdateTool();
 
     int arcUninstaller();
+
     int updateArc();
     int updateTaco();
     int updateTekkit();
+    int update7zip();
 private:
 
     QString _ini_path = "settings.ini";
     QString _taco_install_key   = "Installed/TacoVersion";
     QString _tekkit_install_key = "Installed/TekkitVersion";
+    QString _arc_blocker_key = "Blocker/ArcDPS";
 
     bool hasSetting(QString key);
     void setSetting(QString key, QString value);
     QString getSetting(QString key, QString default_value = "");
     void removeSetting(QString key);
 
+    QString getRemoteHash();
     bool isBlockedArcVersion(QString sRemoteHash);
     bool verifyArcInstallation();
     bool downloadArc(QString pathname);
@@ -40,7 +45,10 @@ private:
     QVersionNumber inquireCurrentTekkitVersion(QString &tekkitLink);
     bool canUpdateTekkit(QVersionNumber &onlineVersion);
 
-    QString getRemoteHash();
+    QVersionNumber inquireCurrent7zipVersion(QString &sevenZipLink);
+    bool find7zip(QString &path);
+    bool searchPathAt(QString key, QString &path);
+
 };
 
 #endif // UPDATER_H

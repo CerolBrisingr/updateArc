@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
         } else {
             std::cout << "Running updater" << std::endl;
             returnValue += _updater.updateArc();
-            returnValue += _updater.updateTaco();
-            returnValue += _updater.updateTekkit();
+            //returnValue += _updater.updateTaco();
+            //returnValue += _updater.updateTekkit();
             std::cout << "Updater finished" << std::endl;
         }
     }

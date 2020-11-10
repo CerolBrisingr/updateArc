@@ -5,6 +5,7 @@
 #include <QCryptographicHash>
 
 #include "classes/downloader.h"
+#include "Windows.h"
 
 class fileInteractions
 {
@@ -17,6 +18,7 @@ public:
     static QString readFirstFileLine(QString filename);
     static int writeFileString(QString filename, QString filecontent);
     static int removeFile(QString pathstring, QString filename);
+    static QString getVersionString(QString fName);
 };
 
 #endif // FILEINTERACTIONS_H

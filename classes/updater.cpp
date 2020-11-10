@@ -20,21 +20,21 @@ int UpdateTool::arcUninstaller() {
         if (userInput.compare("y") == 0) {
             QString sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
             std::cout << "Blocking installation of version " << sLocalHash.toStdString() << std::endl;
-            setSetting("Blocker/ArcDPS", sLocalHash);
+            setSetting(_arc_blocker_key, sLocalHash);
             blockerIsFresh = true;
         } else {
-            removeSetting("Blocker/ArcDPS");
+            removeSetting(_arc_blocker_key);
         }
     }
 
     // Is an old blocker in place? Provide option to remove blocker
-    if (hasSetting("Blocker/ArcDPS") && !blockerIsFresh) {
+    if (hasSetting(_arc_blocker_key) && !blockerIsFresh) {
         std::cout << "Blocker detected. Do you want to remove it? Enter (y)!" << std::endl;
         std::string userInput;
         std::getline(std::cin, userInput);
         if (userInput.compare("y") == 0) {
             std::cout << "Removing blocker!" << std::endl;
-            removeSetting("Blocker/ArcDPS");
+            removeSetting(_arc_blocker_key);
         }
     }
 
@@ -61,7 +61,7 @@ int UpdateTool::updateArc() {
         return 1;
     } else {
         // Remove previous blocker, if there is one
-        removeSetting("Blocker/ArcDPS");
+        removeSetting(_arc_blocker_key);
     }
     QString targetpath = "../bin64";
 
@@ -123,6 +123,7 @@ int UpdateTool::updateTaco()
     std::cout << "    Update link: " << tacoLink.toStdString() << std::endl;
     if (canUpdateTaco(onlineVersion)) {
         std::cout << "    I'll pretend I can already install TacO version " << onlineVersion << std::endl;
+        //downloader::singleDownload(tacoLink, "", "tacoArcive.zip") << std::endl;
         setSetting(_taco_install_key, QVariant(onlineVersion).toString());
     } else {
         std::cout << "    Online version is already registered, no update needed!" << std::endl;
@@ -139,13 +140,43 @@ int UpdateTool::updateTekkit()
     QVersionNumber onlineVersion = inquireCurrentTekkitVersion(tekkitLink);
     std::cout << "    Update link: " << tekkitLink.toStdString() << std::endl;
     if (canUpdateTekkit(onlineVersion)) {
-        std::cout << "    I'll pretend I can already install TacO version " << onlineVersion.toString().toStdString() << std::endl;
+        std::cout << "    I'll pretend I can already install Tekkit version " << onlineVersion.toString().toStdString() << std::endl;
+        //downloader::singleDownload(tekkitLink, "", "tw_ALL_IN_ONE.taco");
         setSetting(_tekkit_install_key, onlineVersion.toString());
     } else {
         std::cout << "    Online version is already registered, no update needed!" << std::endl;
     }
     std::cout << "Ended <Tekkit> update" << std::endl;
     return _error;
+}
+
+int UpdateTool::update7zip() {
+
+    std::cout << "    Searching 7Zip registry entry" << std::endl;
+    QString sevenZipLink;
+    QString sevenZipPath;
+    QString path;
+    QVersionNumber installed7zipVersion;
+
+    if (find7zip(path)) {
+        std::cout << "    Install path: \"" << path.toStdString() << "\"" << std::endl;
+
+        installed7zipVersion = QVersionNumber::fromString(fileInteractions::getVersionString(path + "7z.exe"));
+    } else {
+        installed7zipVersion = QVersionNumber(QVector<int>(4, 0));
+    }
+    std::cout << "    Version: " << installed7zipVersion.toString().toStdString() << std::endl;
+
+    QVersionNumber current7zipVersion = inquireCurrent7zipVersion(sevenZipLink);
+    std::cout << "    Online version: " << current7zipVersion.toString().toStdString() << std::endl;
+    std::cout << "    DL Link         " << sevenZipLink.toStdString() << std::endl;
+
+    //installed7zipVersion = QVersionNumber(QVector<int>(4, 0));
+    if (QVersionNumber::compare(current7zipVersion, installed7zipVersion) > 0) {
+        downloader::singleDownload(sevenZipLink, "", "sevenZipInstaller.exe");
+        std::cout << "    Looks like we have a new version" << std::endl;
+    }
+    return 0;
 }
 
 bool UpdateTool::hasSetting(QString key)
@@ -173,13 +204,24 @@ void UpdateTool::removeSetting(QString key)
     return;
 }
 
+QString UpdateTool::getRemoteHash() {
+
+    // Read md5 hash of online version
+    QString output = "https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum";
+    if (0 != downloader::singleTextRequest(output)){
+        std::cout << "Download failed" << std::endl;
+        return "";
+    }
+    return output;
+}
+
 bool UpdateTool::isBlockedArcVersion(QString sRemoteHash) {
-    if (!hasSetting("Blocker/ArcDPS")) {
+    if (!hasSetting(_arc_blocker_key)) {
         std::cout << "Did not find blocker!" << std::endl;
         return false;
     }
 
-    QString blockedHash = getSetting("Blocker/ArcDPS");
+    QString blockedHash = getSetting(_arc_blocker_key);
     std::cout << "Blocked:  " << blockedHash.toStdString() << std::endl;
     std::cout << "Received: " << sRemoteHash.toStdString() << std::endl;
     if (sRemoteHash.contains(blockedHash)) {
@@ -197,7 +239,6 @@ bool UpdateTool::downloadArc(QString pathname) {
     }
     return true;
 }
-
 
 int16_t UpdateTool::inquireCurrentTacoVersion(QString &tacoLink) {
     QString tacoBody = "http://www.gw2taco.com";
@@ -254,13 +295,47 @@ bool UpdateTool::canUpdateTekkit(QVersionNumber &onlineVersion)
     return QVersionNumber::compare(onlineVersion, currentVersion) > 0;
 }
 
-QString UpdateTool::getRemoteHash() {
+QVersionNumber UpdateTool::inquireCurrent7zipVersion(QString &sevenZipLink) {
+    QString sevenZipBody = "https://sourceforge.net/projects/sevenzip/files/7-Zip/";
+    downloader::singleTextRequest(sevenZipBody);
 
-    // Read md5 hash of online version
-    QString output = "https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum";
-    if (0 != downloader::singleTextRequest(output)){
-        std::cout << "Download failed" << std::endl;
-        return "";
+    QRegularExpression re("href=\"(/projects/sevenzip/files/7-Zip/(\\d+)\\.(\\d+)/)\"");
+    QRegularExpressionMatchIterator matches = re.globalMatch(sevenZipBody);
+    QVersionNumber latestVersion = QVersionNumber(QVector<int>(4, 0));
+    QVector<int> versionVec(4, 0);
+    QVersionNumber readingVersion;
+    while (matches.hasNext()) {
+        QRegularExpressionMatch match = matches.next();
+        versionVec[0] = match.captured(2).toInt();
+        versionVec[1] = match.captured(3).toInt();
+        readingVersion = QVersionNumber(versionVec);
+        if (QVersionNumber::compare(readingVersion, latestVersion) > 0) {
+            latestVersion = readingVersion;
+            QString fileVersion = match.captured(2) + match.captured(3);
+            sevenZipLink = "https://7-zip.org/a/7z" + fileVersion + "-x64.exe";
+            //sevenZipLink = "https://sourceforge.net" + match.captured(1) + "7z" + fileVersion + "-x64.exe/download";
+        }
     }
-    return output;
+    return latestVersion;
+}
+
+bool UpdateTool::find7zip(QString &path) {
+    if (!searchPathAt("HKEY_CURRENT_USER\\SOFTWARE\\7-Zip", path)) {
+        if (!searchPathAt("HKEY_LOCAL_MACHINE\\SOFTWARE\\7-Zip", path)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool UpdateTool::searchPathAt(QString key, QString &path) {
+    QSettings zipRegistry(key, QSettings::NativeFormat);
+    if (zipRegistry.contains("Path")) {
+        path = zipRegistry.value("Path").toString();
+        return true;
+    } else if (zipRegistry.contains("Path64")) {
+        path = zipRegistry.value("Path64").toString();
+        return true;
+    }
+    return false;
 }
