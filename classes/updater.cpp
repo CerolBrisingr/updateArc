@@ -122,8 +122,22 @@ int UpdateTool::updateTaco()
     int16_t onlineVersion = inquireCurrentTacoVersion(tacoLink);
     std::cout << "    Update link: " << tacoLink.toStdString() << std::endl;
     if (canUpdateTaco(onlineVersion)) {
-        std::cout << "    I'll pretend I can already install TacO version " << onlineVersion << std::endl;
-        //downloader::singleDownload(tacoLink, "", "tacoArcive.zip") << std::endl;
+        QString sevenZipPath;
+        std::cout << "    Starting download" << std::endl;
+        if (!downloader::singleDownload(tacoLink, "", "tacoArchive.zip")) {
+            std::cout << "    Download of new version failed" << std::endl;
+            return 1;
+        }
+        std::cout << "    Verify current 7-Zip version" << std::endl;
+        if (update7zip() != 0) {
+            std::cout << "    Cannot locate 7-Zip" << std::endl;
+            return 1;
+        }
+        std::cout << "    Extracting archive" << std::endl;
+        if (!fileInteractions::extractWith7zip("tacoArchive.zip", "TacoNew")) {
+            std::cout << "    archive extraction failed" << std::endl;
+            return 1;
+        }
         setSetting(_taco_install_key, QVariant(onlineVersion).toString());
     } else {
         std::cout << "    Online version is already registered, no update needed!" << std::endl;
@@ -153,15 +167,14 @@ int UpdateTool::updateTekkit()
 int UpdateTool::update7zip() {
 
     std::cout << "    Searching 7Zip registry entry" << std::endl;
+    QString path;
     QString sevenZipLink;
     QString sevenZipPath;
-    QString path;
     QVersionNumber installed7zipVersion;
 
-    if (find7zip(path)) {
+    if (fileInteractions::find7zip(path)) {
         std::cout << "    Install path: \"" << path.toStdString() << "\"" << std::endl;
-
-        installed7zipVersion = QVersionNumber::fromString(fileInteractions::getVersionString(path + "7z.exe"));
+        installed7zipVersion = QVersionNumber::fromString(fileInteractions::getVersionString(path));
     } else {
         installed7zipVersion = QVersionNumber(QVector<int>(4, 0));
     }
@@ -171,10 +184,23 @@ int UpdateTool::update7zip() {
     std::cout << "    Online version: " << current7zipVersion.toString().toStdString() << std::endl;
     std::cout << "    DL Link         " << sevenZipLink.toStdString() << std::endl;
 
-    //installed7zipVersion = QVersionNumber(QVector<int>(4, 0));
+    std::cout << "!!!!! Faking old 7zip" << std::endl;
+    installed7zipVersion = QVersionNumber(QVector<int>(4, 0));
     if (QVersionNumber::compare(current7zipVersion, installed7zipVersion) > 0) {
-        downloader::singleDownload(sevenZipLink, "", "sevenZipInstaller.exe");
+        if (!(downloader::singleDownload(sevenZipLink, "", "sevenZipInstaller.exe") == 0)) {
+            return 1;
+        }
         std::cout << "    Looks like we have a new version" << std::endl;
+        QDir dir;
+        QString executablePath = dir.absolutePath() + "/sevenZipInstaller.exe";
+        if(!fileInteractions::executeExternalWaiting(executablePath)) {
+            return 1;
+        }
+        fileInteractions::removeFile("", "sevenZipInstaller.exe");
+    }
+
+    if (!fileInteractions::find7zip(sevenZipPath)) {
+        return 1;
     }
     return 0;
 }
@@ -319,23 +345,4 @@ QVersionNumber UpdateTool::inquireCurrent7zipVersion(QString &sevenZipLink) {
     return latestVersion;
 }
 
-bool UpdateTool::find7zip(QString &path) {
-    if (!searchPathAt("HKEY_CURRENT_USER\\SOFTWARE\\7-Zip", path)) {
-        if (!searchPathAt("HKEY_LOCAL_MACHINE\\SOFTWARE\\7-Zip", path)) {
-            return false;
-        }
-    }
-    return true;
-}
 
-bool UpdateTool::searchPathAt(QString key, QString &path) {
-    QSettings zipRegistry(key, QSettings::NativeFormat);
-    if (zipRegistry.contains("Path")) {
-        path = zipRegistry.value("Path").toString();
-        return true;
-    } else if (zipRegistry.contains("Path64")) {
-        path = zipRegistry.value("Path64").toString();
-        return true;
-    }
-    return false;
-}

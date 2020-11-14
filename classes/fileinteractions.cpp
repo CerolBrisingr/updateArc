@@ -1,9 +1,81 @@
 #include "fileinteractions.h"
 
-fileInteractions::fileInteractions()
-{
 
+bool fileInteractions::find7zip(QString &path) {
+    if (!searchPathAt("HKEY_CURRENT_USER\\SOFTWARE\\7-Zip", path)) {
+        if (!searchPathAt("HKEY_LOCAL_MACHINE\\SOFTWARE\\7-Zip", path)) {
+            return false;
+        }
+    }
+    if (QDir(path).exists("7z.exe")) {
+        path += "7z.exe";
+        return true;
+    }
+    return false;
 }
+
+bool fileInteractions::searchPathAt(QString key, QString &path) {
+    QSettings zipRegistry(key, QSettings::NativeFormat);
+    if (zipRegistry.contains("Path")) {
+        path = zipRegistry.value("Path").toString();
+        return true;
+    } else if (zipRegistry.contains("Path64")) {
+        path = zipRegistry.value("Path64").toString();
+        return true;
+    }
+    return false;
+}
+
+
+bool fileInteractions::extractWith7zip(QString archivePath, QString outputName) {
+    QProcess use7zip;
+    QStringList arguments;
+    QString sevenZipPath;
+    find7zip(sevenZipPath);
+    use7zip.setProgram(sevenZipPath);
+    arguments << "x" << archivePath << "-o" + outputName;
+    use7zip.setArguments(arguments);
+    use7zip.start();
+    if (!use7zip.waitForStarted()) {
+        std::cout << "      Program start failed" << std::endl;
+    }
+    else {
+        std::cout << "      Program started" << std::endl;
+        if (!use7zip.waitForFinished()) {
+            std::cout << "      Something else went wrong" << std::endl;
+            return false;
+        }
+        else
+            std::cout << "      Program finished" << std::endl;
+    }
+    QString output = use7zip.readAllStandardOutput();
+    return output.contains("Everything is Ok");
+}
+
+
+bool fileInteractions::executeExternalWaiting(QString executablePath, QString working_directory) {
+    QProcess m_agent;
+    m_agent.setWorkingDirectory(working_directory);
+    QStringList args = QStringList();
+    args = QStringList({"-Command", QString("Start-Process %1 -Verb runAs -Wait").arg(executablePath)});
+    m_agent.start("powershell", args);
+
+    if (!m_agent.waitForStarted()) {
+        std::cout << "      Program start failed" << std::endl;
+    }
+    else {
+        std::cout << "      Program started" << std::endl;
+        if (!m_agent.waitForFinished()) {
+            std::cout << "      Something else went wrong" << std::endl;
+        }
+        else {
+            std::cout << "      Program finished" << std::endl;
+            return true;
+        }
+    }
+    return false;
+}
+
 
 QString fileInteractions::calculateHashFromFile(QString sFile) {
     // Read hash of currently 'installed' arcdps

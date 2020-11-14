@@ -46,8 +46,6 @@ private:
     bool canUpdateTekkit(QVersionNumber &onlineVersion);
 
     QVersionNumber inquireCurrent7zipVersion(QString &sevenZipLink);
-    bool find7zip(QString &path);
-    bool searchPathAt(QString key, QString &path);
 
 };
 

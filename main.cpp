@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 
     bool doExit;
     bool undoInstall;
-    int returnValue = 1;
+    int returnValue = 0;
     UpdateTool _updater;
 
     evaluateInput(app, doExit, undoInstall);
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
         // Perform core functionality
         if (undoInstall) {
             std::cout << "Running removal" << std::endl;
-            returnValue = _updater.arcUninstaller();
+            returnValue += _updater.arcUninstaller();
             std::cout << "Uninstall finished" << std::endl;
         } else {
             std::cout << "Running updater" << std::endl;
