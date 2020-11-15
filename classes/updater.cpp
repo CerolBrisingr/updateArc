@@ -276,7 +276,7 @@ bool UpdateTool::startTacO()
             return false;
         }
     } else {
-        std::cout << "-- no start for TacO requested";
+        std::cout << "-- no start for TacO requested" << std::endl;
         return true;
     }
 }
