@@ -140,6 +140,36 @@ int fileInteractions::removeFile(QString pathstring, QString filename) {
     return 0;
 }
 
+void fileInteractions::copyFolderTo(QString folderPath, QString targetPath) {
+    QDir folder(folderPath);
+    QDir target(targetPath);
+    if (folder.exists()) {
+
+        foreach (QString subfolder, folder.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+            if (!QDir(targetPath + QDir::separator() + subfolder).exists()) {
+                target.mkpath(subfolder);
+            }
+            copyFolderTo(folderPath + QDir::separator() + subfolder, targetPath + QDir::separator() + subfolder);
+        }
+
+        foreach (QString filename, folder.entryList(QDir::Files)) {
+            if (QDir(targetPath).exists(filename)) {
+                removeFile(targetPath, filename);
+            }
+            QFile::copy(folderPath + QDir::separator() + filename, targetPath + QDir::separator() + filename);
+        }
+    }
+}
+
+
+void fileInteractions::removeFolder(QString folderPath) {
+    QDir folder(folderPath);
+    if (folder.exists()) {
+        folder.removeRecursively();
+    }
+}
+
+
 QString fileInteractions::getVersionString(QString fName)
 {
     // first of all, GetFileVersionInfoSize

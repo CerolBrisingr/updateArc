@@ -2,6 +2,7 @@ d3d9.dll
 d3d9.dll.md5sum
 *.zip
 build/
+addons/
 bin64/
 target/
 Gw2-64.exe

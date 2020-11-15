@@ -119,12 +119,17 @@ int UpdateTool::updateTaco()
     std::cout << "Starting <TacO> update" << std::endl;
     int _error = 0;
     QString tacoLink;
+    QString tempTaco = "TacoNew";
     int16_t onlineVersion = inquireCurrentTacoVersion(tacoLink);
     std::cout << "    Update link: " << tacoLink.toStdString() << std::endl;
     if (canUpdateTaco(onlineVersion)) {
         QString sevenZipPath;
+
+        // Removing possible remains from previous update
+        fileInteractions::removeFolder(tempTaco);
+
         std::cout << "    Starting download" << std::endl;
-        if (!downloader::singleDownload(tacoLink, "", "tacoArchive.zip")) {
+        if (0 != downloader::singleDownload(tacoLink, "", "tacoArchive.zip")) {
             std::cout << "    Download of new version failed" << std::endl;
             return 1;
         }
@@ -134,10 +139,12 @@ int UpdateTool::updateTaco()
             return 1;
         }
         std::cout << "    Extracting archive" << std::endl;
-        if (!fileInteractions::extractWith7zip("tacoArchive.zip", "TacoNew")) {
+        if (!fileInteractions::extractWith7zip("tacoArchive.zip", tempTaco)) {
             std::cout << "    archive extraction failed" << std::endl;
             return 1;
         }
+        fileInteractions::copyFolderTo(tempTaco, _taco_path);
+        fileInteractions::removeFolder(tempTaco);
         setSetting(_taco_install_key, QVariant(onlineVersion).toString());
     } else {
         std::cout << "    Online version is already registered, no update needed!" << std::endl;
@@ -149,19 +156,29 @@ int UpdateTool::updateTaco()
 int UpdateTool::updateTekkit()
 {
     std::cout << "Starting <Tekkit> update" << std::endl;
-    int _error = 0;
     QString tekkitLink;
+    QString filename = "tw_ALL_IN_ONE.taco";
     QVersionNumber onlineVersion = inquireCurrentTekkitVersion(tekkitLink);
     std::cout << "    Update link: " << tekkitLink.toStdString() << std::endl;
     if (canUpdateTekkit(onlineVersion)) {
-        std::cout << "    I'll pretend I can already install Tekkit version " << onlineVersion.toString().toStdString() << std::endl;
-        //downloader::singleDownload(tekkitLink, "", "tw_ALL_IN_ONE.taco");
+        std::cout << "    Starting download of new version" << onlineVersion.toString().toStdString() << std::endl;
+        if (0 != downloader::singleDownload(tekkitLink, "", filename)) {
+            std::cout << "Download failed" << std::endl;
+            return 1;
+        }
+
+        std::cout << "    Moving file in place" << std::endl;
+        fileInteractions::removeFile(_tekkit_path, filename);
+        QFile::copy(filename, _tekkit_path + QDir::separator() + filename);
+        fileInteractions::removeFile("", filename);
+
+        std::cout << "    Registering newly installed version" << std::endl;
         setSetting(_tekkit_install_key, onlineVersion.toString());
     } else {
         std::cout << "    Online version is already registered, no update needed!" << std::endl;
     }
     std::cout << "Ended <Tekkit> update" << std::endl;
-    return _error;
+    return 0;
 }
 
 int UpdateTool::update7zip() {
@@ -184,10 +201,8 @@ int UpdateTool::update7zip() {
     std::cout << "    Online version: " << current7zipVersion.toString().toStdString() << std::endl;
     std::cout << "    DL Link         " << sevenZipLink.toStdString() << std::endl;
 
-    std::cout << "!!!!! Faking old 7zip" << std::endl;
-    installed7zipVersion = QVersionNumber(QVector<int>(4, 0));
     if (QVersionNumber::compare(current7zipVersion, installed7zipVersion) > 0) {
-        if (!(downloader::singleDownload(sevenZipLink, "", "sevenZipInstaller.exe") == 0)) {
+        if (0 != downloader::singleDownload(sevenZipLink, "", "sevenZipInstaller.exe")) {
             return 1;
         }
         std::cout << "    Looks like we have a new version" << std::endl;
