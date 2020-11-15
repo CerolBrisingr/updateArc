@@ -12,6 +12,6 @@
 #include <thread>
 
 bool verifyUpdaterLocation();
-void evaluateInput(QCoreApplication &app, bool &doExit, bool &undoInstall);
+void evaluateInput(QCoreApplication &app, bool &undoInstall);
 
 #endif // MAIN_H

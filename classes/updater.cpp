@@ -49,15 +49,27 @@ bool UpdateTool::verifyArcInstallation() {
 }
 
 int UpdateTool::updateArc() {
+    std::cout << "Starting <ArcDPS> update" << std::endl;
+    int out = runArcUpdate();
+    if (out == 0) {
+        std::cout << "    ArcDPS update sucessful" << std::endl;
+    } else {
+        std::cout << "    ArcDPS update failed" << std::endl;
+    }
+    std::cout << "Ended <ArcDPS> update" << std::endl;
+    return out;
+}
+
+int UpdateTool::runArcUpdate() {
 
     QString sLocalHash;
     QString sRemoteHash = getRemoteHash();
     if (sRemoteHash.isEmpty()) {
-        std::cout << "Could not read source hash file" << std::endl;
+        std::cout << "    Could not read source hash file" << std::endl;
         return 1;
     }
     if (isBlockedArcVersion(sRemoteHash)) {
-        std::cout << "Curently available version is blocked. Run with \"-remove\" to remove blocker" << std::endl;
+        std::cout << "    Curently available version is blocked. Run with \"-remove\" to remove blocker" << std::endl;
         return 1;
     } else {
         // Remove previous blocker, if there is one
@@ -66,30 +78,23 @@ int UpdateTool::updateArc() {
     QString targetpath = "../bin64";
 
     if (verifyArcInstallation()) {
-
-        std::cout << "ArcDPS is seemingly already installed, looking for updates" << std::endl;
-
+        std::cout << "    ArcDPS is seemingly already installed, looking for updates" << std::endl;
         sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
         if (sLocalHash.isEmpty()) {
-            std::cout << "Could not calculate hash value for ArcDPS library." << std::endl;
+            std::cout << "    Could not calculate hash value for ArcDPS library." << std::endl;
             return 1;
         }
-
-        std::cout << "File: " << sLocalHash.toStdString() << std::endl;
-        std::cout << "Ref:  " << sRemoteHash.toStdString() << std::endl;
-
         if (sRemoteHash.contains(sLocalHash)) {
-            std::cout << "Match! Already running newest version!" << std::endl;
+            std::cout << "    Match! Already running newest version!" << std::endl;
             return 0;
         } else {
-            std::cout << "No Match! Downloading new version!" << std::endl;
+            std::cout << "    No Match! Downloading new version!" << std::endl;
             if (!downloadArc(targetpath)) {
                 return 1;
             }
         }
-
     } else {
-        std::cout << "ArcDPS not (fully) installed, fixing that" << std::endl;
+        std::cout << "    ArcDPS not (fully) installed, fixing that" << std::endl;
         if (!downloadArc(targetpath)) {
             return 1;
         }
@@ -98,18 +103,18 @@ int UpdateTool::updateArc() {
     // Verify correct download
     sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
     if (sLocalHash.isEmpty()) {
-        std::cout << "Could not calculate hash value for downloaded ArcDPS library." << std::endl;
+        std::cout << "    Could not calculate hash value for downloaded ArcDPS library." << std::endl;
         return 1;
     }
-    std::cout << "File: " << sLocalHash.toStdString() << std::endl;
+    std::cout << "     File: " << sLocalHash.toStdString() << std::endl;
     if (!sRemoteHash.contains(sLocalHash)) {
-        std::cout << "Something is wrong, hashes do not match!" << std::endl;
+        std::cout << "    Something is wrong, hashes do not match!" << std::endl;
         if (arcUninstaller() == 1) {
-            std::cout << "Removing files somehow went wrong, too! Is Gw2 running?" << std::endl;
+            std::cout << "    Removing files somehow went wrong, too! Is Gw2 running?" << std::endl;
         }
         return 1;
     } else {
-        std::cout << "Hashes match, update successful!" << std::endl;
+        std::cout << "    Hashes match, update successful!" << std::endl;
         return 0;
     }
 }
@@ -117,11 +122,9 @@ int UpdateTool::updateArc() {
 int UpdateTool::updateTaco()
 {
     std::cout << "Starting <TacO> update" << std::endl;
-    int _error = 0;
     QString tacoLink;
     QString tempTaco = "TacoNew";
     int16_t onlineVersion = inquireCurrentTacoVersion(tacoLink);
-    std::cout << "    Update link: " << tacoLink.toStdString() << std::endl;
     if (canUpdateTaco(onlineVersion)) {
         QString sevenZipPath;
 
@@ -133,7 +136,7 @@ int UpdateTool::updateTaco()
             std::cout << "    Download of new version failed" << std::endl;
             return 1;
         }
-        std::cout << "    Verify current 7-Zip version" << std::endl;
+        // Verify current 7-Zip version
         if (update7zip() != 0) {
             std::cout << "    Cannot locate 7-Zip" << std::endl;
             return 1;
@@ -145,12 +148,13 @@ int UpdateTool::updateTaco()
         }
         fileInteractions::copyFolderTo(tempTaco, _taco_path);
         fileInteractions::removeFolder(tempTaco);
+        fileInteractions::removeFile("", "tacoArchive.zip");
         setSetting(_taco_install_key, QVariant(onlineVersion).toString());
     } else {
         std::cout << "    Online version is already registered, no update needed!" << std::endl;
     }
     std::cout << "Ended <TacO> update" << std::endl;
-    return _error;
+    return 0;
 }
 
 int UpdateTool::updateTekkit()
@@ -159,9 +163,8 @@ int UpdateTool::updateTekkit()
     QString tekkitLink;
     QString filename = "tw_ALL_IN_ONE.taco";
     QVersionNumber onlineVersion = inquireCurrentTekkitVersion(tekkitLink);
-    std::cout << "    Update link: " << tekkitLink.toStdString() << std::endl;
     if (canUpdateTekkit(onlineVersion)) {
-        std::cout << "    Starting download of new version" << onlineVersion.toString().toStdString() << std::endl;
+        std::cout << "    Starting download of new version " << onlineVersion.toString().toStdString() << std::endl;
         if (0 != downloader::singleDownload(tekkitLink, "", filename)) {
             std::cout << "Download failed" << std::endl;
             return 1;
@@ -183,41 +186,99 @@ int UpdateTool::updateTekkit()
 
 int UpdateTool::update7zip() {
 
-    std::cout << "    Searching 7Zip registry entry" << std::endl;
+    std::cout << "    Searching 7Zip installation" << std::endl;
     QString path;
     QString sevenZipLink;
     QString sevenZipPath;
     QVersionNumber installed7zipVersion;
 
     if (fileInteractions::find7zip(path)) {
-        std::cout << "    Install path: \"" << path.toStdString() << "\"" << std::endl;
+        std::cout << "    Found 7-Zip at \"" << path.toStdString() << "\"" << std::endl;
         installed7zipVersion = QVersionNumber::fromString(fileInteractions::getVersionString(path));
     } else {
         installed7zipVersion = QVersionNumber(QVector<int>(4, 0));
     }
-    std::cout << "    Version: " << installed7zipVersion.toString().toStdString() << std::endl;
-
     QVersionNumber current7zipVersion = inquireCurrent7zipVersion(sevenZipLink);
-    std::cout << "    Online version: " << current7zipVersion.toString().toStdString() << std::endl;
-    std::cout << "    DL Link         " << sevenZipLink.toStdString() << std::endl;
 
+    // Update/Install 7-Zip if necessary
     if (QVersionNumber::compare(current7zipVersion, installed7zipVersion) > 0) {
+        std::cout << "    Did not find current version of 7-Zip, downloading version " << current7zipVersion.toString().toStdString() << std::endl;
         if (0 != downloader::singleDownload(sevenZipLink, "", "sevenZipInstaller.exe")) {
+            std::cout << "    Download of 7-Zip failed" << std::endl;
             return 1;
         }
-        std::cout << "    Looks like we have a new version" << std::endl;
+
+        // Install 7-Zip, remove installer
         QDir dir;
         QString executablePath = dir.absolutePath() + "/sevenZipInstaller.exe";
         if(!fileInteractions::executeExternalWaiting(executablePath)) {
+            fileInteractions::removeFile("", "sevenZipInstaller.exe");
             return 1;
         }
         fileInteractions::removeFile("", "sevenZipInstaller.exe");
     }
 
+    // I don't care if the user aborts the install process as long as any version is installed, to be honest.
+    // At that point it's their choice. But there needs to be SOME version installed.
     if (!fileInteractions::find7zip(sevenZipPath)) {
         return 1;
     }
     return 0;
+}
+
+bool UpdateTool::startGW2()
+{
+    QString setting = getSetting2("Starter/GuildWars2", "no");
+    if (setting == "yes") {
+        QProcess gw2;
+        gw2.setWorkingDirectory("..");
+        gw2.setArguments(readGW2Arguments());
+        gw2.setProgram("../Gw2.exe");
+        if(gw2.startDetached()) {
+            std::cout << "-- started GuildWars2" << std::endl;
+            return true;
+        } else {
+            std::cout << "-- start of GuildWars2 failed" << std::endl;
+            return false;
+        }
+    } else {
+        std::cout << "-- no start for GuildWars2 requested" << std::endl;
+        return true;
+    }
+}
+
+QStringList UpdateTool::readGW2Arguments() {
+    QString argumentChain = getSetting2("Starter/GuildWars2Arguments", "");
+    QStringList splitByQuotes = argumentChain.split("\"", QString::SplitBehavior::SkipEmptyParts);
+    QStringList splitArguments;
+    for (int i = 0; i < splitByQuotes.length(); i++) {
+        if (i % 2 == 0) {
+            splitArguments << splitByQuotes[i].split(" ", QString::SplitBehavior::SkipEmptyParts);
+        } else {
+            splitArguments << splitByQuotes[i];
+        }
+    }
+    return splitArguments;
+}
+
+bool UpdateTool::startTacO()
+{
+    QString setting = getSetting2("Starter/TacO", "no");
+    if (setting == "yes") {
+        QProcess taco;
+        taco.setWorkingDirectory(_taco_path);
+        taco.setProgram(_taco_path + "/GW2TacO.exe");
+        if (taco.startDetached()) {
+            std::cout << "-- started TacO" << std::endl;
+            return true;
+        } else {
+            std::cout << "-- start of TacO failed" << std::endl;
+            return false;
+        }
+    } else {
+        std::cout << "-- no start for TacO requested";
+        return true;
+    }
 }
 
 bool UpdateTool::hasSetting(QString key)
@@ -230,6 +291,16 @@ void UpdateTool::setSetting(QString key, QString value)
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     setting.setValue(key, value);
+}
+
+QString UpdateTool::getSetting2(QString key, QString default_value)
+{
+    if (!hasSetting(key)) {
+        setSetting(key, default_value);
+    }
+
+    QSettings setting(_ini_path, QSettings::IniFormat);
+    return setting.value(key, default_value).toString();
 }
 
 QString UpdateTool::getSetting(QString key, QString default_value)
@@ -258,13 +329,13 @@ QString UpdateTool::getRemoteHash() {
 
 bool UpdateTool::isBlockedArcVersion(QString sRemoteHash) {
     if (!hasSetting(_arc_blocker_key)) {
-        std::cout << "Did not find blocker!" << std::endl;
+        std::cout << "    Did not find blocker!" << std::endl;
         return false;
     }
 
     QString blockedHash = getSetting(_arc_blocker_key);
-    std::cout << "Blocked:  " << blockedHash.toStdString() << std::endl;
-    std::cout << "Received: " << sRemoteHash.toStdString() << std::endl;
+    std::cout << "    Blocked:  " << blockedHash.toStdString() << std::endl;
+    std::cout << "    Received: " << sRemoteHash.toStdString() << std::endl;
     if (sRemoteHash.contains(blockedHash)) {
         return true;
     } else {

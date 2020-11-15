@@ -4,12 +4,11 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    bool doExit;
     bool undoInstall;
     int returnValue = 0;
     UpdateTool _updater;
 
-    evaluateInput(app, doExit, undoInstall);
+    evaluateInput(app, undoInstall);
 
     std::cout << "Searching gw2 install" << std::endl;
     if (verifyUpdaterLocation()) {
@@ -27,8 +26,12 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Execute starters
+    _updater.startGW2();
+    _updater.startTacO();
+
     // Exit after timer or stay open at user command
-    if (doExit) {
+    if (_updater.getSetting2("ProgramFlow/CloseAfterNoError", "no") == "yes") {
         if (returnValue == 0) {
             std::cout << "Update completed successfully. Window closing in 10 seconds!" << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(10));
@@ -39,18 +42,18 @@ int main(int argc, char *argv[])
         }
         return returnValue;
     } else {
-        std::cout << std::endl << "No \"-closeAfter\" requested. Press <Enter> to close." << std::endl;
+        std::cout << std::endl << "Update completed successfully!" << std::endl;
+        std::cout << "Press <Enter> to close." << std::endl;
         std::cin.ignore();
         return returnValue;
     }
 }
 
-void evaluateInput(QCoreApplication &app, bool &doExit, bool &undoInstall){
+void evaluateInput(QCoreApplication &app, bool &undoInstall){
 
     QStringList args = app.instance()->arguments();
     QString argument;
 
-    doExit = false;
     undoInstall = false;
 
     // Read input argument, ignore arguments following the first one
@@ -59,11 +62,9 @@ void evaluateInput(QCoreApplication &app, bool &doExit, bool &undoInstall){
         argument = args.takeFirst();
         if (argument == "-removeArc")
             undoInstall = true;
-        else if (argument == "-closeAfter") {
-            doExit = true;
-        } else {
+        else {
             std::cout << "Invalid command \"" << argument.toStdString()
-                      << "\", either use \"-closeAfter\" or \"-remove\"!" << std::endl;
+                      << "\", currently available: \"-removeArc\"!" << std::endl;
         }
     }
 }

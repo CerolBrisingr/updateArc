@@ -22,6 +22,13 @@ public:
     int updateTaco();
     int updateTekkit();
     int update7zip();
+
+    bool startGW2();
+    bool startTacO();
+
+    bool hasSetting(QString key);
+    QString getSetting(QString key, QString default_value = "");
+    QString getSetting2(QString key, QString default_value = "");
 private:
 
     QString _ini_path = "settings.ini";
@@ -31,15 +38,14 @@ private:
     QString _taco_path = "../addons/TacO";
     QString _tekkit_path = _taco_path + "/POIs";
 
-    bool hasSetting(QString key);
     void setSetting(QString key, QString value);
-    QString getSetting(QString key, QString default_value = "");
     void removeSetting(QString key);
 
     QString getRemoteHash();
     bool isBlockedArcVersion(QString sRemoteHash);
     bool verifyArcInstallation();
     bool downloadArc(QString pathname);
+    int runArcUpdate();
 
     int16_t inquireCurrentTacoVersion(QString &tacoLink);
     bool canUpdateTaco(int16_t &onlineVersion);
@@ -48,6 +54,8 @@ private:
     bool canUpdateTekkit(QVersionNumber &onlineVersion);
 
     QVersionNumber inquireCurrent7zipVersion(QString &sevenZipLink);
+
+    QStringList readGW2Arguments();
 
 };
 
