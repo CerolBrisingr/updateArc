@@ -212,17 +212,20 @@ int UpdateTool::update7zip() {
         QDir dir;
         QString executablePath = dir.absolutePath() + "/sevenZipInstaller.exe";
         if(!fileInteractions::executeExternalWaiting(executablePath)) {
-            fileInteractions::removeFile("", "sevenZipInstaller.exe");
+            std::cout << "  7-Zip update not possible, execute \"sevenZipInstaller.exe\" to fix that" << std::endl;
+            std::cout << "  TacO update failed, cannot unpack archive" << std::endl;
             return 1;
         }
-        fileInteractions::removeFile("", "sevenZipInstaller.exe");
     }
 
     // I don't care if the user aborts the install process as long as any version is installed, to be honest.
     // At that point it's their choice. But there needs to be SOME version installed.
     if (!fileInteractions::find7zip(sevenZipPath)) {
+        std::cout << "  7-Zip still not installed, execute \"sevenZipInstaller.exe\" to fix that" << std::endl;
+        std::cout << "  TacO update failed, cannot unpack archive" << std::endl;
         return 1;
     }
+    fileInteractions::removeFile("", "sevenZipInstaller.exe");
     return 0;
 }
 
@@ -233,7 +236,11 @@ bool UpdateTool::startGW2()
         QProcess gw2;
         gw2.setWorkingDirectory("..");
         gw2.setArguments(readGW2Arguments());
-        gw2.setProgram("../Gw2.exe");
+        if (QDir("..").exists("Gw2-64.exe")) {
+            gw2.setProgram("../Gw2-64.exe");
+        } else {
+            gw2.setProgram("../Gw2.exe");
+        }
         if(gw2.startDetached()) {
             std::cout << "-- started GuildWars2" << std::endl;
             return true;
@@ -263,11 +270,14 @@ QStringList UpdateTool::readGW2Arguments() {
 
 bool UpdateTool::startTacO()
 {
-    QString setting = getSetting2("Starter/TacO", "no");
-    if (setting == "yes") {
+    QString tacoSetting = getSetting2("Starter/TacO", "no");
+    QString gw2Setting = getSetting2("Starter/GuildWars2", "no");
+    if ((tacoSetting == "yes") && (gw2Setting == "yes")) {
         QProcess taco;
         taco.setWorkingDirectory(_taco_path);
         taco.setProgram(_taco_path + "/GW2TacO.exe");
+        std::cout << "Waiting for 2 min before we start TacO" << std::endl;
+        std::this_thread::sleep_for(std::chrono::minutes(2));
         if (taco.startDetached()) {
             std::cout << "-- started TacO" << std::endl;
             return true;

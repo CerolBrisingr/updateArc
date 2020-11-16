@@ -4,7 +4,9 @@
 #include <QSettings>
 #include <QRegularExpression>
 #include <QVersionNumber>
-#include <QtZlib/zlib.h>
+
+#include <chrono>
+#include <thread>
 
 #include "fileinteractions.h"
 #include "downloader.h"
