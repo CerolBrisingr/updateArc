@@ -272,12 +272,16 @@ bool UpdateTool::startTacO()
 {
     QString tacoSetting = getSetting2("Starter/TacO", "no");
     QString gw2Setting = getSetting2("Starter/GuildWars2", "no");
+    int waitTacO = QVariant(getSetting2("Starter/TacODelay_s", "90")).toInt();
     if ((tacoSetting == "yes") && (gw2Setting == "yes")) {
         QProcess taco;
         taco.setWorkingDirectory(_taco_path);
         taco.setProgram(_taco_path + "/GW2TacO.exe");
-        std::cout << "Waiting for 2 min before we start TacO" << std::endl;
-        std::this_thread::sleep_for(std::chrono::minutes(2));
+        std::cout << "Waiting for " << waitTacO << "seconds before we start TacO" << std::endl;
+        for (int i = 0; i < waitTacO; i += 10) {
+            std::cout << "Timer: " << i << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(10));
+        }
         if (taco.startDetached()) {
             std::cout << "-- started TacO" << std::endl;
             return true;
