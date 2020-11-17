@@ -161,6 +161,17 @@ void fileInteractions::copyFolderTo(QString folderPath, QString targetPath) {
     }
 }
 
+void fileInteractions::copyFileTo(QString filePath, QString targetPath) {
+    QFile source(filePath);
+    QFileInfo target(targetPath);
+    if (!source.exists()) {
+        return;
+    }
+    if (!target.absoluteDir().exists()) {
+        QDir("").mkpath(target.absolutePath());
+    }
+    source.copy(targetPath);
+}
 
 void fileInteractions::removeFolder(QString folderPath) {
     QDir folder(folderPath);
@@ -168,7 +179,6 @@ void fileInteractions::removeFolder(QString folderPath) {
         folder.removeRecursively();
     }
 }
-
 
 QString fileInteractions::getVersionString(QString fName)
 {

@@ -1,19 +1,20 @@
 #include "downloader.h"
 
-downloader::downloader(bool print_debug)
+downloader::downloader()
 {
-    _print_debug = print_debug;
+    QSettings setting(_setting_path, QSettings::IniFormat);
+    _print_debug = setting.value("debug/downloader", "no").toString() == "yes";
 
-    if (print_debug) {
+    if (_print_debug) {
     std::cout << QSslSocket::sslLibraryBuildVersionString().toStdString() << std::endl;
     }
     if (QSslSocket::supportsSsl()) {
         if (_print_debug) {
-            std::cout << "Supporting SSL" << std::endl;
+            std::cout << "      Supporting SSL" << std::endl;
         }
     } else {
         if (_print_debug) {
-        std::cout << "No support for SSL!" << std::endl;
+        std::cout << "      No support for SSL!" << std::endl;
         }
     }
 
@@ -50,7 +51,7 @@ int downloader::fetch()
         QUrl url = QUrl(taskList[i]->getRequestAddress());
 
         if (_print_debug) {
-            std::cout << "Starting request: " << url.url().toStdString() << std::endl;
+            std::cout << "      Starting request: " << url.url().toStdString() << std::endl;
         }
         request = QNetworkRequest(url);
 
@@ -87,7 +88,7 @@ void downloader::sslErrors(const QList<QSslError> &sslErrors)
 {
 #if QT_CONFIG(ssl)
     for (const QSslError &error : sslErrors)
-        fprintf(stderr, "SSL error: %s\n", qPrintable(error.errorString()));
+        fprintf(stderr, "      SSL error: %s\n", qPrintable(error.errorString()));
 #else
     Q_UNUSED(sslErrors);
 #endif
@@ -103,7 +104,7 @@ void downloader::addRequest(Request *newRequest)
 void downloader::processReply(QNetworkReply* netReply)
 {
     if (_print_debug) {
-        std::cout << "Recieved reply from URL: " << netReply->url().toString().toStdString() << std::endl;
+        std::cout << "      Recieved reply from URL: " << netReply->url().toString().toStdString() << std::endl;
     }
     int16_t _err = 0;
 
@@ -113,7 +114,7 @@ void downloader::processReply(QNetworkReply* netReply)
     QUrl url = netReply->url();
     if (netReply->error()) {
         // Request failed
-        fprintf(stderr, "Download of %s failed: %s\n",
+        fprintf(stderr, "      Download of %s failed: %s\n",
                 url.toEncoded().constData(),
                 qPrintable(netReply->errorString()));
         _err = 1;
@@ -131,7 +132,7 @@ void downloader::processReply(QNetworkReply* netReply)
             if (targetFilename.isEmpty()) {
                 // Invalid target name
                 if (_print_debug) {
-                    std::cout << "Download requested but filename empty!" << std::endl;
+                    std::cout << "      Download requested but filename empty!" << std::endl;
                 }
                 _err = 1;
             } else {
@@ -141,17 +142,17 @@ void downloader::processReply(QNetworkReply* netReply)
 
                 QFile file(fullPath);
                 if (_print_debug) {
-                    std::cout << "Saving file to: " << fullPath.toStdString() << std::endl;
+                    std::cout << "      Saving file to: " << fullPath.toStdString() << std::endl;
                 }
                 if (file.open(QFile::WriteOnly)) {
                     file.write(netReply->read(netReply->bytesAvailable()));
                     file.close();
                     if (_print_debug) {
-                        std::cout << "File saved to: " << fullPath.toStdString() << std::endl;
+                        std::cout << "      File saved to: " << fullPath.toStdString() << std::endl;
                     }
                 } else {
                     if (_print_debug) {
-                        std::cout << "Cannot write target file" << std::endl;
+                        std::cout << "      Cannot write target file" << std::endl;
                     }
                     _err = 1;
                 }

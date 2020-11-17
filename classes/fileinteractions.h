@@ -22,6 +22,7 @@ public:
     static int writeFileString(QString filename, QString filecontent);
     static int removeFile(QString pathstring, QString filename);
     static void copyFolderTo(QString folderPath, QString targetPath);
+    static void copyFileTo(QString filePath, QString targetPath);
     static void removeFolder(QString folderPath);
     static QString getVersionString(QString fName);
 

@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     evaluateInput(app, undoInstall);
 
     std::cout << "Searching gw2 install" << std::endl;
-    if (verifyUpdaterLocation()) {
+    if (_updater.verifyLocation()) {
         // Perform core functionality
         if (undoInstall) {
             std::cout << "Running removal" << std::endl;
@@ -67,23 +67,5 @@ void evaluateInput(QCoreApplication &app, bool &undoInstall){
                       << "\", currently available: \"-removeArc\"!" << std::endl;
         }
     }
-}
-
-bool verifyUpdaterLocation() {
-
-    bool existGw2_64 = QDir("../").exists("Gw2-64.exe");
-    bool existGw2_32 = QDir("../").exists("Gw2.exe");
-    if (!(existGw2_32 ||  existGw2_64)){
-        std::cout << "Could not find gw2 executable. Updater seems to be at wrong location" << std::endl;
-        return false;
-    }
-
-    bool existBin64  = QDir("../bin64").exists();
-    if (!(existBin64)) {
-        std::cout << "Missing target folder \"bin64\"" << std::endl;
-        return false;
-    }
-
-    return true;
 }
 

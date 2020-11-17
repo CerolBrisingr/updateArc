@@ -8,6 +8,24 @@ UpdateTool::~UpdateTool()
 {
 }
 
+bool UpdateTool::verifyLocation() {
+
+    bool existGw2_64 = QDir(_gw_path).exists("Gw2-64.exe");
+    bool existGw2_32 = QDir(_gw_path).exists("Gw2.exe");
+    if (!(existGw2_32 ||  existGw2_64)){
+        std::cout << "Could not find gw2 executable. Updater seems to be at wrong location" << std::endl;
+        return false;
+    }
+
+    bool existBin64  = QDir(_gw_path + "/bin64").exists();
+    if (!(existBin64)) {
+        std::cout << "Missing target folder \"bin64\"" << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
 int UpdateTool::arcUninstaller() {
 
     bool blockerIsFresh = false;
@@ -18,7 +36,7 @@ int UpdateTool::arcUninstaller() {
         std::string userInput;
         std::getline(std::cin, userInput);
         if (userInput.compare("y") == 0) {
-            QString sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
+            QString sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
             std::cout << "Blocking installation of version " << sLocalHash.toStdString() << std::endl;
             setSetting(_arc_blocker_key, sLocalHash);
             blockerIsFresh = true;
@@ -38,14 +56,14 @@ int UpdateTool::arcUninstaller() {
         }
     }
 
-    fileInteractions::removeFile("../bin64", "d3d9.dll");
-    fileInteractions::removeFile("../bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
+    fileInteractions::removeFile(_gw_path + "/bin64", "d3d9.dll");
+    fileInteractions::removeFile(_gw_path + "/bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
 
     return 0;
 }
 
 bool UpdateTool::verifyArcInstallation() {
-    return QDir("../bin64").exists("d3d9.dll");
+    return QDir(_gw_path + "/bin64").exists("d3d9.dll");
 }
 
 int UpdateTool::updateArc() {
@@ -75,11 +93,11 @@ int UpdateTool::runArcUpdate() {
         // Remove previous blocker, if there is one
         removeSetting(_arc_blocker_key);
     }
-    QString targetpath = "../bin64";
+    QString targetpath = _gw_path + "/bin64";
 
     if (verifyArcInstallation()) {
         std::cout << "    ArcDPS is seemingly already installed, looking for updates" << std::endl;
-        sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
+        sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
         if (sLocalHash.isEmpty()) {
             std::cout << "    Could not calculate hash value for ArcDPS library." << std::endl;
             return 1;
@@ -101,7 +119,7 @@ int UpdateTool::runArcUpdate() {
     }
 
     // Verify correct download
-    sLocalHash = fileInteractions::calculateHashFromFile("../bin64/d3d9.dll");
+    sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
     if (sLocalHash.isEmpty()) {
         std::cout << "    Could not calculate hash value for downloaded ArcDPS library." << std::endl;
         return 1;
@@ -166,13 +184,14 @@ int UpdateTool::updateTekkit()
     if (canUpdateTekkit(onlineVersion)) {
         std::cout << "    Starting download of new version " << onlineVersion.toString().toStdString() << std::endl;
         if (0 != downloader::singleDownload(tekkitLink, "", filename)) {
-            std::cout << "Download failed" << std::endl;
+            std::cout << "    Download failed" << std::endl;
             return 1;
         }
 
         std::cout << "    Moving file in place" << std::endl;
         fileInteractions::removeFile(_tekkit_path, filename);
-        QFile::copy(filename, _tekkit_path + QDir::separator() + filename);
+
+        fileInteractions::copyFileTo(filename, _tekkit_path + QDir::separator() + filename);
         fileInteractions::removeFile("", filename);
 
         std::cout << "    Registering newly installed version" << std::endl;
@@ -234,12 +253,12 @@ bool UpdateTool::startGW2()
     QString setting = getSetting2("Starter/GuildWars2", "no");
     if (setting == "yes") {
         QProcess gw2;
-        gw2.setWorkingDirectory("..");
+        gw2.setWorkingDirectory(_gw_path);
         gw2.setArguments(readGW2Arguments());
-        if (QDir("..").exists("Gw2-64.exe")) {
-            gw2.setProgram("../Gw2-64.exe");
+        if (QDir(_gw_path).exists("Gw2-64.exe")) {
+            gw2.setProgram(_gw_path + "/Gw2-64.exe");
         } else {
-            gw2.setProgram("../Gw2.exe");
+            gw2.setProgram(_gw_path + "/Gw2.exe");
         }
         if(gw2.startDetached()) {
             std::cout << "-- started GuildWars2" << std::endl;

@@ -11,7 +11,6 @@
 #include <chrono>
 #include <thread>
 
-bool verifyUpdaterLocation();
 void evaluateInput(QCoreApplication &app, bool &undoInstall);
 
 #endif // MAIN_H

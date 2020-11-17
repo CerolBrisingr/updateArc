@@ -27,7 +27,7 @@ class downloader : public QObject
 {
     Q_OBJECT
 public:
-    downloader(bool print_debug = false);
+    downloader();
     ~downloader();
 
     bool _print_debug;
@@ -53,6 +53,7 @@ private:
     QNetworkAccessManager netManager;
     QNetworkRequest request;
     QString targetPath = "";
+    QString _setting_path = "settings.ini";
 
     QEventLoop waitLoop;
     bool hasError;
