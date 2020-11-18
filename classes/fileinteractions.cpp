@@ -1,31 +1,5 @@
 #include "fileinteractions.h"
 
-
-bool fileInteractions::find7zip(QString &path) {
-    if (!searchPathAt("HKEY_CURRENT_USER\\SOFTWARE\\7-Zip", path)) {
-        if (!searchPathAt("HKEY_LOCAL_MACHINE\\SOFTWARE\\7-Zip", path)) {
-            return false;
-        }
-    }
-    if (QDir(path).exists("7z.exe")) {
-        path += "7z.exe";
-        return true;
-    }
-    return false;
-}
-
-bool fileInteractions::searchPathAt(QString key, QString &path) {
-    QSettings zipRegistry(key, QSettings::NativeFormat);
-    if (zipRegistry.contains("Path")) {
-        path = zipRegistry.value("Path").toString();
-        return true;
-    } else if (zipRegistry.contains("Path64")) {
-        path = zipRegistry.value("Path64").toString();
-        return true;
-    }
-    return false;
-}
-
 bool fileInteractions::unzipArchive(QString archive, QString targetPath) {
     QProcess m_agent;
     QFileInfo source(archive);
@@ -48,32 +22,6 @@ bool fileInteractions::unzipArchive(QString archive, QString targetPath) {
     }
     return false;
 }
-
-bool fileInteractions::extractWith7zip(QString archivePath, QString outputName) {
-    QProcess use7zip;
-    QStringList arguments;
-    QString sevenZipPath;
-    find7zip(sevenZipPath);
-    use7zip.setProgram(sevenZipPath);
-    arguments << "x" << archivePath << "-o" + outputName;
-    use7zip.setArguments(arguments);
-    use7zip.start();
-    if (!use7zip.waitForStarted()) {
-        std::cout << "      Program start failed" << std::endl;
-    }
-    else {
-        std::cout << "      Program started" << std::endl;
-        if (!use7zip.waitForFinished()) {
-            std::cout << "      Something else went wrong" << std::endl;
-            return false;
-        }
-        else
-            std::cout << "      Program finished" << std::endl;
-    }
-    QString output = use7zip.readAllStandardOutput();
-    return output.contains("Everything is Ok");
-}
-
 
 bool fileInteractions::executeExternalWaiting(QString executablePath, QString working_directory) {
     QProcess m_agent;
@@ -202,40 +150,3 @@ void fileInteractions::removeFolder(QString folderPath) {
     }
 }
 
-QString fileInteractions::getVersionString(QString fName)
-{
-    // first of all, GetFileVersionInfoSize
-    DWORD dwHandle;
-    DWORD dwLen = GetFileVersionInfoSize(fName.toStdWString().c_str(), &dwHandle);
-
-    // GetFileVersionInfo
-    LPVOID lpData = new BYTE[dwLen];
-    if (!GetFileVersionInfo(fName.toStdWString().c_str(), dwHandle, dwLen, lpData))
-    {
-        qDebug() << "error in GetFileVersionInfo";
-        delete[] lpData;
-        return "";
-    }
-
-    // VerQueryValue
-    VS_FIXEDFILEINFO* lpBuffer = NULL;
-    UINT uLen;
-
-    if (!VerQueryValue(lpData,
-                       QString("\\").toStdWString().c_str(),
-                       (LPVOID*)& lpBuffer,
-                       &uLen))
-    {
-
-        qDebug() << "error in VerQueryValue";
-        delete[] lpData;
-        return "";
-    }
-    else
-    {
-        return QString::number((lpBuffer->dwFileVersionMS >> 16) & 0xffff) + "." +
-                QString::number((lpBuffer->dwFileVersionMS) & 0xffff) + "." +
-                QString::number((lpBuffer->dwFileVersionLS >> 16) & 0xffff) + "." +
-                QString::number((lpBuffer->dwFileVersionLS) & 0xffff);
-    }
-}

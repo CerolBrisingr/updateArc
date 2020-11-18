@@ -24,7 +24,6 @@ public:
     int updateArc();
     int updateTaco();
     int updateTekkit();
-    int update7zip();
 
     bool startGW2();
     bool startTacO();
@@ -39,11 +38,13 @@ private:
     QString _tekkit_install_key = "Installed/TekkitVersion";
     QString _arc_blocker_key = "Blocker/ArcDPS";
     QString _gw_path = "../..";  // Will possibly be updated by verifyLocation()
-    QString _taco_path = _gw_path + "/addons/TacO";
-    QString _tekkit_path = _taco_path + "/POIs";
+    QString _taco_path;
+    QString _tekkit_path;
 
     void setSetting(QString key, QString value);
     void removeSetting(QString key);
+
+    void updateTargetPaths(QString gw_path);
 
     QString getRemoteHash();
     bool isBlockedArcVersion(QString sRemoteHash);
@@ -56,8 +57,6 @@ private:
 
     QVersionNumber inquireCurrentTekkitVersion(QString &tekkitLink);
     bool canUpdateTekkit(QVersionNumber &onlineVersion);
-
-    QVersionNumber inquireCurrent7zipVersion(QString &sevenZipLink);
 
     QStringList readGW2Arguments();
 

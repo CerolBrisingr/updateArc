@@ -2,6 +2,7 @@
 
 UpdateTool::UpdateTool()
 {
+    updateTargetPaths(_gw_path);
 }
 
 UpdateTool::~UpdateTool()
@@ -11,13 +12,13 @@ UpdateTool::~UpdateTool()
 bool UpdateTool::verifyLocation() {
     bool existGw2_64 = false;
     bool existGw2_32 = false;
-    QString path = "..";
+    QString gw_path = "..";
 
     for (int i = 0; i < 2; i++) {
-        existGw2_64 = QDir(path).exists("Gw2-64.exe");
-        existGw2_32 = QDir(path).exists("Gw2.exe");
+        existGw2_64 = QDir(gw_path).exists("Gw2-64.exe");
+        existGw2_32 = QDir(gw_path).exists("Gw2.exe");
         if (!(existGw2_32 || existGw2_64)){
-            path = "../..";
+            gw_path = "../..";
         } else {
             break;
         }
@@ -26,8 +27,8 @@ bool UpdateTool::verifyLocation() {
         std::cout << "Could not find gw2 executable. Updater seems to be at wrong location" << std::endl;
         return false;
     }
-    _gw_path = path;
 
+    updateTargetPaths(gw_path);
     bool existBin64  = QDir(_gw_path + "/bin64").exists();
     if (!(existBin64)) {
         std::cout << "Missing target folder \"bin64\"" << std::endl;
@@ -165,19 +166,18 @@ int UpdateTool::updateTaco()
             std::cout << "    Download of new version failed" << std::endl;
             return 1;
         }
-        // Verify current 7-Zip version
-        if (update7zip() != 0) {
-            std::cout << "    Cannot locate 7-Zip" << std::endl;
-            return 1;
-        }
         std::cout << "    Extracting archive" << std::endl;
-        if (!fileInteractions::extractWith7zip("tacoArchive.zip", tempTaco)) {
+        if (!fileInteractions::unzipArchive("tacoArchive.zip", tempTaco)) {
             std::cout << "    archive extraction failed" << std::endl;
             return 1;
         }
+
+        std::cout << "    Moving files to target location" << std::endl;
         fileInteractions::copyFolderTo(tempTaco, _taco_path);
         fileInteractions::removeFolder(tempTaco);
         fileInteractions::removeFile("", "tacoArchive.zip");
+
+        std::cout << "    Registering newly installed version" << std::endl;
         setSetting(_taco_install_key, QVariant(onlineVersion).toString());
     } else {
         std::cout << "    Online version is already registered, no update needed!" << std::endl;
@@ -211,51 +211,6 @@ int UpdateTool::updateTekkit()
         std::cout << "    Online version is already registered, no update needed!" << std::endl;
     }
     std::cout << "Ended <Tekkit> update" << std::endl;
-    return 0;
-}
-
-int UpdateTool::update7zip() {
-
-    std::cout << "    Searching 7Zip installation" << std::endl;
-    QString path;
-    QString sevenZipLink;
-    QString sevenZipPath;
-    QVersionNumber installed7zipVersion;
-
-    if (fileInteractions::find7zip(path)) {
-        std::cout << "    Found 7-Zip at \"" << path.toStdString() << "\"" << std::endl;
-        installed7zipVersion = QVersionNumber::fromString(fileInteractions::getVersionString(path));
-    } else {
-        installed7zipVersion = QVersionNumber(QVector<int>(4, 0));
-    }
-    QVersionNumber current7zipVersion = inquireCurrent7zipVersion(sevenZipLink);
-
-    // Update/Install 7-Zip if necessary
-    if (QVersionNumber::compare(current7zipVersion, installed7zipVersion) > 0) {
-        std::cout << "    Did not find current version of 7-Zip, downloading version " << current7zipVersion.toString().toStdString() << std::endl;
-        if (0 != downloader::singleDownload(sevenZipLink, "", "sevenZipInstaller.exe")) {
-            std::cout << "    Download of 7-Zip failed" << std::endl;
-            return 1;
-        }
-
-        // Install 7-Zip, remove installer
-        QDir dir;
-        QString executablePath = dir.absolutePath() + "/sevenZipInstaller.exe";
-        if(!fileInteractions::executeExternalWaiting(executablePath)) {
-            std::cout << "  7-Zip update not possible, execute \"sevenZipInstaller.exe\" to fix that" << std::endl;
-            std::cout << "  TacO update failed, cannot unpack archive" << std::endl;
-            return 1;
-        }
-    }
-
-    // I don't care if the user aborts the install process as long as any version is installed, to be honest.
-    // At that point it's their choice. But there needs to be SOME version installed.
-    if (!fileInteractions::find7zip(sevenZipPath)) {
-        std::cout << "  7-Zip still not installed, execute \"sevenZipInstaller.exe\" to fix that" << std::endl;
-        std::cout << "  TacO update failed, cannot unpack archive" << std::endl;
-        return 1;
-    }
-    fileInteractions::removeFile("", "sevenZipInstaller.exe");
     return 0;
 }
 
@@ -360,6 +315,12 @@ void UpdateTool::removeSetting(QString key)
     return;
 }
 
+void UpdateTool::updateTargetPaths(QString gw_path) {
+    _gw_path = gw_path;
+    _taco_path = _gw_path + "/addons/TacO";
+    _tekkit_path = _taco_path + "/POIs";
+}
+
 QString UpdateTool::getRemoteHash() {
 
     // Read md5 hash of online version
@@ -450,29 +411,3 @@ bool UpdateTool::canUpdateTekkit(QVersionNumber &onlineVersion)
     std::cout << "    Tekkit version installed: " << currentVersion.toString().toStdString() << std::endl;
     return QVersionNumber::compare(onlineVersion, currentVersion) > 0;
 }
-
-QVersionNumber UpdateTool::inquireCurrent7zipVersion(QString &sevenZipLink) {
-    QString sevenZipBody = "https://sourceforge.net/projects/sevenzip/files/7-Zip/";
-    downloader::singleTextRequest(sevenZipBody);
-
-    QRegularExpression re("href=\"(/projects/sevenzip/files/7-Zip/(\\d+)\\.(\\d+)/)\"");
-    QRegularExpressionMatchIterator matches = re.globalMatch(sevenZipBody);
-    QVersionNumber latestVersion = QVersionNumber(QVector<int>(4, 0));
-    QVector<int> versionVec(4, 0);
-    QVersionNumber readingVersion;
-    while (matches.hasNext()) {
-        QRegularExpressionMatch match = matches.next();
-        versionVec[0] = match.captured(2).toInt();
-        versionVec[1] = match.captured(3).toInt();
-        readingVersion = QVersionNumber(versionVec);
-        if (QVersionNumber::compare(readingVersion, latestVersion) > 0) {
-            latestVersion = readingVersion;
-            QString fileVersion = match.captured(2) + match.captured(3);
-            sevenZipLink = "https://7-zip.org/a/7z" + fileVersion + "-x64.exe";
-            //sevenZipLink = "https://sourceforge.net" + match.captured(1) + "7z" + fileVersion + "-x64.exe/download";
-        }
-    }
-    return latestVersion;
-}
-
-
