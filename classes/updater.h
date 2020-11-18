@@ -38,8 +38,8 @@ private:
     QString _taco_install_key   = "Installed/TacoVersion";
     QString _tekkit_install_key = "Installed/TekkitVersion";
     QString _arc_blocker_key = "Blocker/ArcDPS";
-    QString _gw_path = "../..";
-    QString _taco_path = "../TacO";
+    QString _gw_path = "../..";  // Will possibly be updated by verifyLocation()
+    QString _taco_path = _gw_path + "/addons/TacO";
     QString _tekkit_path = _taco_path + "/POIs";
 
     void setSetting(QString key, QString value);

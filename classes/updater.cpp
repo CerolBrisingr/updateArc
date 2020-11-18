@@ -9,13 +9,24 @@ UpdateTool::~UpdateTool()
 }
 
 bool UpdateTool::verifyLocation() {
+    bool existGw2_64 = false;
+    bool existGw2_32 = false;
+    QString path = "..";
 
-    bool existGw2_64 = QDir(_gw_path).exists("Gw2-64.exe");
-    bool existGw2_32 = QDir(_gw_path).exists("Gw2.exe");
-    if (!(existGw2_32 ||  existGw2_64)){
+    for (int i = 0; i < 2; i++) {
+        existGw2_64 = QDir(path).exists("Gw2-64.exe");
+        existGw2_32 = QDir(path).exists("Gw2.exe");
+        if (!(existGw2_32 || existGw2_64)){
+            path = "../..";
+        } else {
+            break;
+        }
+    }
+    if (!(existGw2_32 || existGw2_64)){
         std::cout << "Could not find gw2 executable. Updater seems to be at wrong location" << std::endl;
         return false;
     }
+    _gw_path = path;
 
     bool existBin64  = QDir(_gw_path + "/bin64").exists();
     if (!(existBin64)) {
