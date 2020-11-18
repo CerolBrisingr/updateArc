@@ -15,6 +15,7 @@ public:
 
     static bool find7zip(QString &path);
     static bool extractWith7zip(QString archivePath, QString outputName);
+    static bool unzipArchive(QString archive, QString targetPath);
     static bool executeExternalWaiting(QString executablePath, QString working_directory = "");
     static QString calculateHashFromFile(QString sFile);
     static QString readFullFileString(QString filename);

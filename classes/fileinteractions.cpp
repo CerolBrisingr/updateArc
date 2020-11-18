@@ -26,6 +26,28 @@ bool fileInteractions::searchPathAt(QString key, QString &path) {
     return false;
 }
 
+bool fileInteractions::unzipArchive(QString archive, QString targetPath) {
+    QProcess m_agent;
+    QFileInfo source(archive);
+    QFileInfo target(targetPath);
+    //m_agent.setWorkingDirectory(working_directory);
+    QStringList args = QStringList();
+    args = QStringList({"-Command", QString("Expand-Archive -LiteralPath %1 -DestinationPath %2").arg(source.absoluteFilePath(), target.absoluteFilePath())});
+    m_agent.start("powershell", args);
+
+    if (!m_agent.waitForStarted()) {
+        std::cout << "Could not start powershell to unpack archive" << std::endl;
+    }
+    else {
+        if (!m_agent.waitForFinished()) {
+            std::cout << "Unpacking did not finish sucessfully" << std::endl;
+        }
+        else {
+            return true;
+        }
+    }
+    return false;
+}
 
 bool fileInteractions::extractWith7zip(QString archivePath, QString outputName) {
     QProcess use7zip;
