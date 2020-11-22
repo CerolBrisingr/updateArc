@@ -82,7 +82,7 @@ int UpdateTool::updateArc() {
     std::cout << "Starting <ArcDPS> update" << std::endl;
     int out = runArcUpdate();
     if (out == 0) {
-        std::cout << "    ArcDPS update sucessful" << std::endl;
+        std::cout << "    ArcDPS updater executed sucessfully" << std::endl;
     } else {
         std::cout << "    ArcDPS update failed" << std::endl;
     }
@@ -334,13 +334,12 @@ QString UpdateTool::getRemoteHash() {
 
 bool UpdateTool::isBlockedArcVersion(QString sRemoteHash) {
     if (!hasSetting(_arc_blocker_key)) {
-        std::cout << "    Did not find blocker!" << std::endl;
         return false;
     }
 
     QString blockedHash = getSetting(_arc_blocker_key);
-    std::cout << "    Blocked:  " << blockedHash.toStdString() << std::endl;
-    std::cout << "    Received: " << sRemoteHash.toStdString() << std::endl;
+    std::cout << "    Blocked md5:  " << blockedHash.toStdString() << std::endl;
+    std::cout << "    Received md5: " << sRemoteHash.toStdString() << std::endl;
     if (sRemoteHash.contains(blockedHash)) {
         return true;
     } else {
