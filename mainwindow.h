@@ -9,6 +9,12 @@
 #include <QCheckBox>
 #include <QScrollBar>
 #include <QLineEdit>
+#include <QTextStream>
+
+#include <chrono>
+#include <thread>
+#include <QVariant>
+#include <QTime>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,18 +28,19 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void evaluate_autorun();
 
 private slots:
-    void on_pushButton_arcdps_clicked();
     void writeLog(QString logline);
 
-    void on_pushButton_taco_clicked();
+    void run_selected_options();
 
-    void on_pushButton_tekkit_clicked();
+    void update_arc();
+    void update_taco();
+    void update_tekkit();
 
-    void on_pushButton_run_gw2_clicked();
-
-    void on_pushButton_run_taco_clicked();
+    void run_gw2();
+    void run_taco();
 
 private:
     Ui::MainWindow *ui;
@@ -43,6 +50,8 @@ private:
 
     void init_interface();
     void set_edit(QLineEdit* edit, QString text);
+
+    void delay(int secs);
 
 };
 #endif // MAINWINDOW_H

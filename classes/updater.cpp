@@ -271,32 +271,17 @@ void UpdateTool::writeline()
 
 bool UpdateTool::startTacO()
 {
-    QString tacoSetting = _settings->getValueWrite("starters/taco_run", "off");
-    QString gw2Setting = _settings->getValueWrite("starters/gw2_run", "off");
-    int waitTacO = QVariant(_settings->getValueWrite("starters/taco_delay", "90")).toInt();
-    if ((tacoSetting == "on") && (gw2Setting == "on")) {
-        QProcess taco;
-        taco.setWorkingDirectory(_taco_path);
-        taco.setProgram(_taco_path + "/GW2TacO.exe");
-        _stream << "Waiting for " << waitTacO << "seconds before we start TacO"; writeline();
-        for (int i = 0; i < waitTacO; i += 10) {
-            _stream << "Timer: " << i; writeline();
-            std::this_thread::sleep_for(std::chrono::seconds(10));
-        }
-        if (taco.startDetached()) {
-            writeline("-- started TacO");
-            return true;
-        } else {
-            writeline("-- start of TacO failed");
-            return false;
-        }
-    } else {
-        writeline("-- no start for TacO requested");
+    QProcess taco;
+    taco.setWorkingDirectory(_taco_path);
+    taco.setProgram(_taco_path + "/GW2TacO.exe");
+    if (taco.startDetached()) {
+        writeline("-- started TacO");
         return true;
+    } else {
+        writeline("-- start of TacO failed");
+        return false;
     }
 }
-
-
 
 void UpdateTool::updateTargetPaths(QString gw_path) {
     _gw_path = gw_path;
