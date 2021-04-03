@@ -8,6 +8,9 @@ mkdir target\source\classes
 
 xcopy /y /i ".\resources\*.dll" ".\target"
 xcopy /y /i ".\main.cpp" ".\target\source"
+xcopy /y /i ".\mainwindow.cpp" ".\target\source"
+xcopy /y /i ".\mainwindow.h" ".\target\source"
+xcopy /y /i ".\mainwindow.ui" ".\target\source"
 xcopy /y /i ".\UpdateArc.pro" ".\target\source"
 xcopy /y /i ".\UpdateArc.pro.user" ".\target\source"
 xcopy /y /i ".\classes" ".\target\source\classes"
