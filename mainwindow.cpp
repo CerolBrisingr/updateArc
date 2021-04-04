@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     init_interface();
     _updater = new UpdateTool(&_settings);
 
@@ -26,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(run_gw2()));
     connect(ui->pushButton_run_taco, SIGNAL(clicked()),
             this, SLOT(run_taco()));
+    connect(ui->pushButton_config_run_gw2, SIGNAL(clicked()),
+            this, SLOT(config_gw2_arguments()));
 
     _updater->verifyLocation();
 }
@@ -143,6 +146,7 @@ void MainWindow::run_selected_options()
         stream << "At least " << wait_secs  << " are over."; writeLog(stream.readAll() + "\n");
     }
 
+    // User should be able to change their mind about closing the window automatically
     if (_settings.getValue("General/autoclose").compare("on") == 0) {
         this->close();
     }
@@ -183,4 +187,18 @@ void MainWindow::run_taco()
     ui->pushButton_run_taco->setEnabled(false);
     _updater->startTacO();
     ui->pushButton_run_taco->setEnabled(true);
+}
+
+void MainWindow::config_gw2_arguments()
+{
+    QString arguments = ui->lineEdit_run_gw2->text();
+    _set_args = new Form(arguments);
+    _set_args->show();
+}
+
+void MainWindow::config_gw2_udpated(QString config)
+{
+    // Write stuff to lineEdit and to settings
+    delete(_set_args);
+    _set_args = nullptr;
 }

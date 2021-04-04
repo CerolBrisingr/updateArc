@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Gw2 Tool Updater</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="gridLayoutWidget">
@@ -71,6 +71,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QCheckBox" name="checkBox_run_taco">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select this if you want the updater to start TacO after it started Guildwars 2. This selection will have no effect if Guildwars 2 is not selected to start as well. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -89,6 +92,9 @@
            <width>0</width>
            <height>0</height>
           </size>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attempt to start TacO now.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>TacO</string>
@@ -110,6 +116,9 @@
            <height>0</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;TacO needs Guildwars 2 active and logged in to properly start.&lt;/p&gt;&lt;p&gt;Use this edit to choose the number of seconds you need to achieve that.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>delay_seconds_string</string>
          </property>
@@ -128,6 +137,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QCheckBox" name="checkBox_run_gw2">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select this if you want the updater to start Guildwars2 after the other tasks are done.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -135,6 +147,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_run_gw2">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start Guildwars 2 now, using the attributes in the edit to the right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>GuildWars 2</string>
          </property>
@@ -142,6 +157,9 @@
        </item>
        <item>
         <widget class="QLineEdit" name="lineEdit_run_gw2">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Change the attributes with which Guildwars 2 is started.&lt;/p&gt;&lt;p&gt;Look at the &lt;a href=&quot;https://wiki.guildwars2.com/wiki/Command_line_arguments&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;wiki page&lt;/span&gt;&lt;/a&gt; to learn more or use the config button to the right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>attributes_string</string>
          </property>
@@ -173,6 +191,9 @@
            <weight>75</weight>
            <bold>true</bold>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;Argument configurator&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Will open an editor that lets you choose command line arguements to Guildwars 2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>⛭</string>
@@ -227,6 +248,9 @@ p, li { white-space: pre-wrap; }
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_run_manually">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to run automatic execution manually. This may also lead to the updater getting closed. (You may change this setting while you see the countdown)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Start selected updaters</string>
          </property>
@@ -264,6 +288,9 @@ p, li { white-space: pre-wrap; }
        </item>
        <item>
         <widget class="QCheckBox" name="checkBox_autorun">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select this to have the updater perform your chosen tasks automatically on it's next execution.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Start automatically on next execution</string>
          </property>
@@ -301,6 +328,9 @@ p, li { white-space: pre-wrap; }
        </item>
        <item>
         <widget class="QCheckBox" name="checkBox_autoclose">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this is selected, the updater will close itsself after the task list is cleared.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Close window after running updaters</string>
          </property>
@@ -337,6 +367,9 @@ p, li { white-space: pre-wrap; }
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
         <widget class="QCheckBox" name="checkBox_tekkit">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select to run Tekkit updater on automatic execution&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -344,6 +377,9 @@ p, li { white-space: pre-wrap; }
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_tekkit">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Update Tekkit now&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Tekkit</string>
          </property>
@@ -381,6 +417,9 @@ p, li { white-space: pre-wrap; }
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
         <widget class="QCheckBox" name="checkBox_taco">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select to run TacO updater on automatic execution&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -388,6 +427,9 @@ p, li { white-space: pre-wrap; }
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_taco">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Update TacO now&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>TacO</string>
          </property>
@@ -422,6 +464,9 @@ p, li { white-space: pre-wrap; }
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_arcdps">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Update ArcDPS now&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>ArcDPS</string>
          </property>

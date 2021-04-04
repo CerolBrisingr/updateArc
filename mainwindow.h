@@ -3,6 +3,7 @@
 
 #include "classes/settings.h"
 #include "classes/updater.h"
+#include "form.h"
 
 #include <QMainWindow>
 #include <iostream>
@@ -11,8 +12,6 @@
 #include <QLineEdit>
 #include <QTextStream>
 
-#include <chrono>
-#include <thread>
 #include <QVariant>
 #include <QTime>
 
@@ -42,8 +41,12 @@ private slots:
     void run_gw2();
     void run_taco();
 
+    void config_gw2_arguments();
+    void config_gw2_udpated(QString config);
+
 private:
     Ui::MainWindow *ui;
+    Form *_set_args = nullptr;
     Settings _settings = Settings("settings.ini");
     UpdateTool* _updater;
     std::vector<CheckBoxSetting*> _check_box_settings;

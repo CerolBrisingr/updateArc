@@ -216,11 +216,16 @@ int UpdateTool::updateTekkit()
     return 0;
 }
 
-bool UpdateTool::startGW2()
+bool UpdateTool::startGW2(QStringList arguments)
 {
     QProcess gw2;
     gw2.setWorkingDirectory(_gw_path);
-    gw2.setArguments(readGW2Arguments());
+    if (arguments.empty()) {
+        gw2.setArguments(loadGW2Arguments());
+    } else
+    {
+        gw2.setArguments(arguments);
+    }
     if (QDir(_gw_path).exists("Gw2-64.exe")) {
         gw2.setProgram(_gw_path + "/Gw2-64.exe");
     } else {
@@ -235,18 +240,15 @@ bool UpdateTool::startGW2()
     }
 }
 
-QStringList UpdateTool::readGW2Arguments() {
-    QString argumentChain = _settings->getValueWrite("starters/gw2_arguments", "");
-    QStringList splitByQuotes = argumentChain.split("\"", QString::SplitBehavior::SkipEmptyParts);
-    QStringList splitArguments;
-    for (int i = 0; i < splitByQuotes.length(); i++) {
-        if (i % 2 == 0) {
-            splitArguments << splitByQuotes[i].split(" ", QString::SplitBehavior::SkipEmptyParts);
-        } else {
-            splitArguments << splitByQuotes[i];
-        }
+QStringList UpdateTool::loadGW2Arguments() {
+
+    QString argument_chain = _settings->getValue("starters/gw2_arguments", "");
+    QStringList arguments;
+    QStringList split_by_spaces = argument_chain.split(" ", QString::SplitBehavior::SkipEmptyParts);
+    for (auto argument: split_by_spaces) {
+        arguments.append(argument.trimmed());
     }
-    return splitArguments;
+    return arguments;
 }
 
 void UpdateTool::write(QString text)
@@ -343,8 +345,8 @@ int16_t UpdateTool::inquireCurrentTacoVersion(QString &tacoLink) {
 
 bool UpdateTool::canUpdateTaco(int16_t &onlineVersion) {
     int16_t currentVersion = static_cast<int16_t>(_settings->getValue(_taco_install_key, "0").toInt());
-    _stream << "    Taco version available: " << onlineVersion; writeline();
-    _stream << "    Taco version installed: " << currentVersion; writeline();
+    _stream << "    Taco version available:   " << onlineVersion; writeline();
+    _stream << "    Taco version I installed: " << currentVersion; writeline();
     return onlineVersion > currentVersion;
 }
 
@@ -374,7 +376,7 @@ QVersionNumber UpdateTool::inquireCurrentTekkitVersion(QString &tekkitLink) {
 bool UpdateTool::canUpdateTekkit(QVersionNumber &onlineVersion)
 {
     QVersionNumber currentVersion = QVersionNumber::fromString(_settings->getValue(_tekkit_install_key, "0.0.0"));
-    _stream << "    Tekkit version available: " << onlineVersion.toString(); writeline();
-    _stream << "    Tekkit version installed: " << currentVersion.toString(); writeline();
+    _stream << "    Tekkit version available:   " << onlineVersion.toString(); writeline();
+    _stream << "    Tekkit version I installed: " << currentVersion.toString(); writeline();
     return QVersionNumber::compare(onlineVersion, currentVersion) > 0;
 }

@@ -29,7 +29,7 @@ public:
     int updateTaco();
     int updateTekkit();
 
-    bool startGW2();
+    bool startGW2(QStringList arguments = QStringList());
     bool startTacO();
 
 signals:
@@ -60,7 +60,7 @@ private:
     QVersionNumber inquireCurrentTekkitVersion(QString &tekkitLink);
     bool canUpdateTekkit(QVersionNumber &onlineVersion);
 
-    QStringList readGW2Arguments();
+    QStringList loadGW2Arguments();
 
     void write(QString text);
     void writeline(QString text);
