@@ -2,6 +2,7 @@
 #define FORM_H
 
 #include <QWidget>
+#include <QCloseEvent>
 
 namespace Ui {
 class Form;
@@ -15,8 +16,13 @@ public:
     explicit Form(QString arguments, QWidget *parent = nullptr);
     ~Form();
 
+signals:
+    void closed();
+
 private:
     Ui::Form *ui;
+
+    void closeEvent(QCloseEvent *event);
 };
 
 #endif // FORM_H

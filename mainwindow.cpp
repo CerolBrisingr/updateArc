@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->pushButton_arcdps, SIGNAL(clicked()),
             this, SLOT(update_arc()));
+    connect(ui->toolButton_block_arc, SIGNAL(clicked()),
+            this, SLOT(remove_arc()));
     connect(ui->pushButton_taco, SIGNAL(clicked()),
             this, SLOT(update_taco()));
     connect(ui->pushButton_tekkit, SIGNAL(clicked()),
@@ -27,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(run_gw2()));
     connect(ui->pushButton_run_taco, SIGNAL(clicked()),
             this, SLOT(run_taco()));
-    connect(ui->pushButton_config_run_gw2, SIGNAL(clicked()),
+    connect(ui->toolButton_config_run_gw2, SIGNAL(clicked()),
             this, SLOT(config_gw2_arguments()));
 
     _updater->verifyLocation();
@@ -157,7 +159,23 @@ void MainWindow::run_selected_options()
 void MainWindow::update_arc()
 {
     ui->pushButton_arcdps->setEnabled(false);
+    ui->toolButton_block_arc->setEnabled(false);
     _updater->updateArc();
+    ui->toolButton_block_arc->setEnabled(true);
+    ui->pushButton_arcdps->setEnabled(true);
+}
+
+void MainWindow::remove_arc()
+{
+    ui->pushButton_arcdps->setEnabled(false);
+    ui->toolButton_block_arc->setEnabled(false);
+    if (_settings.hasKey("updaters/block_arcdps")) {
+        _settings.removeKey("updaters/block_arcdps");
+        writeLog("Removed blocker for ArcDPS update.\n");
+    } else {
+        _updater->arcUninstaller();
+    }
+    ui->toolButton_block_arc->setEnabled(true);
     ui->pushButton_arcdps->setEnabled(true);
 }
 
@@ -191,14 +209,24 @@ void MainWindow::run_taco()
 
 void MainWindow::config_gw2_arguments()
 {
-    QString arguments = ui->lineEdit_run_gw2->text();
-    _set_args = new Form(arguments);
-    _set_args->show();
+    if (!_has_config) {
+        QString arguments = ui->lineEdit_run_gw2->text();
+        _set_args = new Form(arguments);
+        _has_config = true;
+        _set_args->show();
+        connect(_set_args, SIGNAL(closed()),
+                this, SLOT(config_closed()));
+    }
 }
 
 void MainWindow::config_gw2_udpated(QString config)
 {
     // Write stuff to lineEdit and to settings
-    delete(_set_args);
+}
+
+void MainWindow::config_closed()
+{
+    _set_args->deleteLater();
+    _has_config = false;
     _set_args = nullptr;
 }

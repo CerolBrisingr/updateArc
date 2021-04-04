@@ -42,32 +42,14 @@ bool UpdateTool::verifyLocation() {
 
 int UpdateTool::arcUninstaller() {
 
-    bool blockerIsFresh = false;
-
     // ArcDPS still installed? Provide option to install blocker
     if (verifyArcInstallation()) {
-        writeline("Do you want to block the current version from being re-installed? Enter (y)!");
-        std::string userInput;
-        std::getline(std::cin, userInput);
-        if (userInput.compare("y") == 0) {
-            QString sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
-            _stream << "Blocking installation of version " << sLocalHash; writeline();
-            _settings->setValue(_arc_blocker_key, sLocalHash);
-            blockerIsFresh = true;
-        } else {
-            _settings->removeKey(_arc_blocker_key);
-        }
-    }
+        writeline("Removing ArcDPS. Will block the current version from being re-installed.");
+        writeline("Click again to remove this blocker.");
 
-    // Is an old blocker in place? Provide option to remove blocker
-    if (_settings->hasKey(_arc_blocker_key) && !blockerIsFresh) {
-        writeline("Blocker detected. Do you want to remove it? Enter (y)!");
-        std::string userInput;
-        std::getline(std::cin, userInput);
-        if (userInput.compare("y") == 0) {
-            writeline("Removing blocker!");
-            _settings->removeKey(_arc_blocker_key);
-        }
+        QString sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
+        _stream << "Blocking installation of version " << sLocalHash; writeline();
+        _settings->setValue(_arc_blocker_key, sLocalHash);
     }
 
     fileInteractions::removeFile(_gw_path + "/bin64", "d3d9.dll");

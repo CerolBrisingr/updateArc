@@ -35,6 +35,7 @@ private slots:
     void run_selected_options();
 
     void update_arc();
+    void remove_arc();
     void update_taco();
     void update_tekkit();
 
@@ -43,10 +44,12 @@ private slots:
 
     void config_gw2_arguments();
     void config_gw2_udpated(QString config);
+    void config_closed();
 
 private:
     Ui::MainWindow *ui;
     Form *_set_args = nullptr;
+    bool _has_config = false;
     Settings _settings = Settings("settings.ini");
     UpdateTool* _updater;
     std::vector<CheckBoxSetting*> _check_box_settings;
