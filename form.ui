@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>310</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Gw2 start argument editor</string>
+  </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>20</y>
+     <width>304</width>
+     <height>111</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="spacing">
+     <number>2</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QCheckBox" name="checkBox_bmp">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-bmp&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;bmp&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Forces the game to create &lt;a href=&quot;https://en.wikipedia.org/wiki/Lossless_data_compression&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;lossless&lt;/span&gt;&lt;/a&gt; screenshots as &lt;span style=&quot; font-family:'Courier New';&quot;&gt;.BMP files&lt;/span&gt;. &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:12px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Used for creating higher-quality screenshots at the expense of much larger files.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>bmp</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QCheckBox" name="checkBox_clientport">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-clientport_80&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;clientport 80&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Instructs the client to connect to the game servers over port 80 (HTTP) instead of 6112 (commonly used for games). &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Some ISPs may prioritize traffic at certain times, and some networks may block port 6112. This may be useful to avoid such scenarios.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Some ISPs, networks, and other forms of MITM attacks may modify traffic on port 80 which will lead to issues with the GW2 client if this option is used.&lt;/li&gt;&lt;/ul&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-clientport_443&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;clientport 443&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Instructs the client to connect to the game servers over port 443 (HTTPS) instead of 6112 (commonly used for games). &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Some ISPs may prioritize traffic at certain times, and some networks may block port 6112. This may be useful to avoid such scenarios.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Some ISPs, networks, and other forms of MITM attacks may modify traffic on port 443 which will lead to issues with the GW2 client if this option is used (this is less-likely to occur than with port 80).&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>clientport</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox_clientport">
+        <item>
+         <property name="text">
+          <string>80</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>443</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="2">
+     <widget class="QCheckBox" name="checkBox_maploadinfo">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-mapLoadinfo&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;mapLoadinfo&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Shows diagnostic information during map loads, including load percentages and elapsed time.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>maploadinfo</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QCheckBox" name="checkBox_autologin">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-autologin&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;autologin&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Logs in automatically, &lt;span style=&quot; font-weight:600;&quot;&gt;if&lt;/span&gt; the client has been set to remember the Account Name and Password.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>autologin</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>140</y>
+     <width>361</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QLineEdit" name="lineEdit_custom">
+      <property name="text">
+       <string>custom entries</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="lineEdit_full">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="text">
+       <string>full list</string>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_cancel">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_apply">
+        <property name="text">
+         <string>Apply</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_ok">
+        <property name="text">
+         <string>OK</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="gridLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>230</y>
+     <width>361</width>
+     <height>73</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="1" column="0">
+     <widget class="QPushButton" name="pushButton_image">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-image&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;image&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Runs the patch UI only in order to download any available updates; closes immediately without loading the login form. &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:12px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Recommended:&lt;/span&gt; Create an extra Guild Wars 2 shortcut (e.g. &lt;span style=&quot; font-style:italic;&quot;&gt;&amp;quot;Guild Wars 2 Updater&amp;quot;&lt;/span&gt;) specifically to use this command line switch.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Download all available game files</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QPushButton" name="pushButton_diag">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-diag&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;diag&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Instead of launching the game, this command creates a detailed diagnostic file that contains diagnostic data that can be used for troubleshooting. The file, &lt;span style=&quot; font-family:'Courier New';&quot;&gt;NetworkDiag.log&lt;/span&gt;, will be located in your game directory or &amp;quot;Documents\Guild Wars 2&amp;quot;. If you want to use this feature, be sure to create a separate shortcut for it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Run network diagnostics</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Special commands</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QPushButton" name="pushButton_repair">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-repair&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;repair&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Start the client, checks the files for errors and repairs them as needed. This can take a long time (1/2 hour or an hour) to run as it checks the entire contents of the ~50 gigabyte archive.&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This is rarely necessary as the archive is always checking for errors as it runs; if it finds an error, it will schedule a repair for the next time the game starts.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The archive reads and writes certain parts of the disk fairly frequently; if you are getting a lot of disk errors, this is a sign that your drive may be dying.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Run repair mode</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="pushButton_verify">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h3 style=&quot; margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-verify&quot;/&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;verify&lt;/span&gt;&lt;/h3&gt;&lt;p&gt;Used to verify the .dat file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Verify installation</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

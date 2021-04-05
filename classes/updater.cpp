@@ -1,8 +1,10 @@
 #include "updater.h"
 
-UpdateTool::UpdateTool()
+UpdateTool::UpdateTool(Settings* settings)
+    :_settings(settings)
 {
     updateTargetPaths(_gw_path);
+    _stream.setString(&_streamline);
 }
 
 UpdateTool::~UpdateTool()
@@ -24,14 +26,14 @@ bool UpdateTool::verifyLocation() {
         }
     }
     if (!(existGw2_32 || existGw2_64)){
-        std::cout << "Could not find gw2 executable. Updater seems to be at wrong location" << std::endl;
+        writeline("Could not find gw2 executable. Updater seems to be at wrong location");
         return false;
     }
 
     updateTargetPaths(gw_path);
     bool existBin64  = QDir(_gw_path + "/bin64").exists();
     if (!(existBin64)) {
-        std::cout << "Missing target folder \"bin64\"" << std::endl;
+        writeline("Missing target folder \"bin64\"");
         return false;
     }
 
@@ -40,32 +42,14 @@ bool UpdateTool::verifyLocation() {
 
 int UpdateTool::arcUninstaller() {
 
-    bool blockerIsFresh = false;
-
     // ArcDPS still installed? Provide option to install blocker
     if (verifyArcInstallation()) {
-        std::cout << "Do you want to block the current version from being re-installed? Enter (y)!" << std::endl;
-        std::string userInput;
-        std::getline(std::cin, userInput);
-        if (userInput.compare("y") == 0) {
-            QString sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
-            std::cout << "Blocking installation of version " << sLocalHash.toStdString() << std::endl;
-            setSetting(_arc_blocker_key, sLocalHash);
-            blockerIsFresh = true;
-        } else {
-            removeSetting(_arc_blocker_key);
-        }
-    }
+        writeline("Removing ArcDPS. Will block the current version from being re-installed.");
+        writeline("Click again to remove this blocker.");
 
-    // Is an old blocker in place? Provide option to remove blocker
-    if (hasSetting(_arc_blocker_key) && !blockerIsFresh) {
-        std::cout << "Blocker detected. Do you want to remove it? Enter (y)!" << std::endl;
-        std::string userInput;
-        std::getline(std::cin, userInput);
-        if (userInput.compare("y") == 0) {
-            std::cout << "Removing blocker!" << std::endl;
-            removeSetting(_arc_blocker_key);
-        }
+        QString sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
+        _stream << "Blocking installation of version " << sLocalHash; writeline();
+        _settings->setValue(_arc_blocker_key, sLocalHash);
     }
 
     fileInteractions::removeFile(_gw_path + "/bin64", "d3d9.dll");
@@ -79,14 +63,14 @@ bool UpdateTool::verifyArcInstallation() {
 }
 
 int UpdateTool::updateArc() {
-    std::cout << "Starting <ArcDPS> update" << std::endl;
+    writeline("Starting <ArcDPS> update");
     int out = runArcUpdate();
     if (out == 0) {
-        std::cout << "    ArcDPS updater executed sucessfully" << std::endl;
+        writeline("    ArcDPS updater executed sucessfully");
     } else {
-        std::cout << "    ArcDPS update failed" << std::endl;
+        writeline("    ArcDPS update failed");
     }
-    std::cout << "Ended <ArcDPS> update" << std::endl;
+    writeline("Ended <ArcDPS> update");
     return out;
 }
 
@@ -95,36 +79,36 @@ int UpdateTool::runArcUpdate() {
     QString sLocalHash;
     QString sRemoteHash = getRemoteHash();
     if (sRemoteHash.isEmpty()) {
-        std::cout << "    Could not read source hash file" << std::endl;
+        writeline("    Could not read source hash file");
         return 1;
     }
     if (isBlockedArcVersion(sRemoteHash)) {
-        std::cout << "    Curently available version is blocked. Run with \"-remove\" to remove blocker" << std::endl;
+        writeline("    Curently available version is blocked. Run with \"-remove\" to remove blocker");
         return 1;
     } else {
         // Remove previous blocker, if there is one
-        removeSetting(_arc_blocker_key);
+        _settings->removeKey(_arc_blocker_key);
     }
     QString targetpath = _gw_path + "/bin64";
 
     if (verifyArcInstallation()) {
-        std::cout << "    ArcDPS is seemingly already installed, looking for updates" << std::endl;
+        writeline("    ArcDPS is seemingly already installed, looking for updates");
         sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
         if (sLocalHash.isEmpty()) {
-            std::cout << "    Could not calculate hash value for ArcDPS library." << std::endl;
+            writeline("    Could not calculate hash value for ArcDPS library.");
             return 1;
         }
         if (sRemoteHash.contains(sLocalHash)) {
-            std::cout << "    Match! Already running newest version!" << std::endl;
+            writeline("    Match! Already running newest version!");
             return 0;
         } else {
-            std::cout << "    No Match! Downloading new version!" << std::endl;
+            writeline("    No Match! Downloading new version!");
             if (!downloadArc(targetpath)) {
                 return 1;
             }
         }
     } else {
-        std::cout << "    ArcDPS not (fully) installed, fixing that" << std::endl;
+        writeline("    ArcDPS not (fully) installed, fixing that");
         if (!downloadArc(targetpath)) {
             return 1;
         }
@@ -133,25 +117,25 @@ int UpdateTool::runArcUpdate() {
     // Verify correct download
     sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
     if (sLocalHash.isEmpty()) {
-        std::cout << "    Could not calculate hash value for downloaded ArcDPS library." << std::endl;
+        writeline("    Could not calculate hash value for downloaded ArcDPS library.");
         return 1;
     }
-    std::cout << "     File: " << sLocalHash.toStdString() << std::endl;
+    _stream << "     File: " << sLocalHash; writeline();
     if (!sRemoteHash.contains(sLocalHash)) {
-        std::cout << "    Something is wrong, hashes do not match!" << std::endl;
+        writeline("    Something is wrong, hashes do not match!");
         if (arcUninstaller() == 1) {
-            std::cout << "    Removing files somehow went wrong, too! Is Gw2 running?" << std::endl;
+            writeline("    Removing files somehow went wrong, too! Is Gw2 running?");
         }
         return 1;
     } else {
-        std::cout << "    Hashes match, update successful!" << std::endl;
+        writeline("    Hashes match, update successful!");
         return 0;
     }
 }
 
 int UpdateTool::updateTaco()
 {
-    std::cout << "Starting <TacO> update" << std::endl;
+    writeline("Starting <TacO> update");
     QString tacoLink;
     QString tempTaco = "TacoNew";
     int16_t onlineVersion = inquireCurrentTacoVersion(tacoLink);
@@ -161,158 +145,130 @@ int UpdateTool::updateTaco()
         // Removing possible remains from previous update
         fileInteractions::removeFolder(tempTaco);
 
-        std::cout << "    Starting download" << std::endl;
+        writeline("    Starting download");
         if (0 != downloader::singleDownload(tacoLink, "", "tacoArchive.zip")) {
-            std::cout << "    Download of new version failed" << std::endl;
+            writeline("    Download of new version failed");
             return 1;
         }
-        std::cout << "    Extracting archive" << std::endl;
+        writeline("    Extracting archive");
         if (!fileInteractions::unzipArchive("tacoArchive.zip", tempTaco)) {
-            std::cout << "    archive extraction failed" << std::endl;
+            writeline("    archive extraction failed");
+            return 1;
+        }
+        if (!QDir(tempTaco).exists("GW2TacO.exe")) {
+            writeline("    archive extraction did not produce expected results. Keeping downloads.");
             return 1;
         }
 
-        std::cout << "    Moving files to target location" << std::endl;
+        writeline("    Moving files to target location");
         fileInteractions::copyFolderTo(tempTaco, _taco_path);
         fileInteractions::removeFolder(tempTaco);
         fileInteractions::removeFile("", "tacoArchive.zip");
 
-        std::cout << "    Registering newly installed version" << std::endl;
-        setSetting(_taco_install_key, QVariant(onlineVersion).toString());
+        writeline("    Registering newly installed version");
+        _settings->setValue(_taco_install_key, QVariant(onlineVersion).toString());
     } else {
-        std::cout << "    Online version is already registered, no update needed!" << std::endl;
+        writeline("    Online version is already registered, no update needed!");
     }
-    std::cout << "Ended <TacO> update" << std::endl;
+    writeline("Ended <TacO> update");
     return 0;
 }
 
 int UpdateTool::updateTekkit()
 {
-    std::cout << "Starting <Tekkit> update" << std::endl;
+    writeline("Starting <Tekkit> update");
     QString tekkitLink;
     QString filename = "tw_ALL_IN_ONE.taco";
     QVersionNumber onlineVersion = inquireCurrentTekkitVersion(tekkitLink);
     if (canUpdateTekkit(onlineVersion)) {
-        std::cout << "    Starting download of new version " << onlineVersion.toString().toStdString() << std::endl;
+        _stream << "    Starting download of new version " << onlineVersion.toString(); writeline();
         if (0 != downloader::singleDownload(tekkitLink, "", filename)) {
-            std::cout << "    Download failed" << std::endl;
+            writeline("    Download failed");
             return 1;
         }
 
-        std::cout << "    Moving file in place" << std::endl;
+        writeline("    Moving file in place");
         fileInteractions::removeFile(_tekkit_path, filename);
 
         fileInteractions::copyFileTo(filename, _tekkit_path + QDir::separator() + filename);
         fileInteractions::removeFile("", filename);
 
-        std::cout << "    Registering newly installed version" << std::endl;
-        setSetting(_tekkit_install_key, onlineVersion.toString());
+        writeline("    Registering newly installed version");
+        _settings->setValue(_tekkit_install_key, onlineVersion.toString());
     } else {
-        std::cout << "    Online version is already registered, no update needed!" << std::endl;
+        writeline("    Online version is already registered, no update needed!");
     }
-    std::cout << "Ended <Tekkit> update" << std::endl;
+    writeline("Ended <Tekkit> update");
     return 0;
 }
 
-bool UpdateTool::startGW2()
+bool UpdateTool::startGW2(QStringList arguments)
 {
-    QString setting = getSetting2("Starter/GuildWars2", "no");
-    if (setting == "yes") {
-        QProcess gw2;
-        gw2.setWorkingDirectory(_gw_path);
-        gw2.setArguments(readGW2Arguments());
-        if (QDir(_gw_path).exists("Gw2-64.exe")) {
-            gw2.setProgram(_gw_path + "/Gw2-64.exe");
-        } else {
-            gw2.setProgram(_gw_path + "/Gw2.exe");
-        }
-        if(gw2.startDetached()) {
-            std::cout << "-- started GuildWars2" << std::endl;
-            return true;
-        } else {
-            std::cout << "-- start of GuildWars2 failed" << std::endl;
-            return false;
-        }
+    QProcess gw2;
+    gw2.setWorkingDirectory(_gw_path);
+    if (arguments.empty()) {
+        gw2.setArguments(loadGW2Arguments());
+    } else
+    {
+        gw2.setArguments(arguments);
+    }
+    if (QDir(_gw_path).exists("Gw2-64.exe")) {
+        gw2.setProgram(_gw_path + "/Gw2-64.exe");
     } else {
-        std::cout << "-- no start for GuildWars2 requested" << std::endl;
+        gw2.setProgram(_gw_path + "/Gw2.exe");
+    }
+    if(gw2.startDetached()) {
+        writeline("-- started GuildWars2");
         return true;
+    } else {
+        writeline("-- start of GuildWars2 failed");
+        return false;
     }
 }
 
-QStringList UpdateTool::readGW2Arguments() {
-    QString argumentChain = getSetting2("Starter/GuildWars2Arguments", "");
-    QStringList splitByQuotes = argumentChain.split("\"", QString::SplitBehavior::SkipEmptyParts);
-    QStringList splitArguments;
-    for (int i = 0; i < splitByQuotes.length(); i++) {
-        if (i % 2 == 0) {
-            splitArguments << splitByQuotes[i].split(" ", QString::SplitBehavior::SkipEmptyParts);
-        } else {
-            splitArguments << splitByQuotes[i];
-        }
+QStringList UpdateTool::loadGW2Arguments() {
+
+    QString argument_chain = _settings->getValue("starters/gw2_arguments", "");
+    QStringList arguments;
+    QStringList split_by_spaces = argument_chain.split(" ", QString::SplitBehavior::SkipEmptyParts);
+    for (auto argument: split_by_spaces) {
+        arguments.append(argument.trimmed());
     }
-    return splitArguments;
+    return arguments;
+}
+
+void UpdateTool::write(QString text)
+{
+    emit(write_log(text));
+}
+
+void UpdateTool::writeline(QString text)
+{
+    emit(write_log(text + "\n"));
+}
+
+void UpdateTool::write()
+{
+    emit(write_log(_stream.readAll()));
+}
+
+void UpdateTool::writeline()
+{
+    emit(write_log(_stream.readAll() + "\n"));
 }
 
 bool UpdateTool::startTacO()
 {
-    QString tacoSetting = getSetting2("Starter/TacO", "no");
-    QString gw2Setting = getSetting2("Starter/GuildWars2", "no");
-    int waitTacO = QVariant(getSetting2("Starter/TacODelay_s", "90")).toInt();
-    if ((tacoSetting == "yes") && (gw2Setting == "yes")) {
-        QProcess taco;
-        taco.setWorkingDirectory(_taco_path);
-        taco.setProgram(_taco_path + "/GW2TacO.exe");
-        std::cout << "Waiting for " << waitTacO << "seconds before we start TacO" << std::endl;
-        for (int i = 0; i < waitTacO; i += 10) {
-            std::cout << "Timer: " << i << std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(10));
-        }
-        if (taco.startDetached()) {
-            std::cout << "-- started TacO" << std::endl;
-            return true;
-        } else {
-            std::cout << "-- start of TacO failed" << std::endl;
-            return false;
-        }
-    } else {
-        std::cout << "-- no start for TacO requested" << std::endl;
+    QProcess taco;
+    taco.setWorkingDirectory(_taco_path);
+    taco.setProgram(_taco_path + "/GW2TacO.exe");
+    if (taco.startDetached()) {
+        writeline("-- started TacO");
         return true;
+    } else {
+        writeline("-- start of TacO failed");
+        return false;
     }
-}
-
-bool UpdateTool::hasSetting(QString key)
-{
-    QSettings setting(_ini_path, QSettings::IniFormat);
-    return setting.contains(key);
-}
-
-void UpdateTool::setSetting(QString key, QString value)
-{
-    QSettings setting(_ini_path, QSettings::IniFormat);
-    setting.setValue(key, value);
-}
-
-QString UpdateTool::getSetting2(QString key, QString default_value)
-{
-    if (!hasSetting(key)) {
-        setSetting(key, default_value);
-    }
-
-    QSettings setting(_ini_path, QSettings::IniFormat);
-    return setting.value(key, default_value).toString();
-}
-
-QString UpdateTool::getSetting(QString key, QString default_value)
-{
-    QSettings setting(_ini_path, QSettings::IniFormat);
-    return setting.value(key, default_value).toString();
-}
-
-void UpdateTool::removeSetting(QString key)
-{
-    QSettings setting(_ini_path, QSettings::IniFormat);
-    setting.remove(key);
-    return;
 }
 
 void UpdateTool::updateTargetPaths(QString gw_path) {
@@ -326,20 +282,20 @@ QString UpdateTool::getRemoteHash() {
     // Read md5 hash of online version
     QString output = "https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum";
     if (0 != downloader::singleTextRequest(output)){
-        std::cout << "Download failed" << std::endl;
+        writeline("Download failed");
         return "";
     }
     return output;
 }
 
 bool UpdateTool::isBlockedArcVersion(QString sRemoteHash) {
-    if (!hasSetting(_arc_blocker_key)) {
+    if (!_settings->hasKey(_arc_blocker_key)) {
         return false;
     }
 
-    QString blockedHash = getSetting(_arc_blocker_key);
-    std::cout << "    Blocked md5:  " << blockedHash.toStdString() << std::endl;
-    std::cout << "    Received md5: " << sRemoteHash.toStdString() << std::endl;
+    QString blockedHash = _settings->getValue(_arc_blocker_key);
+    _stream << "    Blocked md5:  " << blockedHash; writeline();
+    _stream << "    Received md5: " << sRemoteHash; writeline();
     if (sRemoteHash.contains(blockedHash)) {
         return true;
     } else {
@@ -350,7 +306,7 @@ bool UpdateTool::isBlockedArcVersion(QString sRemoteHash) {
 bool UpdateTool::downloadArc(QString pathname) {
     // Only one download needed since build templates are gone
     if (0 != downloader::singleDownload("https://www.deltaconnected.com/arcdps/x64/d3d9.dll", pathname)) {
-        std::cout << "Download failed" << std::endl;
+        writeline("Download failed");
         return false;
     }
     return true;
@@ -374,9 +330,9 @@ int16_t UpdateTool::inquireCurrentTacoVersion(QString &tacoLink) {
 }
 
 bool UpdateTool::canUpdateTaco(int16_t &onlineVersion) {
-    int16_t currentVersion = static_cast<int16_t>(getSetting(_taco_install_key, "0").toInt());
-    std::cout << "    Taco version available: " << onlineVersion << std::endl;
-    std::cout << "    Taco version installed: " << currentVersion << std::endl;
+    int16_t currentVersion = static_cast<int16_t>(_settings->getValue(_taco_install_key, "0").toInt());
+    _stream << "    Taco version available:   " << onlineVersion; writeline();
+    _stream << "    Taco version I installed: " << currentVersion; writeline();
     return onlineVersion > currentVersion;
 }
 
@@ -405,8 +361,8 @@ QVersionNumber UpdateTool::inquireCurrentTekkitVersion(QString &tekkitLink) {
 
 bool UpdateTool::canUpdateTekkit(QVersionNumber &onlineVersion)
 {
-    QVersionNumber currentVersion = QVersionNumber::fromString(getSetting(_tekkit_install_key, "0.0.0"));
-    std::cout << "    Tekkit version available: " << onlineVersion.toString().toStdString() << std::endl;
-    std::cout << "    Tekkit version installed: " << currentVersion.toString().toStdString() << std::endl;
+    QVersionNumber currentVersion = QVersionNumber::fromString(_settings->getValue(_tekkit_install_key, "0.0.0"));
+    _stream << "    Tekkit version available:   " << onlineVersion.toString(); writeline();
+    _stream << "    Tekkit version I installed: " << currentVersion.toString(); writeline();
     return QVersionNumber::compare(onlineVersion, currentVersion) > 0;
 }

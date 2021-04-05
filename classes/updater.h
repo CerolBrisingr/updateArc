@@ -1,21 +1,25 @@
 #ifndef UPDATER_H
 #define UPDATER_H
 
+#include <QObject>
 #include <QSettings>
 #include <QRegularExpression>
 #include <QVersionNumber>
+#include <QTextStream>
 
 #include <chrono>
 #include <thread>
 
 #include "fileinteractions.h"
 #include "downloader.h"
+#include "settings.h"
 
-class UpdateTool
+class UpdateTool: public QObject
 {
+    Q_OBJECT
 public:
 
-    UpdateTool();
+    UpdateTool(Settings* settings);
     ~UpdateTool();
 
     bool verifyLocation();
@@ -25,24 +29,22 @@ public:
     int updateTaco();
     int updateTekkit();
 
-    bool startGW2();
+    bool startGW2(QStringList arguments = QStringList());
     bool startTacO();
 
-    bool hasSetting(QString key);
-    QString getSetting(QString key, QString default_value = "");
-    QString getSetting2(QString key, QString default_value = "");
+signals:
+
+    void write_log(QString text);
+
 private:
 
-    QString _ini_path = "settings.ini";
+    Settings* _settings;
     QString _taco_install_key   = "Installed/TacoVersion";
     QString _tekkit_install_key = "Installed/TekkitVersion";
-    QString _arc_blocker_key = "Blocker/ArcDPS";
+    QString _arc_blocker_key = "updaters/block_arcdps";
     QString _gw_path = "../..";  // Will possibly be updated by verifyLocation()
     QString _taco_path;
     QString _tekkit_path;
-
-    void setSetting(QString key, QString value);
-    void removeSetting(QString key);
 
     void updateTargetPaths(QString gw_path);
 
@@ -58,7 +60,14 @@ private:
     QVersionNumber inquireCurrentTekkitVersion(QString &tekkitLink);
     bool canUpdateTekkit(QVersionNumber &onlineVersion);
 
-    QStringList readGW2Arguments();
+    QStringList loadGW2Arguments();
+
+    void write(QString text);
+    void writeline(QString text);
+    QString _streamline;
+    QTextStream _stream;
+    void write();       // Writes content of _stream, flushes _stream
+    void writeline();   // Writes content of _stream, flushes _stream, adds newline
 
 };
 
