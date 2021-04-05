@@ -43,7 +43,7 @@ private slots:
     void run_taco();
 
     void config_gw2_arguments();
-    void config_gw2_udpated(QString config);
+    void config_gw2_updated(QString config);
     void config_closed();
 
 private:
@@ -52,7 +52,9 @@ private:
     bool _has_config = false;
     Settings _settings = Settings("settings.ini");
     UpdateTool* _updater;
+
     std::vector<CheckBoxSetting*> _check_box_settings;
+    std::vector<LineEditSettings*> _line_edit_settings;
 
     void init_interface();
     void set_edit(QLineEdit* edit, QString text);

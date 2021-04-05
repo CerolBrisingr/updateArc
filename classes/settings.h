@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QCheckBox>
+#include <QLineEdit>
 
 class Settings
 {
@@ -27,7 +28,7 @@ class CheckBoxSetting:  public QObject
 {
     Q_OBJECT
 public:
-    CheckBoxSetting(QCheckBox* checkbox, Settings* _settings, QString key);
+    CheckBoxSetting(QCheckBox* checkbox, Settings* settings, QString key);
     ~CheckBoxSetting();
 
 public slots:
@@ -38,6 +39,23 @@ private:
     Settings* _settings;
     QString _key;
 
+};
+
+// Fuse line edit to settings key value
+class LineEditSettings: public QObject
+{
+    Q_OBJECT
+public:
+    LineEditSettings(QLineEdit* lineedit, Settings* settings, QString key, QString default_entry = "");
+    ~LineEditSettings();
+
+public slots:
+    void lineedit_changed(QString text);
+
+private:
+    QLineEdit* _lineedit;
+    Settings* _settings;
+    QString _key;
 };
 
 #endif // SETTINGS_H

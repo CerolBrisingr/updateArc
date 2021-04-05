@@ -88,3 +88,26 @@ void CheckBoxSetting::checkbox_changed(int state)
         _settings->setValue(_key, "off");
     }
 }
+
+LineEditSettings::LineEditSettings(QLineEdit *lineedit, Settings *settings, QString key, QString default_entry)
+    :_lineedit(lineedit)
+    ,_settings(settings)
+    ,_key(key)
+{
+    // Read setting for lineedit, create if not available
+    QString text = _settings->getValueWrite(_key, default_entry);
+    _lineedit->setText(text);
+
+    // Connect changes on lineedit to update on settings
+    connect(_lineedit, SIGNAL(textChanged(QString)),
+            this, SLOT(lineedit_changed(QString)));
+}
+
+LineEditSettings::~LineEditSettings()
+{
+}
+
+void LineEditSettings::lineedit_changed(QString text)
+{
+    _settings->setValue(_key, text);
+}

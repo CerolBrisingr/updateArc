@@ -68,12 +68,10 @@ void MainWindow::init_interface()
     _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_run_gw2, &_settings, "starters/gw2_run"));
     _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_run_taco, &_settings, "starters/taco_run"));
 
-    set_edit(ui->lineEdit_run_gw2,
-             _settings.getValueWrite("starters/gw2_arguments", "-bmp -maploadinfo"));
-    ui->lineEdit_run_gw2->setEnabled(false);
-    set_edit(ui->lineEdit_run_taco,
-             _settings.getValueWrite("starters/taco_delay", "60"));
-    ui->lineEdit_run_taco->setEnabled(false);
+    _line_edit_settings.push_back(new LineEditSettings(ui->lineEdit_run_gw2, &_settings,
+                                                       "starters/gw2_arguments", "-maploadinfo"));
+    _line_edit_settings.push_back(new LineEditSettings(ui->lineEdit_run_taco, &_settings,
+                                                       "starters/taco_delay", "60"));
 
     _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_autorun, &_settings, "general/autorun"));
     _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_autoclose, &_settings, "general/autoclose"));
@@ -211,17 +209,19 @@ void MainWindow::config_gw2_arguments()
 {
     if (!_has_config) {
         QString arguments = ui->lineEdit_run_gw2->text();
-        _set_args = new Form(arguments);
+        _set_args = new Form(arguments, _updater);
         _has_config = true;
         _set_args->show();
         connect(_set_args, SIGNAL(closed()),
                 this, SLOT(config_closed()));
+        connect(_set_args, SIGNAL(updated(QString)),
+                this, SLOT(config_gw2_updated(QString)));
     }
 }
 
-void MainWindow::config_gw2_udpated(QString config)
+void MainWindow::config_gw2_updated(QString config)
 {
-    // Write stuff to lineEdit and to settings
+    ui->lineEdit_run_gw2->setText(config);
 }
 
 void MainWindow::config_closed()
