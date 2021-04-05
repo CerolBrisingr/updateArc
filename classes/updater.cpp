@@ -155,6 +155,10 @@ int UpdateTool::updateTaco()
             writeline("    archive extraction failed");
             return 1;
         }
+        if (!QDir(tempTaco).exists("GW2TacO.exe")) {
+            writeline("    archive extraction did not produce expected results. Keeping downloads.");
+            return 1;
+        }
 
         writeline("    Moving files to target location");
         fileInteractions::copyFolderTo(tempTaco, _taco_path);

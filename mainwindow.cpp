@@ -32,7 +32,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->toolButton_config_run_gw2, SIGNAL(clicked()),
             this, SLOT(config_gw2_arguments()));
 
-    _updater->verifyLocation();
+    if (!_updater->verifyLocation()) {
+        disable_interface();
+    } else {
+        _location_ok = true;
+    }
 }
 
 MainWindow::~MainWindow()
@@ -41,6 +45,9 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::evaluate_autorun() {
+    if (!_location_ok) {
+        return;
+    }
     if (ui->checkBox_autorun->isChecked()) {
         writeLog("Autorun active. Starting selected options.\n");
         run_selected_options();
@@ -147,6 +154,30 @@ bool MainWindow::run_update()
         this->close();
     }
     return true;
+}
+
+void MainWindow::disable_interface()
+{
+    ui->checkBox_arcdps->setEnabled(false);
+    ui->checkBox_autoclose->setEnabled(false);
+    ui->checkBox_autorun->setEnabled(false);
+    ui->checkBox_run_gw2->setEnabled(false);
+    ui->checkBox_run_taco->setEnabled(false);
+    ui->checkBox_taco->setEnabled(false);
+    ui->checkBox_tekkit->setEnabled(false);
+
+    ui->pushButton_arcdps->setEnabled(false);
+    ui->pushButton_run_gw2->setEnabled(false);
+    ui->pushButton_run_manually->setEnabled(false);
+    ui->pushButton_run_taco->setEnabled(false);
+    ui->pushButton_tekkit->setEnabled(false);
+
+    ui->lineEdit_run_gw2->setEnabled(false);
+    ui->lineEdit_run_taco->setEnabled(false);
+
+    ui->toolButton_block_arc->setEnabled(false);
+    ui->toolButton_cancel->setEnabled(false);
+    ui->toolButton_config_run_gw2->setEnabled(false);
 }
 
 void MainWindow::delay(int secs)
