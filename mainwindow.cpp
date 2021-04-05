@@ -171,6 +171,7 @@ void MainWindow::disable_interface()
     ui->pushButton_run_manually->setEnabled(false);
     ui->pushButton_run_taco->setEnabled(false);
     ui->pushButton_tekkit->setEnabled(false);
+    ui->pushButton_taco->setEnabled(false);
 
     ui->lineEdit_run_gw2->setEnabled(false);
     ui->lineEdit_run_taco->setEnabled(false);
