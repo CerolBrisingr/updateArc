@@ -82,23 +82,12 @@ void MainWindow::set_edit(QLineEdit *edit, QString text)
     edit->setText(text);
 }
 
-void MainWindow::delay(int secs)
-{
-    QTime dieTime = QTime::currentTime().addMSecs( 1000 * secs );
-    while( QTime::currentTime() < dieTime )
-    {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
-    }
-}
-
-void MainWindow::run_selected_options()
+bool MainWindow::run_update()
 {
     // Currently necessary for streamed text output
     QTextStream stream;
     QString stream_string;
     stream.setString(&stream_string);
-
-    ui->pushButton_run_manually->setEnabled(false);
 
     bool do_update_arc = _settings.getValue("updaters/arcdps").compare("on") == 0;
     bool do_update_taco = _settings.getValue("updaters/taco").compare("on") == 0;
@@ -112,20 +101,25 @@ void MainWindow::run_selected_options()
     if (wait_secs < 30) {
         wait_secs = 30;
     }
+    if (_is_cancelled) return false;
 
     if (do_update_arc) {
         update_arc();
     }
+    if (_is_cancelled) return false;
     if (do_update_taco) {
         update_taco();
     }
+    if (_is_cancelled) return false;
     if (do_update_tekkit) {
         update_tekkit();
     }
+    if (_is_cancelled) return false;
 
     if (do_start_gw2) {
         run_gw2();
     }
+    if (_is_cancelled) return false;
 
     if (do_start_taco) {
         ui->checkBox_run_taco->setEnabled(false);
@@ -133,6 +127,7 @@ void MainWindow::run_selected_options()
         for (int i = 0; i < wait_secs; i += 5) {
             stream << "Timer: " << i; writeLog(stream.readAll() + "\n");
             delay(5);
+            if (_is_cancelled) return false;
         }
         stream << "At least " << wait_secs  << " are over."; writeLog(stream.readAll() + "\n");
         run_taco();
@@ -142,6 +137,7 @@ void MainWindow::run_selected_options()
         for (int i = 0; i < wait_secs; i += 5) {
             stream << "Timer: " << i; writeLog(stream.readAll() + "\n");
             delay(5);
+            if (_is_cancelled) return false;
         }
         stream << "At least " << wait_secs  << " are over."; writeLog(stream.readAll() + "\n");
     }
@@ -150,7 +146,29 @@ void MainWindow::run_selected_options()
     if (_settings.getValue("General/autoclose").compare("on") == 0) {
         this->close();
     }
+    return true;
+}
 
+void MainWindow::delay(int secs)
+{
+    QTime dieTime = QTime::currentTime().addMSecs( 1000 * secs );
+    while( QTime::currentTime() < dieTime )
+    {
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
+    }
+}
+
+void MainWindow::run_selected_options()
+{
+    ui->pushButton_run_manually->setEnabled(false);
+    ui->toolButton_cancel->setEnabled(true);
+
+    _is_cancelled = false;
+    if (!run_update()) {
+        writeLog("Execution cancelled\n");
+    }
+
+    ui->toolButton_cancel->setEnabled(false);
     ui->pushButton_run_manually->setEnabled(true);
 }
 
@@ -229,4 +247,9 @@ void MainWindow::config_closed()
     _set_args->deleteLater();
     _has_config = false;
     _set_args = nullptr;
+}
+
+void MainWindow::on_toolButton_cancel_clicked()
+{
+    _is_cancelled = true;
 }

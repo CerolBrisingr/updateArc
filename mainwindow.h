@@ -46,10 +46,13 @@ private slots:
     void config_gw2_updated(QString config);
     void config_closed();
 
+    void on_toolButton_cancel_clicked();
+
 private:
     Ui::MainWindow *ui;
     Form *_set_args = nullptr;
     bool _has_config = false;
+    bool _is_cancelled = false;
     Settings _settings = Settings("settings.ini");
     UpdateTool* _updater;
 
@@ -58,6 +61,7 @@ private:
 
     void init_interface();
     void set_edit(QLineEdit* edit, QString text);
+    bool run_update();
 
     void delay(int secs);
 
