@@ -134,7 +134,10 @@ bool MainWindow::run_update()
         for (int i = 0; i < wait_secs; i += 5) {
             stream << "Timer: " << i; writeLog(stream.readAll() + "\n");
             delay(5);
-            if (_is_cancelled) return false;
+            if (_is_cancelled) {
+                ui->pushButton_run_taco->setEnabled(true);
+                return false;
+            }
         }
         stream << "At least " << wait_secs  << " seconds are over."; writeLog(stream.readAll() + "\n");
         run_taco();

@@ -4,12 +4,9 @@ bool fileInteractions::unzipArchive(QString archive, QString targetPath) {
     QProcess m_agent;
     QFileInfo source(archive);
     QFileInfo target(targetPath);
-    if (!target.absoluteDir().exists()) {
-        QDir("").mkpath(target.absoluteFilePath());
-    }
     //m_agent.setWorkingDirectory(working_directory);
     QStringList args = QStringList();
-    args = QStringList({"-Command", QString("Expand-Archive -LiteralPath %1 -DestinationPath %2").arg(source.absoluteFilePath(), target.absoluteFilePath())});
+    args = QStringList({"-Command", QString("Expand-Archive -LiteralPath \"%1\" -DestinationPath \"%2\"").arg(source.absoluteFilePath(), target.absoluteFilePath())});
     m_agent.start("powershell", args);
 
     if (!m_agent.waitForStarted()) {
