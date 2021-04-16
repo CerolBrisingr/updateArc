@@ -129,14 +129,14 @@ bool MainWindow::run_update()
     if (_is_cancelled) return false;
 
     if (do_start_taco) {
-        ui->checkBox_run_taco->setEnabled(false);
+        ui->pushButton_run_taco->setEnabled(false);
         stream << "Waiting for " << wait_secs << "seconds before we start TacO"; writeLog(stream.readAll() + "\n");
         for (int i = 0; i < wait_secs; i += 5) {
             stream << "Timer: " << i; writeLog(stream.readAll() + "\n");
             delay(5);
             if (_is_cancelled) return false;
         }
-        stream << "At least " << wait_secs  << " are over."; writeLog(stream.readAll() + "\n");
+        stream << "At least " << wait_secs  << " seconds are over."; writeLog(stream.readAll() + "\n");
         run_taco();
     } else if (_settings.getValue("General/autoclose").compare("on") == 0) {
         wait_secs = 20;
@@ -146,7 +146,7 @@ bool MainWindow::run_update()
             delay(5);
             if (_is_cancelled) return false;
         }
-        stream << "At least " << wait_secs  << " are over."; writeLog(stream.readAll() + "\n");
+        stream << "At least " << wait_secs  << " seconds are over."; writeLog(stream.readAll() + "\n");
     }
 
     // User should be able to change their mind about closing the window automatically
