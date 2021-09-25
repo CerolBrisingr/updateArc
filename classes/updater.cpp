@@ -1,4 +1,5 @@
 #include "updater.h"
+#include "fileinteractions.h"
 
 UpdateTool::UpdateTool(Settings* settings)
     :_settings(settings)
@@ -53,6 +54,7 @@ int UpdateTool::arcUninstaller() {
     }
 
     fileInteractions::removeFile(_gw_path + "/bin64", "d3d9.dll");
+    fileInteractions::removeFile(_gw_path + "", "d3d11.dll");
     fileInteractions::removeFile(_gw_path + "/bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
 
     return 0;
@@ -129,6 +131,8 @@ int UpdateTool::runArcUpdate() {
         return 1;
     } else {
         writeline("    Hashes match, update successful!");
+        writeline("    Moving dx11 copy in place.");
+        fileInteractions::copyFileTo(_gw_path + "/bin64/d3d9.dll", _gw_path + "/d3d11.dll");
         return 0;
     }
 }
@@ -315,13 +319,12 @@ bool UpdateTool::downloadArc(QString pathname) {
 int16_t UpdateTool::inquireCurrentTacoVersion(QString &tacoLink) {
     QString tacoBody = "http://www.gw2taco.com";
     downloader::singleTextRequest(tacoBody);
-
-    QRegularExpression re("https://www\\.dropbox\\.com/s/\\w+/GW2TacO_(\\d+)r\\.zip\\?dl=1");
+    QRegularExpression re("https://github\\.com/BoyC/GW2TacO/releases/download/\\d+\\.\\d+r/GW2TacO_(?<version>\\d+)r\\.zip");
     QRegularExpressionMatchIterator matches = re.globalMatch(tacoBody);
     int16_t latestVersion = 0;
     while (matches.hasNext()) {
         QRegularExpressionMatch match = matches.next();
-        if (match.captured(1).toInt() > latestVersion) {
+        if (match.captured("version").toInt() > latestVersion) {
             latestVersion = static_cast<int16_t>(match.captured(1).toInt());
             tacoLink = match.captured(0);
         }

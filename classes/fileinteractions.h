@@ -6,25 +6,18 @@
 
 #include "classes/downloader.h"
 
-class fileInteractions
+namespace fileInteractions
 {
-public:
-    fileInteractions() {}
-    ~fileInteractions() {}
-
-    static bool unzipArchive(QString archive, QString targetPath);
-    static bool executeExternalWaiting(QString executablePath, QString working_directory = "");
-    static QString calculateHashFromFile(QString sFile);
-    static QString readFullFileString(QString filename);
-    static QString readFirstFileLine(QString filename);
-    static int writeFileString(QString filename, QString filecontent);
-    static int removeFile(QString pathstring, QString filename);
-    static void copyFolderTo(QString folderPath, QString targetPath);
-    static void copyFileTo(QString filePath, QString targetPath);
-    static void removeFolder(QString folderPath);
-
-private:
-
+    bool unzipArchive(QString archive, QString targetPath);
+    bool executeExternalWaiting(QString executablePath, QString working_directory = "");
+    QString calculateHashFromFile(QString sFile);
+    QString readFullFileString(QString filename);
+    QString readFirstFileLine(QString filename);
+    int writeFileString(QString filename, QString filecontent);
+    int removeFile(QString pathstring, QString filename);
+    void copyFolderTo(QString folderPath, QString targetPath);
+    void copyFileTo(QString filePath, QString targetPath);
+    void removeFolder(QString folderPath);
 };
 
 

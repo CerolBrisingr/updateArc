@@ -1,6 +1,8 @@
 #include "fileinteractions.h"
 
-bool fileInteractions::unzipArchive(QString archive, QString targetPath) {
+namespace fileInteractions {
+
+bool unzipArchive(QString archive, QString targetPath) {
     QProcess m_agent;
     QFileInfo source(archive);
     QFileInfo target(targetPath);
@@ -23,7 +25,7 @@ bool fileInteractions::unzipArchive(QString archive, QString targetPath) {
     return false;
 }
 
-bool fileInteractions::executeExternalWaiting(QString executablePath, QString working_directory) {
+bool executeExternalWaiting(QString executablePath, QString working_directory) {
     QProcess m_agent;
     m_agent.setWorkingDirectory(working_directory);
     QStringList args = QStringList();
@@ -47,7 +49,7 @@ bool fileInteractions::executeExternalWaiting(QString executablePath, QString wo
 }
 
 
-QString fileInteractions::calculateHashFromFile(QString sFile) {
+QString calculateHashFromFile(QString sFile) {
     // Read hash of currently 'installed' arcdps
     QCryptographicHash crypto(QCryptographicHash::Md5);
     QFile currentDll(sFile);
@@ -61,7 +63,7 @@ QString fileInteractions::calculateHashFromFile(QString sFile) {
     return crypto.result().toHex();
 }
 
-QString fileInteractions::readFullFileString(QString filename)
+QString readFullFileString(QString filename)
 {
     QFile referenceFile(filename);
     if (!referenceFile.open(QFile::ReadOnly | QFile::Text)) {
@@ -74,7 +76,7 @@ QString fileInteractions::readFullFileString(QString filename)
     return output;
 }
 
-QString fileInteractions::readFirstFileLine(QString filename) {
+QString readFirstFileLine(QString filename) {
     QFile referenceFile(filename);
     if (!referenceFile.open(QFile::ReadOnly | QFile::Text)) {
         std::cout << "Could not open reference file" << std::endl;
@@ -86,7 +88,7 @@ QString fileInteractions::readFirstFileLine(QString filename) {
     return stringLine;
 }
 
-int fileInteractions::writeFileString(QString filename, QString filecontent) {
+int writeFileString(QString filename, QString filecontent) {
     QFile targetFile(filename);
     if (!targetFile.open(QFile::WriteOnly | QFile::Text)) {
         std::cout << "Could not open target file" << std::endl;
@@ -98,7 +100,7 @@ int fileInteractions::writeFileString(QString filename, QString filecontent) {
     return 0;
 }
 
-int fileInteractions::removeFile(QString pathstring, QString filename) {
+int removeFile(QString pathstring, QString filename) {
     if (QDir(pathstring).exists(filename)) {
         if (!pathstring.isEmpty()) {
             pathstring = pathstring + "/";
@@ -110,7 +112,7 @@ int fileInteractions::removeFile(QString pathstring, QString filename) {
     return 0;
 }
 
-void fileInteractions::copyFolderTo(QString folderPath, QString targetPath) {
+void copyFolderTo(QString folderPath, QString targetPath) {
     QDir folder(folderPath);
     QDir target(targetPath);
     if (folder.exists()) {
@@ -131,7 +133,7 @@ void fileInteractions::copyFolderTo(QString folderPath, QString targetPath) {
     }
 }
 
-void fileInteractions::copyFileTo(QString filePath, QString targetPath) {
+void copyFileTo(QString filePath, QString targetPath) {
     QFile source(filePath);
     QFileInfo target(targetPath);
     if (!source.exists()) {
@@ -143,10 +145,11 @@ void fileInteractions::copyFileTo(QString filePath, QString targetPath) {
     source.copy(targetPath);
 }
 
-void fileInteractions::removeFolder(QString folderPath) {
+void removeFolder(QString folderPath) {
     QDir folder(folderPath);
     if (folder.exists()) {
         folder.removeRecursively();
     }
 }
 
+}
