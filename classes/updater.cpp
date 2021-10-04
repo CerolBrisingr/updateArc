@@ -278,7 +278,14 @@ bool UpdateTool::startTacO()
 void UpdateTool::updateTargetPaths(QString gw_path) {
     _gw_path = gw_path;
     _taco_path = _gw_path + "/addons/TacO";
-    _tekkit_path = _taco_path + "/POIs";
+    auto tekkit_user_path = _settings->getValueWrite(_tekkit_path_key);
+    writeline("-- Found custom path for tekkit: " + tekkit_user_path);
+    if ((tekkit_user_path.length() == 0) || !QDir(tekkit_user_path).exists()) {
+        writeline("-- Custom path must exist and not be empty, using standard path");
+        _tekkit_path = _taco_path + "/POIs";
+        return;
+    }
+    _tekkit_path = tekkit_user_path;
 }
 
 QString UpdateTool::getRemoteHash() {

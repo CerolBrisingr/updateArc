@@ -41,6 +41,7 @@ private:
     Settings* _settings;
     QString _taco_install_key   = "Installed/TacoVersion";
     QString _tekkit_install_key = "Installed/TekkitVersion";
+    QString _tekkit_path_key = "Installed/TekkitPath";
     QString _arc_blocker_key = "updaters/block_arcdps";
     QString _gw_path = "../..";  // Will possibly be updated by verifyLocation()
     QString _taco_path;
