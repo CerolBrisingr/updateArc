@@ -7,11 +7,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    connect(&Log::writer, &Log::Logger::sendText,
+            this, &MainWindow::writeLog,
+            Qt::ConnectionType::QueuedConnection);
+
     init_interface();
     _updater = new UpdateTool(&_settings);
 
     connect(_updater, SIGNAL(write_log(QString)),
-            this, SLOT(writeLog(QString)));
+            this, SLOT(writeLog(QString)), Qt::QueuedConnection);
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
@@ -49,10 +53,10 @@ void MainWindow::evaluate_autorun() {
         return;
     }
     if (ui->checkBox_autorun->isChecked()) {
-        writeLog("Autorun active. Starting selected options.\n");
+        Log::write("Autorun active. Starting selected options.\n");
         run_selected_options();
     } else {
-        writeLog("Autorun disabled. Do something already!\n");
+        Log::write("Autorun disabled. Do something already!\n");
     }
 }
 

@@ -11,6 +11,7 @@
 #include <thread>
 
 #include "fileinteractions.h"
+#include "logger.h"
 #include "downloader.h"
 #include "settings.h"
 
@@ -31,10 +32,6 @@ public:
 
     bool startGW2(QStringList arguments = QStringList());
     bool startTacO();
-
-signals:
-
-    void write_log(QString text);
 
 private:
 
@@ -62,13 +59,6 @@ private:
     bool canUpdateTekkit(QVersionNumber &onlineVersion);
 
     QStringList loadGW2Arguments();
-
-    void write(QString text);
-    void writeline(QString text);
-    QString _streamline;
-    QTextStream _stream;
-    void write();       // Writes content of _stream, flushes _stream
-    void writeline();   // Writes content of _stream, flushes _stream, adds newline
 
 };
 

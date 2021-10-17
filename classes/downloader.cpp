@@ -3,18 +3,18 @@
 downloader::downloader()
 {
     QSettings setting(_setting_path, QSettings::IniFormat);
-    _print_debug = setting.value("debug/downloader", "no").toString() == "yes";
+    _print_debug = setting.value("debug/downloader", "off").toString() == "on";
 
     if (_print_debug) {
-    std::cout << QSslSocket::sslLibraryBuildVersionString().toStdString() << std::endl;
+    Log::write(QSslSocket::sslLibraryBuildVersionString() + "\n");
     }
     if (QSslSocket::supportsSsl()) {
         if (_print_debug) {
-            std::cout << "      Supporting SSL" << std::endl;
+            Log::write("      Supporting SSL\n");
         }
     } else {
         if (_print_debug) {
-        std::cout << "      No support for SSL!" << std::endl;
+            Log::write("      No support for SSL!\n");
         }
     }
 
@@ -51,7 +51,7 @@ int downloader::fetch()
         QUrl url = QUrl(taskList[i]->getRequestAddress());
 
         if (_print_debug) {
-            std::cout << "      Starting request: " << url.url().toStdString() << std::endl;
+            Log::write("      Starting request: " + url.url() + "\n");
         }
         request = QNetworkRequest(url);
 
@@ -104,7 +104,7 @@ void downloader::addRequest(Request *newRequest)
 void downloader::processReply(QNetworkReply* netReply)
 {
     if (_print_debug) {
-        std::cout << "      Recieved reply from URL: " << netReply->url().toString().toStdString() << std::endl;
+        Log::write("      Recieved reply from URL: " + netReply->url().toString() + "\n");
     }
     int16_t _err = 0;
 
@@ -132,7 +132,7 @@ void downloader::processReply(QNetworkReply* netReply)
             if (targetFilename.isEmpty()) {
                 // Invalid target name
                 if (_print_debug) {
-                    std::cout << "      Download requested but filename empty!" << std::endl;
+                    Log::write("      Download requested but filename empty!\n");
                 }
                 _err = 1;
             } else {
@@ -142,17 +142,17 @@ void downloader::processReply(QNetworkReply* netReply)
 
                 QFile file(fullPath);
                 if (_print_debug) {
-                    std::cout << "      Saving file to: " << fullPath.toStdString() << std::endl;
+                    Log::write("      Saving file to: " + fullPath + "\n");
                 }
                 if (file.open(QFile::WriteOnly)) {
                     file.write(netReply->read(netReply->bytesAvailable()));
                     file.close();
                     if (_print_debug) {
-                        std::cout << "      File saved to: " << fullPath.toStdString() << std::endl;
+                        Log::write("      File saved to: " + fullPath + "\n");
                     }
                 } else {
                     if (_print_debug) {
-                        std::cout << "      Cannot write target file" << std::endl;
+                        Log::write("      Cannot write target file\n");
                     }
                     _err = 1;
                 }
@@ -211,7 +211,7 @@ Request *downloader::addTextRequest(QString address, uint16_t forwards)
 void downloader::printRequests()
 {
     for (int count = 0; count < taskList.length(); count++) {
-        std::cout << taskList[count]->getRequestString().toStdString() << std::endl;
+        Log::write(taskList[count]->getRequestString() + "\n");
     }
 }
 
@@ -236,13 +236,13 @@ int16_t downloader::singleDownload(QString address, QString pathname, QString fi
     return error_msg;
 }
 
-int16_t downloader::singleTextRequest(QString &address, uint16_t forwards)
+int16_t downloader::singleTextRequest(QString &output, QString address, uint16_t forwardings)
 {
     downloader netSource;
-    Request* request = netSource.addTextRequest(address, forwards);
+    Request* request = netSource.addTextRequest(address, forwardings);
     netSource.fetch();
 
-    address = request->getResult();
+    output = request->getResult();
     int16_t error_msg = request->getError();
     delete request;
     return error_msg;
@@ -258,7 +258,7 @@ void downloader::error(QNetworkReply::NetworkError err)
 void downloader::errorMsg(std::string msg, bool bIsFatal)
 {
     if (!_will_shut_down) {
-        std::cout << msg << std::endl;
+        Log::write(msg + "\n");
     }
     if (bIsFatal) {
         waitLoop.exit(1);

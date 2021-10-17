@@ -3,6 +3,7 @@
 
 #include "classes/settings.h"
 #include "classes/updater.h"
+#include "classes/logger.h"
 #include "form.h"
 
 #include <QMainWindow>
@@ -29,9 +30,10 @@ public:
 
     void evaluate_autorun();
 
-private slots:
+public slots:
     void writeLog(QString logline);
 
+private slots:
     void run_selected_options();
 
     void update_arc();

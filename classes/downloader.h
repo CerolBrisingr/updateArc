@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include <cstdio>
+#include "logger.h"
 
 QT_BEGIN_NAMESPACE
 class QSslError;
@@ -27,6 +28,10 @@ class downloader : public QObject
 {
     Q_OBJECT
 public:
+    static int16_t singleDownload(QString address, QString pathname = "", QString filename = "", uint16_t forwards = 3);
+    static int16_t singleTextRequest(QString &output, QString address, uint16_t forwardings = 3);
+
+public:
     downloader();
     ~downloader();
 
@@ -40,9 +45,6 @@ public:
     Request *addTextRequest(QString address, uint16_t forwards = 3);
     void printRequests();
     void dropRequests();
-
-    static int16_t singleDownload(QString address, QString pathname = "", QString filename = "", uint16_t forwards = 3);
-    static int16_t singleTextRequest(QString &address, uint16_t forwards = 3);
 
 public slots:
     void processReply(QNetworkReply *netReply);
