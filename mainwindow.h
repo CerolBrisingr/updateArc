@@ -4,6 +4,8 @@
 #include "classes/settings.h"
 #include "classes/updater.h"
 #include "classes/logger.h"
+#include <updater/arcupdater.h>
+#include <updater/baseupdater.h>
 #include "form.h"
 
 #include <QMainWindow>
@@ -12,9 +14,10 @@
 #include <QScrollBar>
 #include <QLineEdit>
 #include <QTextStream>
-
 #include <QVariant>
 #include <QTime>
+
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -36,8 +39,6 @@ public slots:
 private slots:
     void run_selected_options();
 
-    void update_arc();
-    void remove_arc();
     void update_taco();
     void update_tekkit();
 
@@ -57,7 +58,9 @@ private:
     bool _is_cancelled = false;
     bool _location_ok = false;
     Settings _settings = Settings("settings.ini");
-    UpdateTool* _updater;
+
+    UpdateTool* _update_helper;
+    std::vector<Updater::BaseUpdater*> _updaters;
 
     std::vector<CheckBoxSetting*> _check_box_settings;
     std::vector<LineEditSettings*> _line_edit_settings;

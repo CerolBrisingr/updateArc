@@ -11,8 +11,8 @@ CONFIG += c++11
 SOURCES += \
     classes/logger.cpp \
     classes/simple_json.cpp \
-    downloader/arcupdater.cpp \
-    downloader/baseupdater.cpp \
+    updater/arcupdater.cpp \
+    updater/baseupdater.cpp \
     form.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -24,8 +24,8 @@ SOURCES += \
 HEADERS += \
     classes/logger.h \
     classes/simple_json.h \
-    downloader/arcupdater.h \
-    downloader/baseupdater.h \
+    updater/arcupdater.h \
+    updater/baseupdater.h \
     form.h \
     mainwindow.h \
     classes/downloader.h \

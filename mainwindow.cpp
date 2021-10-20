@@ -12,18 +12,23 @@ MainWindow::MainWindow(QWidget *parent)
             Qt::ConnectionType::QueuedConnection);
 
     init_interface();
-    _updater = new UpdateTool(&_settings);
+    _update_helper = new UpdateTool(&_settings);
+    if (!_update_helper->verifyLocation()) {
+        disable_interface();
+    } else {
+        _location_ok = true;
+    }
 
-    connect(_updater, SIGNAL(write_log(QString)),
+    connect(_update_helper, SIGNAL(write_log(QString)),
             this, SLOT(writeLog(QString)), Qt::QueuedConnection);
+
+    auto gw_path = _update_helper->_gw_path;
+    Updater::Config arc_cfg(gw_path,"",ui->pushButton_arcdps,ui->checkBox_arcdps);
+    _updaters.emplace_back(new Updater::ArcUpdater(arc_cfg, ui->toolButton_block_arc));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
 
-    connect(ui->pushButton_arcdps, SIGNAL(clicked()),
-            this, SLOT(update_arc()));
-    connect(ui->toolButton_block_arc, SIGNAL(clicked()),
-            this, SLOT(remove_arc()));
     connect(ui->pushButton_taco, SIGNAL(clicked()),
             this, SLOT(update_taco()));
     connect(ui->pushButton_tekkit, SIGNAL(clicked()),
@@ -36,15 +41,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->toolButton_config_run_gw2, SIGNAL(clicked()),
             this, SLOT(config_gw2_arguments()));
 
-    if (!_updater->verifyLocation()) {
-        disable_interface();
-    } else {
-        _location_ok = true;
-    }
 }
 
 MainWindow::~MainWindow()
 {
+    delete _update_helper;
+    for (auto* updater: _updaters) {
+        delete updater;
+    }
     delete ui;
 }
 
@@ -100,7 +104,6 @@ bool MainWindow::run_update()
     QString stream_string;
     stream.setString(&stream_string);
 
-    bool do_update_arc = _settings.getValue("updaters/arcdps").compare("on") == 0;
     bool do_update_taco = _settings.getValue("updaters/taco").compare("on") == 0;
     bool do_update_tekkit = _settings.getValue("updaters/tekkit").compare("on") == 0;
 
@@ -114,9 +117,11 @@ bool MainWindow::run_update()
     }
     if (_is_cancelled) return false;
 
-    if (do_update_arc) {
-        update_arc();
+    for (auto* updater: _updaters) {
+        if (_is_cancelled) return false;
+        updater->autoUpdate();
     }
+
     if (_is_cancelled) return false;
     if (do_update_taco) {
         update_taco();
@@ -211,54 +216,31 @@ void MainWindow::run_selected_options()
     ui->pushButton_run_manually->setEnabled(true);
 }
 
-void MainWindow::update_arc()
-{
-    ui->pushButton_arcdps->setEnabled(false);
-    ui->toolButton_block_arc->setEnabled(false);
-    _updater->updateArc();
-    ui->toolButton_block_arc->setEnabled(true);
-    ui->pushButton_arcdps->setEnabled(true);
-}
-
-void MainWindow::remove_arc()
-{
-    ui->pushButton_arcdps->setEnabled(false);
-    ui->toolButton_block_arc->setEnabled(false);
-    if (_settings.hasKey("updaters/block_arcdps")) {
-        _settings.removeKey("updaters/block_arcdps");
-        writeLog("Removed blocker for ArcDPS update.\n");
-    } else {
-        _updater->arcUninstaller();
-    }
-    ui->toolButton_block_arc->setEnabled(true);
-    ui->pushButton_arcdps->setEnabled(true);
-}
-
 void MainWindow::update_taco()
 {
     ui->pushButton_taco->setEnabled(false);
-    _updater->updateTaco();
+    _update_helper->updateTaco();
     ui->pushButton_taco->setEnabled(true);
 }
 
 void MainWindow::update_tekkit()
 {
     ui->pushButton_tekkit->setEnabled(false);
-    _updater->updateTekkit();
+    _update_helper->updateTekkit();
     ui->pushButton_tekkit->setEnabled(true);
 }
 
 void MainWindow::run_gw2()
 {
     ui->pushButton_run_gw2->setEnabled(false);
-    _updater->startGW2();
+    _update_helper->startGW2();
     ui->pushButton_run_gw2->setEnabled(true);
 }
 
 void MainWindow::run_taco()
 {
     ui->pushButton_run_taco->setEnabled(false);
-    _updater->startTacO();
+    _update_helper->startTacO();
     ui->pushButton_run_taco->setEnabled(true);
 }
 
@@ -266,7 +248,7 @@ void MainWindow::config_gw2_arguments()
 {
     if (!_has_config) {
         QString arguments = ui->lineEdit_run_gw2->text();
-        _set_args = new Form(arguments, _updater);
+        _set_args = new Form(arguments, _update_helper);
         _has_config = true;
         _set_args->show();
         connect(_set_args, SIGNAL(closed()),

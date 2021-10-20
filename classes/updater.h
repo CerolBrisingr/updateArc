@@ -33,6 +33,8 @@ public:
     bool startGW2(QStringList arguments = QStringList());
     bool startTacO();
 
+    QString _gw_path = "../..";  // Will possibly be updated by verifyLocation()
+
 private:
 
     Settings* _settings;
@@ -40,7 +42,6 @@ private:
     QString _tekkit_install_key = "Installed/TekkitVersion";
     QString _tekkit_path_key = "Installed/TekkitPath";
     QString _arc_blocker_key = "updaters/block_arcdps";
-    QString _gw_path = "../..";  // Will possibly be updated by verifyLocation()
     QString _taco_path;
     QString _tekkit_path;
 

@@ -2,6 +2,8 @@
 #define BASEDOWNLOADER_H
 
 #include <QObject>
+#include <QPushButton>
+#include <QCheckBox>
 #include <classes/settings.h>
 #include <classes/logger.h>
 #include <classes/fileinteractions.h>
@@ -12,27 +14,31 @@ struct Config
 {
     QString _gw_path;
     QString _web_source;
+    QPushButton* _button;
+    QCheckBox* _checkbox;
     // Work with a vector this time and iterate.
     int _version_digits;
 
-    Config(QString gw_path, QString web_source, int version_digits = 0)
+    Config(QString gw_path, QString web_source, QPushButton* button, QCheckBox* checkbox, int version_digits = 0)
         :_gw_path(gw_path)
         ,_web_source(web_source)
+        ,_button(button)
+        ,_checkbox(checkbox)
         ,_version_digits(version_digits)
     {}
 };
 
-class BaseDownloader
+class BaseUpdater: public QObject
 {
     Q_OBJECT
 public:
-    BaseDownloader(Config config);
-    virtual ~BaseDownloader();
-
-public slots:
-    virtual int autoUpdate() = 0;
+    BaseUpdater(Config config);
+    virtual ~BaseUpdater();
     virtual int update() = 0;
-    virtual int remove() = 0;
+    int autoUpdate();
+
+private slots:
+    virtual void updateSlot();
 
 protected:
     Config _config;

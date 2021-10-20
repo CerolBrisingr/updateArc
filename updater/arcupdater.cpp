@@ -2,9 +2,36 @@
 
 namespace Updater {
 
-ArcUpdater::ArcUpdater(Config config)
-    :BaseDownloader(config)
-{}
+ArcUpdater::ArcUpdater(Config config, QToolButton* button_remove)
+    :BaseUpdater(config)
+    ,_button_remove(button_remove)
+{
+    connect(_button_remove, SIGNAL(clicked()),
+            this, SLOT(removeSlot()));
+}
+
+void ArcUpdater::updateSlot()
+{
+    _config._button->setEnabled(false);
+    _button_remove->setEnabled(false);
+    update();
+    _button_remove->setEnabled(true);
+    _config._button->setEnabled(true);
+}
+
+void ArcUpdater::removeSlot()
+{
+    _config._button->setEnabled(false);
+    _button_remove->setEnabled(false);
+    if (_settings.hasKey("updaters/block_arcdps")) {
+        _settings.removeKey("updaters/block_arcdps");
+        Log::write("Removed blocker for ArcDPS update.\n");
+    } else {
+        remove();
+    }
+    _button_remove->setEnabled(true);
+    _config._button->setEnabled(true);
+}
 
 int ArcUpdater::remove()
 {
