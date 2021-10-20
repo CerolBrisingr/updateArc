@@ -12,16 +12,14 @@ namespace Updater {
 
 struct Config
 {
-    QString _gw_path;
-    QString _web_source;
-    QPushButton* _button;
-    QCheckBox* _checkbox;
+    const QString _gw_path;
+    QPushButton* const _button;
+    QCheckBox* const _checkbox;
     // Work with a vector this time and iterate.
     int _version_digits;
 
-    Config(QString gw_path, QString web_source, QPushButton* button, QCheckBox* checkbox, int version_digits = 0)
+    Config(QString gw_path, QPushButton* button, QCheckBox* checkbox, int version_digits = 0)
         :_gw_path(gw_path)
-        ,_web_source(web_source)
         ,_button(button)
         ,_checkbox(checkbox)
         ,_version_digits(version_digits)

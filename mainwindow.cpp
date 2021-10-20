@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(writeLog(QString)), Qt::QueuedConnection);
 
     auto gw_path = _update_helper->_gw_path;
-    Updater::Config arc_cfg(gw_path,"",ui->pushButton_arcdps,ui->checkBox_arcdps);
+    Updater::Config arc_cfg(gw_path,ui->pushButton_arcdps,ui->checkBox_arcdps);
     _updaters.emplace_back(new Updater::ArcUpdater(arc_cfg, ui->toolButton_block_arc));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),

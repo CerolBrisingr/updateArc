@@ -20,7 +20,7 @@ private slots:
 
 private:
     const QString _arc_blocker_key = "updaters/block_arcdps";
-    QToolButton* _button_remove;
+    QToolButton* const _button_remove;
 
     int runArcUpdate();
     QString getRemoteHash();

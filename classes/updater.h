@@ -24,9 +24,7 @@ public:
     ~UpdateTool();
 
     bool verifyLocation();
-    int arcUninstaller();
 
-    int updateArc();
     int updateTaco();
     int updateTekkit();
 
@@ -46,12 +44,6 @@ private:
     QString _tekkit_path;
 
     void updateTargetPaths(QString gw_path);
-
-    QString getRemoteHash();
-    bool isBlockedArcVersion(QString sRemoteHash);
-    bool verifyArcInstallation();
-    bool downloadArc(QString pathname);
-    int runArcUpdate();
 
     int16_t inquireCurrentTacoVersion(QString &tacoLink);
     bool canUpdateTaco(int16_t &onlineVersion);
