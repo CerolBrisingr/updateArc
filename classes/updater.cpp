@@ -7,10 +7,6 @@ UpdateTool::UpdateTool(Settings* settings)
     updateTargetPaths(_gw_path);
 }
 
-UpdateTool::~UpdateTool()
-{
-}
-
 bool UpdateTool::verifyLocation() {
     bool existGw2_64 = false;
     bool existGw2_32 = false;
@@ -81,34 +77,6 @@ int UpdateTool::updateTaco()
     return 0;
 }
 
-int UpdateTool::updateTekkit()
-{
-    Log::write("Starting <Tekkit> update\n");
-    QString tekkitLink;
-    QString filename = "tw_ALL_IN_ONE.taco";
-    QVersionNumber onlineVersion = inquireCurrentTekkitVersion(tekkitLink);
-    if (canUpdateTekkit(onlineVersion)) {
-        Log::write("    Starting download of new version " + onlineVersion.toString() + "\n");
-        if (0 != downloader::singleDownload(tekkitLink, "", filename)) {
-            Log::write("    Download failed\n");
-            return 1;
-        }
-
-        Log::write("    Moving file in place\n");
-        fileInteractions::removeFile(_tekkit_path, filename);
-
-        fileInteractions::copyFileTo(filename, _tekkit_path + QDir::separator() + filename);
-        fileInteractions::removeFile("", filename);
-
-        Log::write("    Registering newly installed version\n");
-        _settings->setValue(_tekkit_install_key, onlineVersion.toString());
-    } else {
-        Log::write("    Online version is already registered, no update needed!\n");
-    }
-    Log::write("Ended <Tekkit> update\n");
-    return 0;
-}
-
 bool UpdateTool::startGW2(QStringList arguments)
 {
     QProcess gw2;
@@ -161,13 +129,6 @@ bool UpdateTool::startTacO()
 void UpdateTool::updateTargetPaths(QString gw_path) {
     _gw_path = gw_path;
     _taco_path = _gw_path + "/addons/TacO";
-    auto tekkit_user_path = _settings->getValueWrite(_tekkit_path_key);
-    if ((tekkit_user_path.length() == 0) || !QDir(tekkit_user_path).exists()) {
-        _tekkit_path = _taco_path + "/POIs";
-        return;
-    }
-    Log::write("-- Found custom path for tekkit: " + tekkit_user_path+ "\n");
-    _tekkit_path = tekkit_user_path;
 }
 
 int16_t UpdateTool::inquireCurrentTacoVersion(QString &tacoLink) {
@@ -191,35 +152,4 @@ bool UpdateTool::canUpdateTaco(int16_t &onlineVersion) {
     Log::write("    Taco version available:   " + QString(onlineVersion) + "\n");
     Log::write("    Taco version I installed: " + QString(currentVersion) + "\n");
     return onlineVersion > currentVersion;
-}
-
-QVersionNumber UpdateTool::inquireCurrentTekkitVersion(QString &tekkitLink) {
-    QString tekkitBody;
-    downloader::singleTextRequest(tekkitBody, "http://tekkitsworkshop.net/index.php/gw2-taco/download");
-
-    QRegularExpression re("href=\"(/index\\.php/gw2-taco/download/send/\\d-taco-marker-packs/\\d+-all-in-one)\">--- ALL-IN-ONE --- (\\d+)\\.(\\d+)\\.(\\d+) - \\d+\\.\\d+\\.\\d+</a>");
-    QRegularExpressionMatchIterator matches = re.globalMatch(tekkitBody);
-    QVersionNumber latestVersion = QVersionNumber(0, 0, 0);
-    int a,b,c;
-    QVersionNumber readingVersion;
-    while (matches.hasNext()) {
-        QRegularExpressionMatch match = matches.next();
-        a = match.captured(2).toInt();
-        b = match.captured(3).toInt();
-        c = match.captured(4).toInt();
-        readingVersion = QVersionNumber(a, b, c);
-        if (QVersionNumber::compare(readingVersion, latestVersion) > 0) {
-            latestVersion = readingVersion;
-            tekkitLink = "http://tekkitsworkshop.net" + match.captured(1);
-        }
-    }
-    return latestVersion;
-}
-
-bool UpdateTool::canUpdateTekkit(QVersionNumber &onlineVersion)
-{
-    QVersionNumber currentVersion = QVersionNumber::fromString(_settings->getValue(_tekkit_install_key, "0.0.0"));
-    Log::write("    Tekkit version available:   " + onlineVersion.toString() + "\n");
-    Log::write("    Tekkit version I installed: " + currentVersion.toString() + "\n");
-    return QVersionNumber::compare(onlineVersion, currentVersion) > 0;
 }

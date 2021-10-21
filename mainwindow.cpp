@@ -23,16 +23,16 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(writeLog(QString)), Qt::QueuedConnection);
 
     auto gw_path = _update_helper->_gw_path;
-    Updater::Config arc_cfg(gw_path,ui->pushButton_arcdps,ui->checkBox_arcdps);
-    _updaters.emplace_back(new Updater::ArcUpdater(arc_cfg, ui->toolButton_block_arc));
+    _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps));
+    _updaters.emplace_back(new Updater::TekkitUpdater(gw_path, ui->pushButton_tekkit, ui->toolButton_remove_tekkit, ui->checkBox_tekkit));
+
+
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
 
     connect(ui->pushButton_taco, SIGNAL(clicked()),
             this, SLOT(update_taco()));
-    connect(ui->pushButton_tekkit, SIGNAL(clicked()),
-            this, SLOT(update_tekkit()));
 
     connect(ui->pushButton_run_gw2, SIGNAL(clicked()),
             this, SLOT(run_gw2()));
@@ -105,7 +105,6 @@ bool MainWindow::run_update()
     stream.setString(&stream_string);
 
     bool do_update_taco = _settings.getValue("updaters/taco").compare("on") == 0;
-    bool do_update_tekkit = _settings.getValue("updaters/tekkit").compare("on") == 0;
 
     bool do_start_gw2 = _settings.getValue("starters/gw2_run").compare("on") == 0;
     bool do_start_taco = _settings.getValue("starters/taco_run").compare("on") == 0;
@@ -117,6 +116,7 @@ bool MainWindow::run_update()
     }
     if (_is_cancelled) return false;
 
+    // Try to run each updater (don't run if checkbox is not set)
     for (auto* updater: _updaters) {
         if (_is_cancelled) return false;
         updater->autoUpdate();
@@ -125,10 +125,6 @@ bool MainWindow::run_update()
     if (_is_cancelled) return false;
     if (do_update_taco) {
         update_taco();
-    }
-    if (_is_cancelled) return false;
-    if (do_update_tekkit) {
-        update_tekkit();
     }
     if (_is_cancelled) return false;
 
@@ -189,6 +185,8 @@ void MainWindow::disable_interface()
     ui->lineEdit_run_taco->setEnabled(false);
 
     ui->toolButton_block_arc->setEnabled(false);
+    ui->toolButton_remove_taco->setEnabled(false);
+    ui->toolButton_remove_tekkit->setEnabled(false);
     ui->toolButton_cancel->setEnabled(false);
     ui->toolButton_config_run_gw2->setEnabled(false);
 }
@@ -221,13 +219,6 @@ void MainWindow::update_taco()
     ui->pushButton_taco->setEnabled(false);
     _update_helper->updateTaco();
     ui->pushButton_taco->setEnabled(true);
-}
-
-void MainWindow::update_tekkit()
-{
-    ui->pushButton_tekkit->setEnabled(false);
-    _update_helper->updateTekkit();
-    ui->pushButton_tekkit->setEnabled(true);
 }
 
 void MainWindow::run_gw2()

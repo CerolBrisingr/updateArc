@@ -2,7 +2,6 @@
 #define ARCDOWNLOADER_H
 
 #include "baseupdater.h"
-#include <QToolButton>
 
 namespace Updater {
 
@@ -10,17 +9,16 @@ class ArcUpdater : public BaseUpdater
 {
     Q_OBJECT
 public:
-    ArcUpdater(Config config, QToolButton* button_remove);
-    int remove();
+    ArcUpdater(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+               QCheckBox* checkbox);
+    int remove() override;
     int update() override;
 
 private slots:
-    void updateSlot() override;
-    void removeSlot();
+    void removeSlot() override;
 
 private:
     const QString _arc_blocker_key = "updaters/block_arcdps";
-    QToolButton* const _button_remove;
 
     int runArcUpdate();
     QString getRemoteHash();

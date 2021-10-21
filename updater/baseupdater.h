@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QPushButton>
+#include <QToolButton>
 #include <QCheckBox>
 #include <classes/settings.h>
 #include <classes/logger.h>
@@ -13,16 +14,16 @@ namespace Updater {
 struct Config
 {
     const QString _gw_path;
-    QPushButton* const _button;
+    QPushButton* const _install_button;
+    QToolButton* const _remove_button;
     QCheckBox* const _checkbox;
-    // Work with a vector this time and iterate.
-    int _version_digits;
 
-    Config(QString gw_path, QPushButton* button, QCheckBox* checkbox, int version_digits = 0)
+    Config(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+           QCheckBox* checkbox)
         :_gw_path(gw_path)
-        ,_button(button)
+        ,_install_button(install_button)
+        ,_remove_button(remove_button)
         ,_checkbox(checkbox)
-        ,_version_digits(version_digits)
     {}
 };
 
@@ -30,16 +31,22 @@ class BaseUpdater: public QObject
 {
     Q_OBJECT
 public:
-    BaseUpdater(Config config);
+    BaseUpdater(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+                QCheckBox* checkbox);
     virtual ~BaseUpdater();
     virtual int update() = 0;
+    virtual int remove() = 0;
     int autoUpdate();
 
 private slots:
-    virtual void updateSlot();
+    void updateSlot();
+    virtual void removeSlot();
 
 protected:
-    Config _config;
+    const QString _gw_path;
+    QPushButton* const _install_button;
+    QToolButton* const _remove_button;
+    QCheckBox* const _checkbox;
     Settings _settings; // "settings.ini"
 };
 

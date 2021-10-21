@@ -4,8 +4,9 @@
 #include "classes/settings.h"
 #include "classes/updater.h"
 #include "classes/logger.h"
-#include <updater/arcupdater.h>
 #include <updater/baseupdater.h>
+#include <updater/arcupdater.h>
+#include <updater/tekkitupdater.h>
 #include "form.h"
 
 #include <QMainWindow>
@@ -40,7 +41,6 @@ private slots:
     void run_selected_options();
 
     void update_taco();
-    void update_tekkit();
 
     void run_gw2();
     void run_taco();

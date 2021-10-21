@@ -19,7 +19,8 @@ SOURCES += \
     classes/downloader.cpp \
     classes/fileinteractions.cpp \
     classes/settings.cpp \
-    classes/updater.cpp
+    classes/updater.cpp \
+    updater/tekkitupdater.cpp
 
 HEADERS += \
     classes/logger.h \
@@ -31,7 +32,8 @@ HEADERS += \
     classes/downloader.h \
     classes/fileinteractions.h \
     classes/settings.h \
-    classes/updater.h
+    classes/updater.h \
+    updater/tekkitupdater.h
 
 FORMS += \
     form.ui \

@@ -2,35 +2,24 @@
 
 namespace Updater {
 
-ArcUpdater::ArcUpdater(Config config, QToolButton* button_remove)
-    :BaseUpdater(config)
-    ,_button_remove(button_remove)
+ArcUpdater::ArcUpdater(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+                       QCheckBox* checkbox)
+    :BaseUpdater(gw_path, install_button, remove_button, checkbox)
 {
-    connect(_button_remove, SIGNAL(clicked()),
-            this, SLOT(removeSlot()));
-}
-
-void ArcUpdater::updateSlot()
-{
-    _config._button->setEnabled(false);
-    _button_remove->setEnabled(false);
-    update();
-    _button_remove->setEnabled(true);
-    _config._button->setEnabled(true);
 }
 
 void ArcUpdater::removeSlot()
 {
-    _config._button->setEnabled(false);
-    _button_remove->setEnabled(false);
+    _install_button->setEnabled(false);
+    _remove_button->setEnabled(false);
     if (_settings.hasKey("updaters/block_arcdps")) {
         _settings.removeKey("updaters/block_arcdps");
         Log::write("Removed blocker for ArcDPS update.\n");
     } else {
         remove();
     }
-    _button_remove->setEnabled(true);
-    _config._button->setEnabled(true);
+    _remove_button->setEnabled(true);
+    _install_button->setEnabled(true);
 }
 
 int ArcUpdater::remove()
@@ -40,14 +29,14 @@ int ArcUpdater::remove()
         Log::write("Removing ArcDPS. Will block the current version from being re-installed.\n");
         Log::write("Click again to remove this blocker.\n");
 
-        QString sLocalHash = fileInteractions::calculateHashFromFile(_config._gw_path + "/bin64/d3d9.dll");
+        QString sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
         Log::write("Blocking installation of version " + sLocalHash + "\n");
         _settings.setValue(_arc_blocker_key, sLocalHash);
     }
 
-    fileInteractions::removeFile(_config._gw_path + "/bin64", "d3d9.dll");
-    fileInteractions::removeFile(_config._gw_path + "", "d3d11.dll");
-    fileInteractions::removeFile(_config._gw_path + "/bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
+    fileInteractions::removeFile(_gw_path + "/bin64", "d3d9.dll");
+    fileInteractions::removeFile(_gw_path + "", "d3d11.dll");
+    fileInteractions::removeFile(_gw_path + "/bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
 
     return 0;
 }
@@ -80,11 +69,11 @@ int ArcUpdater::runArcUpdate() {
         // Remove previous blocker, if there is one
         _settings.removeKey(_arc_blocker_key);
     }
-    QString targetpath = _config._gw_path + "/bin64";
+    QString targetpath = _gw_path + "/bin64";
 
     if (verifyArcInstallation()) {
         Log::write("    ArcDPS is seemingly already installed, looking for updates\n");
-        sLocalHash = fileInteractions::calculateHashFromFile(_config._gw_path + "/bin64/d3d9.dll");
+        sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
         if (sLocalHash.isEmpty()) {
             Log::write("    Could not calculate hash value for ArcDPS library.\n");
             return 1;
@@ -106,7 +95,7 @@ int ArcUpdater::runArcUpdate() {
     }
 
     // Verify correct download
-    sLocalHash = fileInteractions::calculateHashFromFile(_config._gw_path + "/bin64/d3d9.dll");
+    sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
     if (sLocalHash.isEmpty()) {
         Log::write("    Could not calculate hash value for downloaded ArcDPS library.\n");
         return 1;
@@ -121,7 +110,7 @@ int ArcUpdater::runArcUpdate() {
     } else {
         Log::write("    Hashes match, update successful!\n");
         Log::write("    Moving dx11 copy in place.\n");
-        fileInteractions::copyFileTo(_config._gw_path + "/bin64/d3d9.dll", _config._gw_path + "/d3d11.dll");
+        fileInteractions::copyFileTo(_gw_path + "/bin64/d3d9.dll", _gw_path + "/d3d11.dll");
         return 0;
     }
 }
@@ -155,7 +144,7 @@ bool ArcUpdater::isBlockedArcVersion(QString sRemoteHash)
 
 bool ArcUpdater::verifyArcInstallation()
 {
-    return QDir(_config._gw_path + "/bin64").exists("d3d9.dll");
+    return QDir(_gw_path + "/bin64").exists("d3d9.dll");
 }
 
 bool ArcUpdater::downloadArc(QString pathname)
