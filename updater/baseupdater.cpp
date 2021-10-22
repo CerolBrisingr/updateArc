@@ -2,7 +2,7 @@
 
 namespace Updater {
 
-BaseUpdater::BaseUpdater(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+BaseUpdater::BaseUpdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
                          QCheckBox* checkbox)
     :_gw_path(gw_path)
     ,_install_button(install_button)
@@ -41,7 +41,12 @@ void BaseUpdater::removeSlot()
 int BaseUpdater::autoUpdate()
 {
     if (_checkbox->isChecked()) {
-        return update();
+        _install_button->setEnabled(false);
+        _remove_button->setEnabled(false);
+        auto result = update();
+        _remove_button->setEnabled(true);
+        _install_button->setEnabled(true);
+        return result;
     } else {
         return 1;
     }

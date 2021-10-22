@@ -2,7 +2,7 @@
 
 namespace Updater {
 
-ArcUpdater::ArcUpdater(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+ArcUpdater::ArcUpdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
                        QCheckBox* checkbox)
     :BaseUpdater(gw_path, install_button, remove_button, checkbox)
 {

@@ -6,6 +6,7 @@
 #include "classes/logger.h"
 #include <updater/baseupdater.h>
 #include <updater/arcupdater.h>
+#include <updater/tacoupdater.h>
 #include <updater/tekkitupdater.h>
 #include "form.h"
 
@@ -40,8 +41,6 @@ public slots:
 private slots:
     void run_selected_options();
 
-    void update_taco();
-
     void run_gw2();
     void run_taco();
 
@@ -56,8 +55,7 @@ private:
     Form *_set_args = nullptr;
     bool _has_config = false;
     bool _is_cancelled = false;
-    bool _location_ok = false;
-    Settings _settings = Settings("settings.ini");
+    Settings _settings; // settings.ini
 
     UpdateTool* _update_helper;
     std::vector<Updater::BaseUpdater*> _updaters;

@@ -8,7 +8,7 @@ namespace Updater {
 class TekkitUpdater : public BaseUpdater
 {
 public:
-    TekkitUpdater(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+    TekkitUpdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
                   QCheckBox* checkbox);
 
     int update() override;

@@ -9,7 +9,7 @@ class ArcUpdater : public BaseUpdater
 {
     Q_OBJECT
 public:
-    ArcUpdater(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+    ArcUpdater(QString &gw_path, QPushButton* install_button, QToolButton* remove_button,
                QCheckBox* checkbox);
     int remove() override;
     int update() override;

@@ -2,7 +2,7 @@
 
 namespace Updater {
 
-TekkitUpdater::TekkitUpdater(QString gw_path, QPushButton* install_button, QToolButton* remove_button,
+TekkitUpdater::TekkitUpdater(QString &gw_path, QPushButton* install_button, QToolButton* remove_button,
                              QCheckBox* checkbox)
     :BaseUpdater(gw_path, install_button, remove_button, checkbox)
     ,_tekkit_path(getTekkitPath())

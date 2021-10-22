@@ -4,35 +4,26 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , _settings("settings.ini")
 {
     ui->setupUi(this);
-
     connect(&Log::writer, &Log::Logger::sendText,
             this, &MainWindow::writeLog,
             Qt::ConnectionType::QueuedConnection);
 
     init_interface();
-    _update_helper = new UpdateTool(&_settings);
-    if (!_update_helper->verifyLocation()) {
+    _update_helper = new UpdateTool();
+    if (!_update_helper->isValid()) {
         disable_interface();
-    } else {
-        _location_ok = true;
     }
 
-    connect(_update_helper, SIGNAL(write_log(QString)),
-            this, SLOT(writeLog(QString)), Qt::QueuedConnection);
-
-    auto gw_path = _update_helper->_gw_path;
+    auto gw_path = _update_helper->getGwPath();
     _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps));
+    _updaters.emplace_back(new Updater::TacoUpdater(gw_path, ui->pushButton_taco, ui->toolButton_remove_taco, ui->checkBox_taco));
     _updaters.emplace_back(new Updater::TekkitUpdater(gw_path, ui->pushButton_tekkit, ui->toolButton_remove_tekkit, ui->checkBox_tekkit));
-
-
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
-
-    connect(ui->pushButton_taco, SIGNAL(clicked()),
-            this, SLOT(update_taco()));
 
     connect(ui->pushButton_run_gw2, SIGNAL(clicked()),
             this, SLOT(run_gw2()));
@@ -45,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    _is_cancelled = true;
     delete _update_helper;
     for (auto* updater: _updaters) {
         delete updater;
@@ -53,7 +45,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::evaluate_autorun() {
-    if (!_location_ok) {
+    if (!_update_helper->isValid()) {
         return;
     }
     if (ui->checkBox_autorun->isChecked()) {
@@ -99,13 +91,6 @@ void MainWindow::set_edit(QLineEdit *edit, QString text)
 
 bool MainWindow::run_update()
 {
-    // Currently necessary for streamed text output
-    QTextStream stream;
-    QString stream_string;
-    stream.setString(&stream_string);
-
-    bool do_update_taco = _settings.getValue("updaters/taco").compare("on") == 0;
-
     bool do_start_gw2 = _settings.getValue("starters/gw2_run").compare("on") == 0;
     bool do_start_taco = _settings.getValue("starters/taco_run").compare("on") == 0;
     do_start_taco &= do_start_gw2;
@@ -123,10 +108,6 @@ bool MainWindow::run_update()
     }
 
     if (_is_cancelled) return false;
-    if (do_update_taco) {
-        update_taco();
-    }
-    if (_is_cancelled) return false;
 
     if (do_start_gw2) {
         run_gw2();
@@ -135,26 +116,26 @@ bool MainWindow::run_update()
 
     if (do_start_taco) {
         ui->pushButton_run_taco->setEnabled(false);
-        stream << "Waiting for " << wait_secs << "seconds before we start TacO"; writeLog(stream.readAll() + "\n");
+        writeLog("Waiting for " + QString(wait_secs) + "seconds before we start TacO\n");
         for (int i = 0; i < wait_secs; i += 5) {
-            stream << "Timer: " << i; writeLog(stream.readAll() + "\n");
+            writeLog("Timer: " + QString(i) + "\n");
             delay(5);
             if (_is_cancelled) {
                 ui->pushButton_run_taco->setEnabled(true);
                 return false;
             }
         }
-        stream << "At least " << wait_secs  << " seconds are over."; writeLog(stream.readAll() + "\n");
+        writeLog("At least " + QString(wait_secs) + " seconds are over.\n");
         run_taco();
     } else if (_settings.getValue("General/autoclose").compare("on") == 0) {
         wait_secs = 20;
-        stream << "Waiting for " << wait_secs << " seconds before we close the updater"; writeLog(stream.readAll() + "\n");
+        writeLog("Waiting for " + QString(wait_secs) + " seconds before we close the updater\n");
         for (int i = 0; i < wait_secs; i += 5) {
-            stream << "Timer: " << i; writeLog(stream.readAll() + "\n");
+            writeLog("Timer: " + QString(i) + "\n");
             delay(5);
             if (_is_cancelled) return false;
         }
-        stream << "At least " << wait_secs  << " seconds are over."; writeLog(stream.readAll() + "\n");
+        writeLog("At least " + QString(wait_secs) + " seconds are over.\n");
     }
 
     // User should be able to change their mind about closing the window automatically
@@ -212,13 +193,6 @@ void MainWindow::run_selected_options()
 
     ui->toolButton_cancel->setEnabled(false);
     ui->pushButton_run_manually->setEnabled(true);
-}
-
-void MainWindow::update_taco()
-{
-    ui->pushButton_taco->setEnabled(false);
-    _update_helper->updateTaco();
-    ui->pushButton_taco->setEnabled(true);
 }
 
 void MainWindow::run_gw2()

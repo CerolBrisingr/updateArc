@@ -20,6 +20,7 @@ SOURCES += \
     classes/fileinteractions.cpp \
     classes/settings.cpp \
     classes/updater.cpp \
+    updater/tacoupdater.cpp \
     updater/tekkitupdater.cpp
 
 HEADERS += \
@@ -33,6 +34,7 @@ HEADERS += \
     classes/fileinteractions.h \
     classes/settings.h \
     classes/updater.h \
+    updater/tacoupdater.h \
     updater/tekkitupdater.h
 
 FORMS += \
