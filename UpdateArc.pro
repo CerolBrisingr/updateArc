@@ -20,8 +20,10 @@ SOURCES += \
     classes/fileinteractions.cpp \
     classes/settings.cpp \
     classes/updater.cpp \
+    updater/githupdater.cpp \
     updater/tacoupdater.cpp \
-    updater/tekkitupdater.cpp
+    updater/tekkitupdater.cpp \
+    version_recognition/version.cpp
 
 HEADERS += \
     classes/logger.h \
@@ -34,8 +36,10 @@ HEADERS += \
     classes/fileinteractions.h \
     classes/settings.h \
     classes/updater.h \
+    updater/githupdater.h \
     updater/tacoupdater.h \
-    updater/tekkitupdater.h
+    updater/tekkitupdater.h \
+    version_recognition/version.h
 
 FORMS += \
     form.ui \

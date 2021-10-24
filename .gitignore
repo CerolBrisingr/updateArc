@@ -2,6 +2,7 @@ d3d9.dll
 d3d9.dll.md5sum
 *.zip
 build/
+buildDebug/
 addons/
 bin64/
 target/
