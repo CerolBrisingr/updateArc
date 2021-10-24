@@ -10,7 +10,7 @@ class TacoUpdater : public BaseUpdater
     Q_OBJECT
 public:
     TacoUpdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
-                QCheckBox* checkbox);
+                QCheckBox* checkbox, QString settings_key);
 
     int update() override;
     int remove() override;

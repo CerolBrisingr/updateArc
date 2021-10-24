@@ -18,9 +18,9 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     auto gw_path = _update_helper->getGwPath();
-    _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps));
-    _updaters.emplace_back(new Updater::TacoUpdater(gw_path, ui->pushButton_taco, ui->toolButton_remove_taco, ui->checkBox_taco));
-    _updaters.emplace_back(new Updater::TekkitUpdater(gw_path, ui->pushButton_tekkit, ui->toolButton_remove_tekkit, ui->checkBox_tekkit));
+    _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps, "arcdps"));
+    _updaters.emplace_back(new Updater::TacoUpdater(gw_path, ui->pushButton_taco, ui->toolButton_remove_taco, ui->checkBox_taco, "taco"));
+    _updaters.emplace_back(new Updater::TekkitUpdater(gw_path, ui->pushButton_tekkit, ui->toolButton_remove_tekkit, ui->checkBox_tekkit, "tekkit"));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
@@ -40,6 +40,12 @@ MainWindow::~MainWindow()
     delete _update_helper;
     for (auto* updater: _updaters) {
         delete updater;
+    }
+    for (auto* line_edit_setting: _line_edit_settings) {
+        delete line_edit_setting;
+    }
+    for (auto* check_box_setting: _check_box_settings) {
+        delete check_box_setting;
     }
     delete ui;
 }
@@ -68,20 +74,14 @@ void MainWindow::writeLog(QString logline)
 
 void MainWindow::init_interface()
 {
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_arcdps, &_settings, "updaters/arcdps"));
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_taco, &_settings, "updaters/taco"));
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_tekkit, &_settings, "updaters/tekkit"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_gw2, "starters/gw2_run"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_taco, "starters/taco_run"));
 
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_run_gw2, &_settings, "starters/gw2_run"));
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_run_taco, &_settings, "starters/taco_run"));
+    _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_gw2, "starters/gw2_arguments", "-maploadinfo"));
+    _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_taco, "starters/taco_delay", "60"));
 
-    _line_edit_settings.push_back(new LineEditSettings(ui->lineEdit_run_gw2, &_settings,
-                                                       "starters/gw2_arguments", "-maploadinfo"));
-    _line_edit_settings.push_back(new LineEditSettings(ui->lineEdit_run_taco, &_settings,
-                                                       "starters/taco_delay", "60"));
-
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_autorun, &_settings, "general/autorun"));
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_autoclose, &_settings, "general/autoclose"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autorun, "general/autorun"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autoclose, "general/autoclose"));
 }
 
 void MainWindow::set_edit(QLineEdit *edit, QString text)

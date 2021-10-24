@@ -3,8 +3,8 @@
 namespace Updater {
 
 TacoUpdater::TacoUpdater(QString &gw_path, QPushButton* install_button, QToolButton* remove_button,
-                         QCheckBox* checkbox)
-    :BaseUpdater(gw_path, install_button, remove_button, checkbox)
+                         QCheckBox* checkbox, QString settings_key)
+    :BaseUpdater(gw_path, install_button, remove_button, checkbox, settings_key)
     ,_taco_path(gw_path + "/addons/TacO")
 {}
 

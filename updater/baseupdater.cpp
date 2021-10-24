@@ -3,12 +3,13 @@
 namespace Updater {
 
 BaseUpdater::BaseUpdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
-                         QCheckBox* checkbox)
+                         QCheckBox* checkbox, QString settings_key)
     :_gw_path(gw_path)
     ,_install_button(install_button)
     ,_remove_button(remove_button)
     ,_checkbox(checkbox)
     ,_settings("settings.ini")
+    ,_box_setting(checkbox, "updaters/" + settings_key)
 {
     connect(_install_button, SIGNAL(clicked()),
             this, SLOT(updateSlot()));
@@ -52,4 +53,4 @@ int BaseUpdater::autoUpdate()
     }
 }
 
-} // namespace Downloader
+} // namespace Updater

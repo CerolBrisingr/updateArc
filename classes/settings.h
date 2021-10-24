@@ -28,15 +28,15 @@ class CheckBoxSetting:  public QObject
 {
     Q_OBJECT
 public:
-    CheckBoxSetting(QCheckBox* checkbox, Settings* settings, QString key);
-    ~CheckBoxSetting();
+    CheckBoxSetting(QCheckBox* checkbox, QString key);
+    ~CheckBoxSetting() = default;
 
-public slots:
+private slots:
     void checkbox_changed(int state);
 
 private:
     QCheckBox* _checkbox;
-    Settings* _settings;
+    Settings _settings;
     QString _key;
 
 };
@@ -46,15 +46,15 @@ class LineEditSettings: public QObject
 {
     Q_OBJECT
 public:
-    LineEditSettings(QLineEdit* lineedit, Settings* settings, QString key, QString default_entry = "");
-    ~LineEditSettings();
+    LineEditSettings(QLineEdit* lineedit, QString key, QString default_entry = "");
+    ~LineEditSettings() = default;
 
-public slots:
+private slots:
     void lineedit_changed(QString text);
 
 private:
     QLineEdit* _lineedit;
-    Settings* _settings;
+    Settings _settings;
     QString _key;
 };
 

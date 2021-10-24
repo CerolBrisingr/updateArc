@@ -8,6 +8,7 @@
 #include <classes/settings.h>
 #include <classes/logger.h>
 #include <classes/fileinteractions.h>
+#include <classes/downloader.h>
 
 namespace Updater {
 
@@ -16,7 +17,7 @@ class BaseUpdater: public QObject
     Q_OBJECT
 public:
     BaseUpdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
-                QCheckBox* checkbox);
+                QCheckBox* checkbox, QString settings_key);
     virtual ~BaseUpdater();
     virtual int update() = 0;
     virtual int remove() = 0;
@@ -32,8 +33,9 @@ protected:
     QToolButton* const _remove_button;
     QCheckBox* const _checkbox;
     Settings _settings; // "settings.ini"
+    CheckBoxSetting _box_setting;
 };
 
-} // namespace Downloader
+} // namespace Updater
 
 #endif // BASEDOWNLOADER_H

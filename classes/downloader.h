@@ -3,7 +3,6 @@
 
 #include <QtCore>
 #include <QtNetwork>
-#include <iostream>
 
 #include <cstdio>
 #include "logger.h"

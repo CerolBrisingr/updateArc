@@ -60,13 +60,13 @@ void Settings::removeKey(QString key)
     return;
 }
 
-CheckBoxSetting::CheckBoxSetting(QCheckBox* checkbox, Settings* settings, QString key)
+CheckBoxSetting::CheckBoxSetting(QCheckBox* checkbox, QString key)
     :_checkbox(checkbox)
-    ,_settings(settings)
+    ,_settings("settings.ini")
     ,_key(key)
 {
     // Read setting for checkbox, create if not available, set to "off" if undefined
-    bool value = _settings->readCreateBinary(_key, "on", "off", "off");
+    bool value = _settings.readCreateBinary(_key, "on", "off", "off");
     Qt::CheckState check_state = Qt::CheckState(value * 2);
     _checkbox->setCheckState(check_state);  // apply checkbox value
 
@@ -75,27 +75,23 @@ CheckBoxSetting::CheckBoxSetting(QCheckBox* checkbox, Settings* settings, QStrin
             this, SLOT(checkbox_changed(int)));
 }
 
-CheckBoxSetting::~CheckBoxSetting()
-{
-}
-
 void CheckBoxSetting::checkbox_changed(int state)
 {
     // Checkbox changed, update corresponding value in settings
     if (state == 2) {
-        _settings->setValue(_key, "on");
+        _settings.setValue(_key, "on");
     } else {
-        _settings->setValue(_key, "off");
+        _settings.setValue(_key, "off");
     }
 }
 
-LineEditSettings::LineEditSettings(QLineEdit *lineedit, Settings *settings, QString key, QString default_entry)
+LineEditSettings::LineEditSettings(QLineEdit *lineedit, QString key, QString default_entry)
     :_lineedit(lineedit)
-    ,_settings(settings)
+    ,_settings("settings.ini")
     ,_key(key)
 {
     // Read setting for lineedit, create if not available
-    QString text = _settings->getValueWrite(_key, default_entry);
+    QString text = _settings.getValueWrite(_key, default_entry);
     _lineedit->setText(text);
 
     // Connect changes on lineedit to update on settings
@@ -103,11 +99,7 @@ LineEditSettings::LineEditSettings(QLineEdit *lineedit, Settings *settings, QStr
             this, SLOT(lineedit_changed(QString)));
 }
 
-LineEditSettings::~LineEditSettings()
-{
-}
-
 void LineEditSettings::lineedit_changed(QString text)
 {
-    _settings->setValue(_key, text);
+    _settings.setValue(_key, text);
 }

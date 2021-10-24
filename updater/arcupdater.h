@@ -10,7 +10,7 @@ class ArcUpdater : public BaseUpdater
     Q_OBJECT
 public:
     ArcUpdater(QString &gw_path, QPushButton* install_button, QToolButton* remove_button,
-               QCheckBox* checkbox);
+               QCheckBox* checkbox, QString settings_key);
     int remove() override;
     int update() override;
 
@@ -27,6 +27,6 @@ private:
     bool downloadArc(QString pathname);
 };
 
-} // namespace Downloader
+} // namespace Updater
 
 #endif // ARCDOWNLOADER_H
