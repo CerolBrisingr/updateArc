@@ -20,7 +20,6 @@ class UpdateTool: public QObject
 public:
 
     UpdateTool(Settings* settings);
-    ~UpdateTool();
 
     bool verifyLocation();
     int arcUninstaller();
