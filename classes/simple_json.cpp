@@ -2,10 +2,26 @@
 
 namespace SimpleJson{
 
-QJsonObject toJson(QString json_data)
+QJsonDocument toJsonDoc(QString& json_data) {
+    return QJsonDocument::fromJson(json_data.toUtf8());
+}
+
+QJsonObject toJsonObject(QString& json_data){
+    return toJsonDoc(json_data).object();
+}
+
+QJsonArray toJsonArray(QString& json_data) {
+    return toJsonDoc(json_data).array();
+}
+
+bool targetValid(QJsonArray& array, int index)
 {
-    QJsonDocument json_doc = QJsonDocument::fromJson(json_data.toUtf8());
-    return json_doc.object();
+    return (index >= 0 && index < array.size());
+}
+
+bool targetValid(QJsonObject& object, QString key)
+{
+    return object.contains(key);
 }
 
 }
