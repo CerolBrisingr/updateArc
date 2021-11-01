@@ -1,15 +1,10 @@
 #include "updater.h"
-#include "fileinteractions.h"
 
 UpdateTool::UpdateTool(Settings* settings)
     :_settings(settings)
 {
     updateTargetPaths(_gw_path);
     _stream.setString(&_streamline);
-}
-
-UpdateTool::~UpdateTool()
-{
 }
 
 bool UpdateTool::verifyLocation() {
