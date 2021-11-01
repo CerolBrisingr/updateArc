@@ -3,12 +3,17 @@
 namespace Updater {
 
 GitHupdater::GitHupdater(QString &gw_path, QPushButton *install_button, QToolButton *remove_button,
-                         QCheckBox *checkbox, QString settings_key, QString github_user, QString github_project)
-    :BaseUpdater(gw_path, install_button, remove_button, checkbox, settings_key)
-    , _github_user(github_user)
-    , _github_project(github_project)
-    , _install_path(gw_path + "/addons/" + github_project)
-    , _version_key("version_installed/" + settings_key)
+                         QCheckBox *checkbox, Updater::Config::GithupdateConfig cfg)
+    :BaseUpdater(gw_path, install_button, remove_button, checkbox, cfg._github_project)
+    , _github_user(cfg._github_user)
+    , _github_project(cfg._github_project)
+    , _install_path(gw_path + "/addons/" + cfg._github_project)
+    , _version_key("version_installed/" + cfg._github_project)
+    , _tag_prefix(cfg._tag_prefix)
+    , _tag_suffix(cfg._tag_suffix)
+    , _version_digits(cfg._version_digits)
+    , _install_datatype(cfg._install_datatype)
+    , _verifiction_file(cfg._verifiction_file)
 {
 
 }
@@ -69,10 +74,12 @@ QJsonArray GitHupdater::fetchReleases(int& err)
 QJsonObject GitHupdater::extractLatestFullRelease(QJsonArray& releases)
 {
     for (auto it = releases.begin(); it != releases.end(); ++it) {
-        if (SimpleJson::getBool(it->toObject(), "prerelease", true)) {
+        const bool is_prerelease = SimpleJson::getBool(it->toObject(), "prerelease", true);
+        const bool is_draft = SimpleJson::getBool(it->toObject(), "draft", true);
+        if (is_prerelease || is_draft) {
             continue;
         }
-        return SimpleJson::getObject(releases, it.i);
+        return it->toObject();
     }
     return QJsonObject();
 }
@@ -80,7 +87,7 @@ QJsonObject GitHupdater::extractLatestFullRelease(QJsonArray& releases)
 Version GitHupdater::extractVersion(QJsonObject& release)
 {
     const auto tag = SimpleJson::getString(release, "tag_name");
-    Version tag_version = Version(tag, _version_digits, "", "r");
+    Version tag_version = Version(tag, _version_digits, _tag_prefix, _tag_suffix);
     Log::write("Extracted Version \"" + tag_version.toString() + "\" from tag \"" + tag + "\"\n");
     return tag_version;
 }

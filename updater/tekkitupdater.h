@@ -14,8 +14,8 @@ public:
     int update() override;
     int remove() override;
 private:
-    const QString _tekkit_install_key = "Installed/TekkitVersion";
-    const QString _tekkit_path_key = "Installed/TekkitPath";
+    const QString _tekkit_install_key = "version_installed/TekkitVersion";
+    const QString _tekkit_path_key = "customize/TekkitPath";
     const QString _tekkit_path;
 
     bool canUpdateTekkit(QVersionNumber &onlineVersion);

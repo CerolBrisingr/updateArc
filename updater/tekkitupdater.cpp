@@ -67,7 +67,6 @@ QVersionNumber TekkitUpdater::inquireCurrentTekkitVersion(QString &tekkitLink) {
 
 QString TekkitUpdater::getTekkitPath()
 {
-    QString tekkit_path;
     auto tekkit_user_path = _settings.getValueWrite(_tekkit_path_key);
     if ((tekkit_user_path.length() == 0) || !QDir(tekkit_user_path).exists()) {
         return _gw_path + "/addons/TacO/POIs";

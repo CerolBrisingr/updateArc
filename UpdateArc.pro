@@ -20,6 +20,7 @@ SOURCES += \
     classes/fileinteractions.cpp \
     classes/settings.cpp \
     classes/updater.cpp \
+    updater/config/githup_config.cpp \
     updater/githupdater.cpp \
     updater/tacoupdater.cpp \
     updater/tekkitupdater.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     classes/fileinteractions.h \
     classes/settings.h \
     classes/updater.h \
+    updater/config/githup_config.h \
     updater/githupdater.h \
     updater/tacoupdater.h \
     updater/tekkitupdater.h \
