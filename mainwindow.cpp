@@ -19,7 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto gw_path = _update_helper->getGwPath();
     _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps, "arcdps"));
-    _updaters.emplace_back(new Updater::TacoUpdater(gw_path, ui->pushButton_taco, ui->toolButton_remove_taco, ui->checkBox_taco, "taco"));
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_taco, ui->toolButton_remove_taco, ui->checkBox_taco, "taco",
+                                                    "BoyC", "GW2TacO"));
     _updaters.emplace_back(new Updater::TekkitUpdater(gw_path, ui->pushButton_tekkit, ui->toolButton_remove_tekkit, ui->checkBox_tekkit, "tekkit"));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),

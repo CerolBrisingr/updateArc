@@ -15,8 +15,6 @@ int TacoUpdater::update()
     QString tempTaco = "TacoNew";
     int16_t onlineVersion = inquireCurrentTacoVersion(tacoLink);
     if (canUpdateTaco(onlineVersion)) {
-        QString sevenZipPath;
-
         // Removing possible remains from previous update
         fileInteractions::removeFolder(tempTaco);
 

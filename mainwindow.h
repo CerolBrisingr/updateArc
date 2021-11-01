@@ -6,7 +6,7 @@
 #include "classes/logger.h"
 #include <updater/baseupdater.h>
 #include <updater/arcupdater.h>
-#include <updater/tacoupdater.h>
+#include <updater/githupdater.h>
 #include <updater/tekkitupdater.h>
 #include "form.h"
 
