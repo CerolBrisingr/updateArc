@@ -3,8 +3,8 @@
 
 #include <QCoreApplication>
 #include <QCryptographicHash>
-
-#include "classes/downloader.h"
+#include <QtCore>
+#include <iostream>
 
 namespace fileInteractions
 {

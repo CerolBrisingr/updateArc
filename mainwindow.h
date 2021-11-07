@@ -3,6 +3,11 @@
 
 #include "classes/settings.h"
 #include "classes/updater.h"
+#include "classes/logger.h"
+#include <updater/baseupdater.h>
+#include <updater/arcupdater.h>
+#include <updater/githupdater.h>
+#include <updater/tekkitupdater.h>
 #include "form.h"
 
 #include <QMainWindow>
@@ -11,9 +16,10 @@
 #include <QScrollBar>
 #include <QLineEdit>
 #include <QTextStream>
-
 #include <QVariant>
 #include <QTime>
+
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,22 +31,19 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
     void evaluate_autorun();
 
-private slots:
+public slots:
     void writeLog(QString logline);
 
+private slots:
     void run_selected_options();
-
-    void update_arc();
-    void remove_arc();
-    void update_taco();
-    void update_tekkit();
 
     void run_gw2();
     void run_taco();
+    void run_blish();
 
     void config_gw2_arguments();
     void config_gw2_updated(QString config);
@@ -53,9 +56,10 @@ private:
     Form *_set_args = nullptr;
     bool _has_config = false;
     bool _is_cancelled = false;
-    bool _location_ok = false;
-    Settings _settings = Settings("settings.ini");
-    UpdateTool* _updater;
+    Settings _settings; // settings.ini
+
+    UpdateTool* _update_helper;
+    std::vector<Updater::BaseUpdater*> _updaters;
 
     std::vector<CheckBoxSetting*> _check_box_settings;
     std::vector<LineEditSettings*> _line_edit_settings;

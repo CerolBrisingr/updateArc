@@ -4,55 +4,64 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , _settings("settings.ini")
 {
     ui->setupUi(this);
+    connect(&Log::writer, &Log::Logger::sendText,
+            this, &MainWindow::writeLog,
+            Qt::ConnectionType::QueuedConnection);
 
     init_interface();
-    _updater = new UpdateTool(&_settings);
+    _update_helper = new UpdateTool();
+    if (!_update_helper->isValid()) {
+        disable_interface();
+    }
 
-    connect(_updater, SIGNAL(write_log(QString)),
-            this, SLOT(writeLog(QString)));
+    auto gw_path = _update_helper->getGwPath();
+    _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps, "arcdps"));
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_taco, ui->toolButton_remove_taco, ui->checkBox_taco, Updater::Config::getTacoConfig()));
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_blish, ui->toolButton_remove_blish, ui->checkBox_blish, Updater::Config::getBlishConfig()));
+    _updaters.emplace_back(new Updater::TekkitUpdater(gw_path, ui->pushButton_tekkit, ui->toolButton_remove_tekkit, ui->checkBox_tekkit, "tekkit"));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
-
-    connect(ui->pushButton_arcdps, SIGNAL(clicked()),
-            this, SLOT(update_arc()));
-    connect(ui->toolButton_block_arc, SIGNAL(clicked()),
-            this, SLOT(remove_arc()));
-    connect(ui->pushButton_taco, SIGNAL(clicked()),
-            this, SLOT(update_taco()));
-    connect(ui->pushButton_tekkit, SIGNAL(clicked()),
-            this, SLOT(update_tekkit()));
 
     connect(ui->pushButton_run_gw2, SIGNAL(clicked()),
             this, SLOT(run_gw2()));
     connect(ui->pushButton_run_taco, SIGNAL(clicked()),
             this, SLOT(run_taco()));
+    connect(ui->pushButton_run_blishhud, SIGNAL(clicked()),
+            this, SLOT(run_blish()));
     connect(ui->toolButton_config_run_gw2, SIGNAL(clicked()),
             this, SLOT(config_gw2_arguments()));
 
-    if (!_updater->verifyLocation()) {
-        disable_interface();
-    } else {
-        _location_ok = true;
-    }
 }
 
 MainWindow::~MainWindow()
 {
+    _is_cancelled = true;
+    delete _update_helper;
+    for (auto* updater: _updaters) {
+        delete updater;
+    }
+    for (auto* line_edit_setting: _line_edit_settings) {
+        delete line_edit_setting;
+    }
+    for (auto* check_box_setting: _check_box_settings) {
+        delete check_box_setting;
+    }
     delete ui;
 }
 
 void MainWindow::evaluate_autorun() {
-    if (!_location_ok) {
+    if (!_update_helper->isValid()) {
         return;
     }
     if (ui->checkBox_autorun->isChecked()) {
-        writeLog("Autorun active. Starting selected options.\n");
+        Log::write("Autorun active. Starting selected options.\n");
         run_selected_options();
     } else {
-        writeLog("Autorun disabled. Do something already!\n");
+        Log::write("Autorun disabled. Do something already!\n");
     }
 }
 
@@ -68,20 +77,15 @@ void MainWindow::writeLog(QString logline)
 
 void MainWindow::init_interface()
 {
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_arcdps, &_settings, "updaters/arcdps"));
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_taco, &_settings, "updaters/taco"));
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_tekkit, &_settings, "updaters/tekkit"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_gw2, "starters/gw2_run"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_taco, "starters/taco_run"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_blishhud, "starters/blish_run"));
 
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_run_gw2, &_settings, "starters/gw2_run"));
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_run_taco, &_settings, "starters/taco_run"));
+    _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_gw2, "starters/gw2_arguments", "-maploadinfo"));
+    _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_taco, "starters/taco_delay", "60"));
 
-    _line_edit_settings.push_back(new LineEditSettings(ui->lineEdit_run_gw2, &_settings,
-                                                       "starters/gw2_arguments", "-maploadinfo"));
-    _line_edit_settings.push_back(new LineEditSettings(ui->lineEdit_run_taco, &_settings,
-                                                       "starters/taco_delay", "60"));
-
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_autorun, &_settings, "general/autorun"));
-    _check_box_settings.push_back(new CheckBoxSetting(ui->checkBox_autoclose, &_settings, "general/autoclose"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autorun, "general/autorun"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autoclose, "general/autoclose"));
 }
 
 void MainWindow::set_edit(QLineEdit *edit, QString text)
@@ -91,17 +95,10 @@ void MainWindow::set_edit(QLineEdit *edit, QString text)
 
 bool MainWindow::run_update()
 {
-    // Currently necessary for streamed text output
-    QTextStream stream;
-    QString stream_string;
-    stream.setString(&stream_string);
-
-    bool do_update_arc = _settings.getValue("updaters/arcdps").compare("on") == 0;
-    bool do_update_taco = _settings.getValue("updaters/taco").compare("on") == 0;
-    bool do_update_tekkit = _settings.getValue("updaters/tekkit").compare("on") == 0;
-
     bool do_start_gw2 = _settings.getValue("starters/gw2_run").compare("on") == 0;
     bool do_start_taco = _settings.getValue("starters/taco_run").compare("on") == 0;
+    bool do_start_blish = _settings.getValue("starters/blish_run").compare("on") == 0;
+    do_start_taco = do_start_taco & !do_start_blish;
     do_start_taco &= do_start_gw2;
 
     int wait_secs = QVariant(_settings.getValue("starters/taco_delay")).toInt();
@@ -110,17 +107,12 @@ bool MainWindow::run_update()
     }
     if (_is_cancelled) return false;
 
-    if (do_update_arc) {
-        update_arc();
+    // Try to run each updater (don't run if checkbox is not set)
+    for (auto* updater: _updaters) {
+        if (_is_cancelled) return false;
+        updater->autoUpdate();
     }
-    if (_is_cancelled) return false;
-    if (do_update_taco) {
-        update_taco();
-    }
-    if (_is_cancelled) return false;
-    if (do_update_tekkit) {
-        update_tekkit();
-    }
+
     if (_is_cancelled) return false;
 
     if (do_start_gw2) {
@@ -128,28 +120,32 @@ bool MainWindow::run_update()
     }
     if (_is_cancelled) return false;
 
+    if (do_start_blish) {
+        run_blish();
+    }
+
     if (do_start_taco) {
         ui->pushButton_run_taco->setEnabled(false);
-        stream << "Waiting for " << wait_secs << "seconds before we start TacO"; writeLog(stream.readAll() + "\n");
+        writeLog("Waiting for " + QString(wait_secs) + "seconds before we start TacO\n");
         for (int i = 0; i < wait_secs; i += 5) {
-            stream << "Timer: " << i; writeLog(stream.readAll() + "\n");
+            writeLog("Timer: " + QString(i) + "\n");
             delay(5);
             if (_is_cancelled) {
                 ui->pushButton_run_taco->setEnabled(true);
                 return false;
             }
         }
-        stream << "At least " << wait_secs  << " seconds are over."; writeLog(stream.readAll() + "\n");
+        writeLog("At least " + QString(wait_secs) + " seconds are over.\n");
         run_taco();
     } else if (_settings.getValue("General/autoclose").compare("on") == 0) {
         wait_secs = 20;
-        stream << "Waiting for " << wait_secs << " seconds before we close the updater"; writeLog(stream.readAll() + "\n");
+        writeLog("Waiting for " + QString(wait_secs) + " seconds before we close the updater\n");
         for (int i = 0; i < wait_secs; i += 5) {
-            stream << "Timer: " << i; writeLog(stream.readAll() + "\n");
+            writeLog("Timer: " + QString(i) + "\n");
             delay(5);
             if (_is_cancelled) return false;
         }
-        stream << "At least " << wait_secs  << " seconds are over."; writeLog(stream.readAll() + "\n");
+        writeLog("At least " + QString(wait_secs) + " seconds are over.\n");
     }
 
     // User should be able to change their mind about closing the window automatically
@@ -168,6 +164,8 @@ void MainWindow::disable_interface()
     ui->checkBox_run_taco->setEnabled(false);
     ui->checkBox_taco->setEnabled(false);
     ui->checkBox_tekkit->setEnabled(false);
+    ui->checkBox_blish->setEnabled(false);
+    ui->checkBox_run_blishhud->setEnabled(false);
 
     ui->pushButton_arcdps->setEnabled(false);
     ui->pushButton_run_gw2->setEnabled(false);
@@ -175,13 +173,18 @@ void MainWindow::disable_interface()
     ui->pushButton_run_taco->setEnabled(false);
     ui->pushButton_tekkit->setEnabled(false);
     ui->pushButton_taco->setEnabled(false);
+    ui->pushButton_blish->setEnabled(false);
+    ui->pushButton_run_blishhud->setEnabled(false);
 
     ui->lineEdit_run_gw2->setEnabled(false);
     ui->lineEdit_run_taco->setEnabled(false);
 
     ui->toolButton_block_arc->setEnabled(false);
+    ui->toolButton_remove_taco->setEnabled(false);
+    ui->toolButton_remove_tekkit->setEnabled(false);
     ui->toolButton_cancel->setEnabled(false);
     ui->toolButton_config_run_gw2->setEnabled(false);
+    ui->toolButton_remove_blish->setEnabled(false);
 }
 
 void MainWindow::delay(int secs)
@@ -207,62 +210,32 @@ void MainWindow::run_selected_options()
     ui->pushButton_run_manually->setEnabled(true);
 }
 
-void MainWindow::update_arc()
-{
-    ui->pushButton_arcdps->setEnabled(false);
-    ui->toolButton_block_arc->setEnabled(false);
-    _updater->updateArc();
-    ui->toolButton_block_arc->setEnabled(true);
-    ui->pushButton_arcdps->setEnabled(true);
-}
-
-void MainWindow::remove_arc()
-{
-    ui->pushButton_arcdps->setEnabled(false);
-    ui->toolButton_block_arc->setEnabled(false);
-    if (_settings.hasKey("updaters/block_arcdps")) {
-        _settings.removeKey("updaters/block_arcdps");
-        writeLog("Removed blocker for ArcDPS update.\n");
-    } else {
-        _updater->arcUninstaller();
-    }
-    ui->toolButton_block_arc->setEnabled(true);
-    ui->pushButton_arcdps->setEnabled(true);
-}
-
-void MainWindow::update_taco()
-{
-    ui->pushButton_taco->setEnabled(false);
-    _updater->updateTaco();
-    ui->pushButton_taco->setEnabled(true);
-}
-
-void MainWindow::update_tekkit()
-{
-    ui->pushButton_tekkit->setEnabled(false);
-    _updater->updateTekkit();
-    ui->pushButton_tekkit->setEnabled(true);
-}
-
 void MainWindow::run_gw2()
 {
     ui->pushButton_run_gw2->setEnabled(false);
-    _updater->startGW2();
+    _update_helper->startGW2();
     ui->pushButton_run_gw2->setEnabled(true);
 }
 
 void MainWindow::run_taco()
 {
     ui->pushButton_run_taco->setEnabled(false);
-    _updater->startTacO();
+    _update_helper->startTacO();
     ui->pushButton_run_taco->setEnabled(true);
+}
+
+void MainWindow::run_blish()
+{
+    ui->pushButton_run_blishhud->setEnabled(false);
+    _update_helper->startBlish();
+    ui->pushButton_run_blishhud->setEnabled(true);
 }
 
 void MainWindow::config_gw2_arguments()
 {
     if (!_has_config) {
         QString arguments = ui->lineEdit_run_gw2->text();
-        _set_args = new Form(arguments, _updater);
+        _set_args = new Form(arguments, _update_helper);
         _has_config = true;
         _set_args->show();
         connect(_set_args, SIGNAL(closed()),

@@ -21,7 +21,7 @@ Form::Form(QString arguments, UpdateTool *updater, QWidget *parent) :
 }
 
 void Form::closeEvent(QCloseEvent *event) {
-    emit(closed());
+    emit closed();
     event->accept();
 }
 

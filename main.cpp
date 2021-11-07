@@ -9,6 +9,5 @@ int main(int argc, char *argv[])
     w.show();
 
     w.evaluate_autorun();
-
     return a.exec();
 }
