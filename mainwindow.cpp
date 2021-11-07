@@ -126,26 +126,26 @@ bool MainWindow::run_update()
 
     if (do_start_taco) {
         ui->pushButton_run_taco->setEnabled(false);
-        writeLog("Waiting for " + QString(wait_secs) + "seconds before we start TacO\n");
+        writeLog("Waiting for " + QString::number(wait_secs) + "seconds before we start TacO\n");
         for (int i = 0; i < wait_secs; i += 5) {
-            writeLog("Timer: " + QString(i) + "\n");
+            writeLog("Timer: " + QString::number(i) + "\n");
             delay(5);
             if (_is_cancelled) {
                 ui->pushButton_run_taco->setEnabled(true);
                 return false;
             }
         }
-        writeLog("At least " + QString(wait_secs) + " seconds are over.\n");
+        writeLog("At least " + QString::number(wait_secs) + " seconds are over.\n");
         run_taco();
     } else if (_settings.getValue("General/autoclose").compare("on") == 0) {
         wait_secs = 20;
-        writeLog("Waiting for " + QString(wait_secs) + " seconds before we close the updater\n");
+        writeLog("Waiting for " + QString::number(wait_secs) + " seconds before we close the updater\n");
         for (int i = 0; i < wait_secs; i += 5) {
-            writeLog("Timer: " + QString(i) + "\n");
+            writeLog("Timer: " + QString::number(i) + "\n");
             delay(5);
             if (_is_cancelled) return false;
         }
-        writeLog("At least " + QString(wait_secs) + " seconds are over.\n");
+        writeLog("At least " + QString::number(wait_secs) + " seconds are over.\n");
     }
 
     // User should be able to change their mind about closing the window automatically
