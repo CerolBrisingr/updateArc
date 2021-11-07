@@ -16,15 +16,16 @@ The UpdateArc.exe as well as the libraries
 * Qt5Core.dll (Code is using the QT frameowrk)
 * Qt5Network.dll (Code is using the QT framework to establish the https connection)
 * libeay32.dll and ssleay32.dll (OpenSSL is necessary it's easier to give you those dll files than to write an install guide)  
+* Since this has become a GUI, some more stuff..
 
 need to be placed in a subfolder to the GuildWars2 game folder.
 
-## Update arcdps:  
-Just run UpdateArc.exe
+## Update arcdps (and more):  
+Just run UpdateArc.exe, follow UI
 
-## Remove arcdps:  
-Either run "arcUninstall.bat" or run "UpdateArc.exe -remove" by using command line or a windows link.
-Answer requests by the uninstaller for keyboard input.
+## Remove arcdps (and more):  
+Run UpdateArc.exe, watch out for the [-] boxes next to the updaters
 
 ## Remove ArcUpdater:  
 Just delete the folder you placed the Updater in. If you want to also get rid of arcdps, I advise you to run removal first.
+Blish-HUD places its settings and markers in Documents/Guild Wars 2/addons
