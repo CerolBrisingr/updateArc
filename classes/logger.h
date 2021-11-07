@@ -22,7 +22,6 @@ class Logger: public QObject
     Q_OBJECT
 public:
     Logger();
-    ~Logger();
 
     void emitString(QString text);
 

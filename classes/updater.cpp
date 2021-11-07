@@ -4,6 +4,7 @@ UpdateTool::UpdateTool()
     :_settings("settings.ini")
     ,_gw_path(findGwInstall())
     ,_taco_path(_gw_path + "/addons/TacO")
+    ,_blish_path(_gw_path + "/addons/Blish-HUD")
     ,_valid(_gw_path != "error")
 {}
 
@@ -74,7 +75,7 @@ QStringList UpdateTool::loadGW2Arguments() {
     QString argument_chain = _settings.getValue("starters/gw2_arguments", "");
     QStringList arguments;
     QStringList split_by_spaces = argument_chain.split(" ", QString::SplitBehavior::SkipEmptyParts);
-    for (auto argument: split_by_spaces) {
+    for (auto& argument: split_by_spaces) {
         arguments.append(argument.trimmed());
     }
     return arguments;
@@ -90,6 +91,20 @@ bool UpdateTool::startTacO()
         return true;
     } else {
         Log::write("-- start of TacO failed\n");
+        return false;
+    }
+}
+
+bool UpdateTool::startBlish()
+{
+    QProcess taco;
+    taco.setWorkingDirectory(_blish_path);
+    taco.setProgram(_blish_path + "/Blish HUD.exe");
+    if (taco.startDetached()) {
+        Log::write("-- started Blish-HUD\n");
+        return true;
+    } else {
+        Log::write("-- start of Blish-HUD failed\n");
         return false;
     }
 }

@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     auto gw_path = _update_helper->getGwPath();
     _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps, "arcdps"));
     _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_taco, ui->toolButton_remove_taco, ui->checkBox_taco, Updater::Config::getTacoConfig()));
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_blish, ui->toolButton_remove_blish, ui->checkBox_blish, Updater::Config::getBlishConfig()));
     _updaters.emplace_back(new Updater::TekkitUpdater(gw_path, ui->pushButton_tekkit, ui->toolButton_remove_tekkit, ui->checkBox_tekkit, "tekkit"));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
@@ -29,6 +30,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(run_gw2()));
     connect(ui->pushButton_run_taco, SIGNAL(clicked()),
             this, SLOT(run_taco()));
+    connect(ui->pushButton_run_blishhud, SIGNAL(clicked()),
+            this, SLOT(run_blish()));
     connect(ui->toolButton_config_run_gw2, SIGNAL(clicked()),
             this, SLOT(config_gw2_arguments()));
 
@@ -76,6 +79,7 @@ void MainWindow::init_interface()
 {
     _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_gw2, "starters/gw2_run"));
     _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_taco, "starters/taco_run"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_blishhud, "starters/blish_run"));
 
     _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_gw2, "starters/gw2_arguments", "-maploadinfo"));
     _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_taco, "starters/taco_delay", "60"));
@@ -93,6 +97,8 @@ bool MainWindow::run_update()
 {
     bool do_start_gw2 = _settings.getValue("starters/gw2_run").compare("on") == 0;
     bool do_start_taco = _settings.getValue("starters/taco_run").compare("on") == 0;
+    bool do_start_blish = _settings.getValue("starters/blish_run").compare("on") == 0;
+    do_start_taco = do_start_taco & !do_start_blish;
     do_start_taco &= do_start_gw2;
 
     int wait_secs = QVariant(_settings.getValue("starters/taco_delay")).toInt();
@@ -113,6 +119,10 @@ bool MainWindow::run_update()
         run_gw2();
     }
     if (_is_cancelled) return false;
+
+    if (do_start_blish) {
+        run_blish();
+    }
 
     if (do_start_taco) {
         ui->pushButton_run_taco->setEnabled(false);
@@ -154,6 +164,8 @@ void MainWindow::disable_interface()
     ui->checkBox_run_taco->setEnabled(false);
     ui->checkBox_taco->setEnabled(false);
     ui->checkBox_tekkit->setEnabled(false);
+    ui->checkBox_blish->setEnabled(false);
+    ui->checkBox_run_blishhud->setEnabled(false);
 
     ui->pushButton_arcdps->setEnabled(false);
     ui->pushButton_run_gw2->setEnabled(false);
@@ -161,6 +173,8 @@ void MainWindow::disable_interface()
     ui->pushButton_run_taco->setEnabled(false);
     ui->pushButton_tekkit->setEnabled(false);
     ui->pushButton_taco->setEnabled(false);
+    ui->pushButton_blish->setEnabled(false);
+    ui->pushButton_run_blishhud->setEnabled(false);
 
     ui->lineEdit_run_gw2->setEnabled(false);
     ui->lineEdit_run_taco->setEnabled(false);
@@ -170,6 +184,7 @@ void MainWindow::disable_interface()
     ui->toolButton_remove_tekkit->setEnabled(false);
     ui->toolButton_cancel->setEnabled(false);
     ui->toolButton_config_run_gw2->setEnabled(false);
+    ui->toolButton_remove_blish->setEnabled(false);
 }
 
 void MainWindow::delay(int secs)
@@ -207,6 +222,13 @@ void MainWindow::run_taco()
     ui->pushButton_run_taco->setEnabled(false);
     _update_helper->startTacO();
     ui->pushButton_run_taco->setEnabled(true);
+}
+
+void MainWindow::run_blish()
+{
+    ui->pushButton_run_blishhud->setEnabled(false);
+    _update_helper->startBlish();
+    ui->pushButton_run_blishhud->setEnabled(true);
 }
 
 void MainWindow::config_gw2_arguments()

@@ -32,10 +32,6 @@ Logger::Logger()
     qRegisterMetaType<QString>("QString");
 }
 
-Logger::~Logger()
-{
-}
-
 void Logger::emitString(QString text)
 {
     std::cout << text.toStdString();

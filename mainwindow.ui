@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>450</width>
-    <height>493</height>
+    <height>575</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,49 +24,12 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>140</y>
+      <y>170</y>
       <width>431</width>
-      <height>111</height>
+      <height>115</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_starters">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>20</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>25</height>
-        </size>
-       </property>
-       <property name="baseSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Starters</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
@@ -202,15 +165,83 @@
        </item>
       </layout>
      </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>25</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Starters</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_9">
+       <item>
+        <widget class="QCheckBox" name="checkBox_run_blishhud">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_run_blishhud">
+         <property name="text">
+          <string>Blish HUD</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_11">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
     </layout>
    </widget>
    <widget class="QTextBrowser" name="eventlog">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>270</y>
+      <y>300</y>
       <width>431</width>
-      <height>201</height>
+      <height>251</height>
      </rect>
     </property>
     <property name="html">
@@ -372,11 +403,11 @@ p, li { white-space: pre-wrap; }
       <x>20</x>
       <y>10</y>
       <width>135</width>
-      <height>121</height>
+      <height>151</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_select">
-     <item row="3" column="0">
+     <item row="4" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
         <widget class="QCheckBox" name="checkBox_tekkit">
@@ -406,6 +437,9 @@ p, li { white-space: pre-wrap; }
            <bold>true</bold>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove Tekkit markers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>-</string>
          </property>
@@ -425,19 +459,6 @@ p, li { white-space: pre-wrap; }
         </spacer>
        </item>
       </layout>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Available Updaters</string>
-       </property>
-      </widget>
      </item>
      <item row="2" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -469,6 +490,9 @@ p, li { white-space: pre-wrap; }
            <bold>true</bold>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove TacO&lt;/p&gt;&lt;p&gt;! Will also remove settings&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>-</string>
          </property>
@@ -488,6 +512,19 @@ p, li { white-space: pre-wrap; }
         </spacer>
        </item>
       </layout>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Available Updaters</string>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -529,6 +566,53 @@ p, li { white-space: pre-wrap; }
        </item>
        <item>
         <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="3" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QCheckBox" name="checkBox_blish">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_blish">
+         <property name="text">
+          <string>Blish-HUD</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton_remove_blish">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove Blish-HUD&lt;/p&gt;&lt;p&gt;! Will NOT remove settings and markers&lt;/p&gt;&lt;p&gt;-&amp;gt; You'll find add-ons and marker packs in Documents/Guild Wars2/addons/blishhud&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>-</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_10">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

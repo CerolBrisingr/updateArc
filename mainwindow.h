@@ -31,7 +31,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
     void evaluate_autorun();
 
@@ -43,6 +43,7 @@ private slots:
 
     void run_gw2();
     void run_taco();
+    void run_blish();
 
     void config_gw2_arguments();
     void config_gw2_updated(QString config);

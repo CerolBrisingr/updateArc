@@ -1,34 +1,40 @@
 #include "tekkitupdater.h"
 
 namespace Updater {
+using namespace Tekkit;
 
 TekkitUpdater::TekkitUpdater(QString &gw_path, QPushButton* install_button, QToolButton* remove_button,
                              QCheckBox* checkbox, QString settings_key)
     :BaseUpdater(gw_path, install_button, remove_button, checkbox, settings_key)
-    ,_tekkit_path(getTekkitPath())
+    ,_taco_info(getTacoMarkerPath(), "version_installed/GW2TacO")
+    ,_blish_info(getBlishMarkerPath(), "version_installed/Blish-HUD")
 {}
 
 int TekkitUpdater::update()
 {
     Log::write("Starting <Tekkit> update\n");
-    QString tekkitLink;
-    QString filename = "tw_ALL_IN_ONE.taco";
-    QVersionNumber onlineVersion = inquireCurrentTekkitVersion(tekkitLink);
-    if (canUpdateTekkit(onlineVersion)) {
-        Log::write("    Starting download of new version " + onlineVersion.toString() + "\n");
-        if (0 != downloader::singleDownload(tekkitLink, "", filename)) {
+    int n_targets = prepareTargets();
+    if (n_targets == 0) {
+        Log::write("Aborted <Tekkit> update\n");
+        return 1;
+    }
+    QString tekkit_link;
+    Version online_version = inquireCurrentTekkitVersion(tekkit_link);
+    if (canUpdateTekkit(online_version)) {
+        Log::write("    Starting download of new version " + online_version.toString() + "\n");
+        if (0 != downloader::singleDownload(tekkit_link, "", _filename)) {
             Log::write("    Download failed\n");
             return 1;
         }
 
-        Log::write("    Moving file in place\n");
-        fileInteractions::removeFile(_tekkit_path, filename);
+        Log::write("    Moving file in place(s)\n");
+        updateTarget(_taco_info);
+        updateTarget(_blish_info);
 
-        fileInteractions::copyFileTo(filename, _tekkit_path + QDir::separator() + filename);
-        fileInteractions::removeFile("", filename);
+        fileInteractions::removeFile("", _filename);
 
         Log::write("    Registering newly installed version\n");
-        _settings.setValue(_tekkit_install_key, onlineVersion.toString());
+        _settings.setValue(_tekkit_install_key, online_version.toString());
     } else {
         Log::write("    Online version is already registered, no update needed!\n");
     }
@@ -36,51 +42,93 @@ int TekkitUpdater::update()
     return 0;
 }
 
+void TekkitUpdater::updateTarget(const TkTarget& target)
+{
+    if (isTargetSetUp(target) && (target._install_path != "")) {
+        fileInteractions::removeFile(target._install_path, _filename);
+        fileInteractions::copyFileTo(_filename, target._install_path + QDir::separator() + _filename);
+    }
+}
+
+void TekkitUpdater::removeTarget(const TkTarget& target)
+{
+    fileInteractions::removeFile(target._install_path, _filename);
+}
+
 int TekkitUpdater::remove()
 {
-    Log::write("    Tekkit removal not implemented!\n");
-    return -1;
+    removeTarget(_blish_info);
+    removeTarget(_taco_info);
+    _settings.removeKey(_tekkit_install_key);
+    Log::write("Tekkit markers removed!\n");
+    return 0;
 }
 
-QVersionNumber TekkitUpdater::inquireCurrentTekkitVersion(QString &tekkitLink) {
-    QString tekkitBody;
-    downloader::singleTextRequest(tekkitBody, "http://tekkitsworkshop.net/index.php/gw2-taco/download");
+int TekkitUpdater::prepareTargets()
+{
+    int n_targets = 0;
+    n_targets += cleanOrCount(_taco_info);
+    n_targets += cleanOrCount(_blish_info);
 
-    QRegularExpression re("href=\"(/index\\.php/gw2-taco/download/send/\\d-taco-marker-packs/\\d+-all-in-one)\">--- ALL-IN-ONE --- (\\d+)\\.(\\d+)\\.(\\d+) - \\d+\\.\\d+\\.\\d+</a>");
-    QRegularExpressionMatchIterator matches = re.globalMatch(tekkitBody);
-    QVersionNumber latestVersion = QVersionNumber(0, 0, 0);
-    int a,b,c;
-    QVersionNumber readingVersion;
+    if (n_targets == 0) {
+        Log::write("    No targets for Tekkit markers are available.\n");
+        remove();
+    }
+    return n_targets;
+}
+
+int TekkitUpdater::cleanOrCount(const Tekkit::TkTarget &target)
+{
+    if (!isTargetSetUp(target)) {
+        removeTarget(target);
+        return 0;
+    }
+    return 1;
+}
+
+Version TekkitUpdater::inquireCurrentTekkitVersion(QString &tekkit_link) {
+    QString tekkit_body;
+    downloader::singleTextRequest(tekkit_body, "http://tekkitsworkshop.net/index.php/gw2-taco/download");
+
+    QRegularExpression re("href=\"(/index\\.php/gw2-taco/download/send/\\d-taco-marker-packs/\\d+-all-in-one)\">--- ALL-IN-ONE --- (\\d+\\.\\d+\\.\\d+) - \\d+\\.\\d+\\.\\d+</a>");
+    QRegularExpressionMatchIterator matches = re.globalMatch(tekkit_body);
+    Version latest_version(std::vector<int>(_version_digits, 0));
     while (matches.hasNext()) {
         QRegularExpressionMatch match = matches.next();
-        a = match.captured(2).toInt();
-        b = match.captured(3).toInt();
-        c = match.captured(4).toInt();
-        readingVersion = QVersionNumber(a, b, c);
-        if (QVersionNumber::compare(readingVersion, latestVersion) > 0) {
-            latestVersion = readingVersion;
-            tekkitLink = "http://tekkitsworkshop.net" + match.captured(1);
+        Version reading_version(match.captured(2), _version_digits);
+        if (reading_version > latest_version) {
+            latest_version = reading_version;
+            tekkit_link = "http://tekkitsworkshop.net" + match.captured(1);
         }
     }
-    return latestVersion;
+    return latest_version;
 }
 
-QString TekkitUpdater::getTekkitPath()
+bool TekkitUpdater::isTargetSetUp(const TkTarget& target)
 {
-    auto tekkit_user_path = _settings.getValueWrite(_tekkit_path_key);
-    if ((tekkit_user_path.length() == 0) || !QDir(tekkit_user_path).exists()) {
-        return _gw_path + "/addons/TacO/POIs";
+    return _settings.hasKey(target._target_version_key);
+}
+
+QString TekkitUpdater::getTacoMarkerPath()
+{
+    return _gw_path + "/addons/TacO/POIs";
+}
+
+QString TekkitUpdater::getBlishMarkerPath()
+{
+    QStringList paths = QStandardPaths::standardLocations(QStandardPaths::StandardLocation::DocumentsLocation);
+    if (paths.empty()) {
+        return "";
     }
-    Log::write("-- Found custom path for tekkit: " + tekkit_user_path+ "\n");
-    return tekkit_user_path;
+    return paths[0] + "/Guild Wars 2/addons/blishhud/markers";
 }
 
-bool TekkitUpdater::canUpdateTekkit(QVersionNumber &onlineVersion)
+bool TekkitUpdater::canUpdateTekkit(Version &online_version)
 {
-    QVersionNumber currentVersion = QVersionNumber::fromString(_settings.getValue(_tekkit_install_key, "0.0.0"));
-    Log::write("    Tekkit version available:   " + onlineVersion.toString() + "\n");
-    Log::write("    Tekkit version I installed: " + currentVersion.toString() + "\n");
-    return QVersionNumber::compare(onlineVersion, currentVersion) > 0;
+    Version current_version(_settings.getValue(_tekkit_install_key, "tekkit_not_installed"), _version_digits);
+    Log::write("    Tekkit version available:   " + online_version.toString() + "\n");
+    Log::write("    Tekkit version I installed: " + current_version.toString() + "\n");
+    return online_version > current_version;
 }
 
 } // namespace Updater

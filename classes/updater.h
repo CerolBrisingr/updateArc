@@ -21,10 +21,10 @@ class UpdateTool: public QObject
 public:
 
     UpdateTool();
-    ~UpdateTool() = default;
 
     bool startGW2(QStringList arguments = QStringList());
     bool startTacO();
+    bool startBlish();
 
     bool isValid() const noexcept;
     const QString& getGwPath() const noexcept;
@@ -32,6 +32,7 @@ private:
     Settings _settings; // settings.ini
     const QString _gw_path;
     const QString _taco_path;
+    const QString _blish_path;
     const bool _valid;
 
     QString findGwInstall() const;

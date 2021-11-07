@@ -51,6 +51,9 @@ int GitHupdater::update()
 
 int GitHupdater::remove()
 {
+    fileInteractions::removeFolder(_install_path);
+    _settings.removeKey(_version_key);
+    Log::write("Removed install folder for <" + _github_project + ">\n");
     return 0;
 }
 

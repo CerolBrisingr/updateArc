@@ -32,7 +32,7 @@ public:
 
 public:
     downloader();
-    ~downloader();
+    ~downloader() override;
 
     bool _print_debug;
 

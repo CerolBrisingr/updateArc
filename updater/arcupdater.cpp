@@ -108,10 +108,12 @@ int ArcUpdater::runArcUpdate() {
         return 1;
     } else {
         Log::write("    Hashes match, update successful!\n");
-        Log::write("    Moving dx11 copy in place.\n");
-        fileInteractions::copyFileTo(_gw_path + "/bin64/d3d9.dll", _gw_path + "/d3d11.dll");
-        return 0;
+        if (_settings.getValueWrite("customize/arcdps_dx11", "off") == "on") {
+            Log::write("    Moving dx11 copy in place.\n");
+            fileInteractions::copyFileTo(_gw_path + "/bin64/d3d9.dll", _gw_path + "/d3d11.dll");
+        }
     }
+    return 0;
 }
 
 QString ArcUpdater::getRemoteHash()
