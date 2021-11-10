@@ -18,7 +18,7 @@ class BaseUpdater: public QObject
 public:
     BaseUpdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
                 QCheckBox* checkbox, QString settings_key);
-    virtual ~BaseUpdater();
+    virtual ~BaseUpdater() override;
     virtual int update() = 0;
     virtual int remove() = 0;
     int autoUpdate();

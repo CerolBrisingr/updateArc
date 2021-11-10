@@ -20,7 +20,7 @@ class Form : public QWidget
 
 public:
     explicit Form(QString arguments, UpdateTool *updater, QWidget *parent = nullptr);
-    ~Form();
+    ~Form() override;
 
 signals:
     void closed();
@@ -42,7 +42,7 @@ private:
     UpdateTool *_updater;
 
     void link_interactions();
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 };
 
 

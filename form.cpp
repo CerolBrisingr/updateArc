@@ -40,9 +40,7 @@ command_set::command_set(QString& command, QCheckBox *check, QComboBox *combo)
 }
 
 command_set::~command_set()
-{
-
-}
+{}
 
 QString command_set::print_command()
 {
@@ -105,7 +103,7 @@ void command_list::import_arguments(QString arguments)
 
     QStringList arguments_split = arguments.split("-", QString::SplitBehavior::SkipEmptyParts);
     QStringList arguments_remain;
-    for (QString argument: arguments_split) {
+    for (QString& argument: arguments_split) {
         argument = "-" + argument.trimmed();
         bool hit = false;
         for (auto set: _sets) {
@@ -119,7 +117,7 @@ void command_list::import_arguments(QString arguments)
         }
     }
     QString custom_commands = "";
-    for (auto command: arguments_remain) {
+    for (auto& command: arguments_remain) {
         custom_commands += command + " ";
     }
     _custom_commands->setText(custom_commands.trimmed());
@@ -166,12 +164,12 @@ void Form::on_pushButton_cancel_clicked()
 
 void Form::on_pushButton_apply_clicked()
 {
-    emit(updated(ui->lineEdit_full->text()));
+    emit updated(ui->lineEdit_full->text());
 }
 
 void Form::on_pushButton_ok_clicked()
 {
-    emit(updated(ui->lineEdit_full->text()));
+    emit updated(ui->lineEdit_full->text());
     this->close();
 }
 
