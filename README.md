@@ -1,5 +1,12 @@
 # updateArc  
 Updater for the DPS-Tracking tool arcdps (https://www.deltaconnected.com/arcdps/) which is as of now authorized for usage with the game GuildWars2(TM)
+Has since then been expanded to:
+* ArcDPS
+* TacO
+* Blish-HUD
+* Tekkit
+With each element being optional
+Will also run Blish-HUD, Gw2 and/or TacO as set up by the user
 
 ## Motivation:  
 I am using this tool myself and was interested in an updater. Also, I wanted to do something with c++. 
