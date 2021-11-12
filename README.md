@@ -4,8 +4,9 @@ Has since then been expanded to:
 * ArcDPS
 * TacO
 * Blish-HUD
-* Tekkit
-With each element being optional
+* Tekkit  
+  
+With each element being optional  
 Will also run Blish-HUD, Gw2 and/or TacO as set up by the user
 
 ## Motivation:  
