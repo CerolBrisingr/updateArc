@@ -14,6 +14,7 @@
 #include "logger.h"
 #include "downloader.h"
 #include "settings.h"
+#include "updater/config/githup_config.h"
 
 class UpdateTool: public QObject
 {
@@ -38,6 +39,8 @@ private:
     QString findGwInstall() const;
     QStringList loadGW2Arguments();
 
+    QString getTacoPath() const noexcept;
+    QString getBlishHudPath() const noexcept;
 };
 
 #endif // UPDATER_H

@@ -20,15 +20,9 @@ public:
     int remove() override;
 
 private:
-    const QString _github_user;
-    const QString _github_project;
+    const Updater::Config::GithupdateConfig _cfg;
     const QString _install_path;
     const QString _version_key;
-    const QString _tag_prefix;
-    const QString _tag_suffix;
-    const size_t _version_digits;
-    const QString _install_datatype;
-    const QString _verifiction_file;
 
     QJsonArray fetchReleases(int& err);
     QJsonObject extractLatestFullRelease(QJsonArray &releases);

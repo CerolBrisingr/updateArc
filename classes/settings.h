@@ -29,7 +29,6 @@ class CheckBoxSetting:  public QObject
     Q_OBJECT
 public:
     CheckBoxSetting(QCheckBox* checkbox, QString key);
-    ~CheckBoxSetting() = default;
 
 private slots:
     void checkbox_changed(int state);
@@ -47,7 +46,6 @@ class LineEditSettings: public QObject
     Q_OBJECT
 public:
     LineEditSettings(QLineEdit* lineedit, QString key, QString default_entry = "");
-    ~LineEditSettings() = default;
 
 private slots:
     void lineedit_changed(QString text);
