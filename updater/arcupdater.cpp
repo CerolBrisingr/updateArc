@@ -28,7 +28,7 @@ int ArcUpdater::remove()
         Log::write("Removing ArcDPS. Will block the current version from being re-installed.\n");
         Log::write("Click again to remove this blocker.\n");
 
-        QString sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
+        QString sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
         Log::write("Blocking installation of version " + sLocalHash + "\n");
         _settings.setValue(_arc_blocker_key, sLocalHash);
     }
@@ -68,11 +68,11 @@ int ArcUpdater::runArcUpdate() {
         // Remove previous blocker, if there is one
         _settings.removeKey(_arc_blocker_key);
     }
-    QString targetpath = _gw_path + "/bin64";
+    QString targetpath = _gw_path;
 
     if (verifyArcInstallation()) {
         Log::write("    ArcDPS is seemingly already installed, looking for updates\n");
-        sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
+        sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
         if (sLocalHash.isEmpty()) {
             Log::write("    Could not calculate hash value for ArcDPS library.\n");
             return 1;
@@ -94,7 +94,7 @@ int ArcUpdater::runArcUpdate() {
     }
 
     // Verify correct download
-    sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/bin64/d3d9.dll");
+    sLocalHash = fileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
     if (sLocalHash.isEmpty()) {
         Log::write("    Could not calculate hash value for downloaded ArcDPS library.\n");
         return 1;
@@ -108,9 +108,9 @@ int ArcUpdater::runArcUpdate() {
         return 1;
     } else {
         Log::write("    Hashes match, update successful!\n");
-        if (_settings.getValueWrite("customize/arcdps_dx11", "off") == "on") {
-            Log::write("    Moving dx11 copy in place.\n");
-            fileInteractions::copyFileTo(_gw_path + "/bin64/d3d9.dll", _gw_path + "/d3d11.dll");
+        if (_settings.getValueWrite("customize/arcdps_dx9", "off") == "on") {
+            Log::write("    Moving dx9 copy in place.\n");
+            fileInteractions::copyFileTo(_gw_path + "/d3d11.dll", _gw_path + "/bin64/d3d9.dll");
         }
     }
     return 0;
@@ -120,7 +120,7 @@ QString ArcUpdater::getRemoteHash()
 {
     // Read md5 hash of online version
     QString output;
-    if (0 != downloader::singleTextRequest(output, "https://www.deltaconnected.com/arcdps/x64/d3d9.dll.md5sum")){
+    if (0 != downloader::singleTextRequest(output, "https://www.deltaconnected.com/arcdps/x64/d3d11.dll.md5sum")){
         Log::write("Download failed\n");
         return "";
     }
@@ -145,12 +145,12 @@ bool ArcUpdater::isBlockedArcVersion(QString sRemoteHash)
 
 bool ArcUpdater::verifyArcInstallation()
 {
-    return QDir(_gw_path + "/bin64").exists("d3d9.dll");
+    return QDir(_gw_path).exists("d3d11.dll");
 }
 
 bool ArcUpdater::downloadArc(QString pathname)
 {
-    if (0 != downloader::singleDownload("https://www.deltaconnected.com/arcdps/x64/d3d9.dll", pathname)) {
+    if (0 != downloader::singleDownload("https://www.deltaconnected.com/arcdps/x64/d3d11.dll", pathname)) {
         Log::write("Download failed\n");
         return false;
     }

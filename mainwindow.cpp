@@ -19,17 +19,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto gw_path = _update_helper->getGwPath();
     _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps, "arcdps"));
-    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_taco, ui->toolButton_remove_taco, ui->checkBox_taco, Updater::Config::getTacoConfig()));
     _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_blish, ui->toolButton_remove_blish, ui->checkBox_blish, Updater::Config::getBlishConfig()));
-    _updaters.emplace_back(new Updater::TekkitUpdater(gw_path, ui->pushButton_tekkit, ui->toolButton_remove_tekkit, ui->checkBox_tekkit, "tekkit"));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
 
     connect(ui->pushButton_run_gw2, SIGNAL(clicked()),
             this, SLOT(run_gw2()));
-    connect(ui->pushButton_run_taco, SIGNAL(clicked()),
-            this, SLOT(run_taco()));
     connect(ui->pushButton_run_blishhud, SIGNAL(clicked()),
             this, SLOT(run_blish()));
     connect(ui->toolButton_config_run_gw2, SIGNAL(clicked()),
@@ -78,14 +74,19 @@ void MainWindow::writeLog(QString logline)
 void MainWindow::init_interface()
 {
     _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_gw2, "starters/gw2_run"));
-    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_taco, "starters/taco_run"));
     _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_blishhud, "starters/blish_run"));
 
     _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_gw2, "starters/gw2_arguments", "-maploadinfo"));
-    _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_taco, "starters/taco_delay", "60"));
 
     _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autorun, "general/autorun"));
     _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autoclose, "general/autoclose"));
+
+    ui->checkBox_boon->setEnabled(false);
+    ui->pushButton_boon->setEnabled(false);
+    ui->toolButton_remove_boon->setEnabled(false);
+    ui->checkBox_kp->setEnabled(false);
+    ui->pushButton_kp->setEnabled(false);
+    ui->toolButton_remove_kp->setEnabled(false);
 }
 
 void MainWindow::set_edit(QLineEdit *edit, QString text)
@@ -96,23 +97,13 @@ void MainWindow::set_edit(QLineEdit *edit, QString text)
 bool MainWindow::run_update()
 {
     bool do_start_gw2 = _settings.getValue("starters/gw2_run").compare("on") == 0;
-    bool do_start_taco = _settings.getValue("starters/taco_run").compare("on") == 0;
     bool do_start_blish = _settings.getValue("starters/blish_run").compare("on") == 0;
-    do_start_taco = do_start_taco & !do_start_blish;
-    do_start_taco &= do_start_gw2;
-
-    int wait_secs = QVariant(_settings.getValue("starters/taco_delay")).toInt();
-    if (wait_secs < 30) {
-        wait_secs = 30;
-    }
-    if (_is_cancelled) return false;
 
     // Try to run each updater (don't run if checkbox is not set)
     for (auto* updater: _updaters) {
         if (_is_cancelled) return false;
         updater->autoUpdate();
     }
-
     if (_is_cancelled) return false;
 
     if (do_start_gw2) {
@@ -124,21 +115,8 @@ bool MainWindow::run_update()
         run_blish();
     }
 
-    if (do_start_taco) {
-        ui->pushButton_run_taco->setEnabled(false);
-        writeLog("Waiting for " + QString::number(wait_secs) + "seconds before we start TacO\n");
-        for (int i = 0; i < wait_secs; i += 5) {
-            writeLog("Timer: " + QString::number(i) + "\n");
-            delay(5);
-            if (_is_cancelled) {
-                ui->pushButton_run_taco->setEnabled(true);
-                return false;
-            }
-        }
-        writeLog("At least " + QString::number(wait_secs) + " seconds are over.\n");
-        run_taco();
-    } else if (_settings.getValue("General/autoclose").compare("on") == 0) {
-        wait_secs = 20;
+    if (_settings.getValue("General/autoclose").compare("on") == 0) {
+        int wait_secs = 20;
         writeLog("Waiting for " + QString::number(wait_secs) + " seconds before we close the updater\n");
         for (int i = 0; i < wait_secs; i += 5) {
             writeLog("Timer: " + QString::number(i) + "\n");
@@ -161,30 +139,27 @@ void MainWindow::disable_interface()
     ui->checkBox_autoclose->setEnabled(false);
     ui->checkBox_autorun->setEnabled(false);
     ui->checkBox_run_gw2->setEnabled(false);
-    ui->checkBox_run_taco->setEnabled(false);
-    ui->checkBox_taco->setEnabled(false);
-    ui->checkBox_tekkit->setEnabled(false);
+    ui->checkBox_boon->setEnabled(false);
+    ui->checkBox_kp->setEnabled(false);
     ui->checkBox_blish->setEnabled(false);
     ui->checkBox_run_blishhud->setEnabled(false);
 
     ui->pushButton_arcdps->setEnabled(false);
     ui->pushButton_run_gw2->setEnabled(false);
     ui->pushButton_run_manually->setEnabled(false);
-    ui->pushButton_run_taco->setEnabled(false);
-    ui->pushButton_tekkit->setEnabled(false);
-    ui->pushButton_taco->setEnabled(false);
     ui->pushButton_blish->setEnabled(false);
+    ui->pushButton_boon->setEnabled(false);
+    ui->pushButton_kp->setEnabled(false);
     ui->pushButton_run_blishhud->setEnabled(false);
 
     ui->lineEdit_run_gw2->setEnabled(false);
-    ui->lineEdit_run_taco->setEnabled(false);
 
     ui->toolButton_block_arc->setEnabled(false);
-    ui->toolButton_remove_taco->setEnabled(false);
-    ui->toolButton_remove_tekkit->setEnabled(false);
     ui->toolButton_cancel->setEnabled(false);
     ui->toolButton_config_run_gw2->setEnabled(false);
     ui->toolButton_remove_blish->setEnabled(false);
+    ui->toolButton_remove_boon->setEnabled(false);
+    ui->toolButton_remove_kp->setEnabled(false);
 }
 
 void MainWindow::delay(int secs)
@@ -215,13 +190,6 @@ void MainWindow::run_gw2()
     ui->pushButton_run_gw2->setEnabled(false);
     _update_helper->startGW2();
     ui->pushButton_run_gw2->setEnabled(true);
-}
-
-void MainWindow::run_taco()
-{
-    ui->pushButton_run_taco->setEnabled(false);
-    _update_helper->startTacO();
-    ui->pushButton_run_taco->setEnabled(true);
 }
 
 void MainWindow::run_blish()

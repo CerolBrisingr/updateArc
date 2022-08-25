@@ -7,7 +7,6 @@
 #include <updater/baseupdater.h>
 #include <updater/arcupdater.h>
 #include <updater/githupdater.h>
-#include <updater/tekkitupdater.h>
 #include "form.h"
 
 #include <QMainWindow>
@@ -42,7 +41,6 @@ private slots:
     void run_selected_options();
 
     void run_gw2();
-    void run_taco();
     void run_blish();
 
     void config_gw2_arguments();

@@ -22,7 +22,6 @@ SOURCES += \
     classes/updater.cpp \
     updater/config/githup_config.cpp \
     updater/githupdater.cpp \
-    updater/tekkitupdater.cpp \
     version_recognition/version.cpp
 
 HEADERS += \
@@ -38,7 +37,6 @@ HEADERS += \
     classes/updater.h \
     updater/config/githup_config.h \
     updater/githupdater.h \
-    updater/tekkitupdater.h \
     version_recognition/version.h
 
 FORMS += \
