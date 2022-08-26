@@ -128,7 +128,7 @@ bool MainWindow::run_update()
 
     // User should be able to change their mind about closing the window automatically
     if (_settings.getValue("General/autoclose").compare("on") == 0) {
-        this->close();
+        QCoreApplication::quit();
     }
     return true;
 }
