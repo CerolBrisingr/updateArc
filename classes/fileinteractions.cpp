@@ -152,4 +152,12 @@ void removeFolder(QString folderPath) {
     }
 }
 
+void createFolder(QString folderPath)
+{
+    QDir folder(folderPath);
+    if (!folder.exists()) {
+        QDir("").mkpath(folder.absolutePath());
+    }
+}
+
 }

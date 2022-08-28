@@ -11,6 +11,10 @@ CONFIG += c++11
 SOURCES += \
     classes/logger.cpp \
     classes/simple_json.cpp \
+    installer/install_blishhud.cpp \
+    installer/install_boontable.cpp \
+    installer/install_kp.cpp \
+    installer/installer.cpp \
     updater/arcupdater.cpp \
     updater/baseupdater.cpp \
     form.cpp \
@@ -27,6 +31,10 @@ SOURCES += \
 HEADERS += \
     classes/logger.h \
     classes/simple_json.h \
+    installer/install_blishhud.h \
+    installer/install_boontable.h \
+    installer/install_kp.h \
+    installer/installer.h \
     updater/arcupdater.h \
     updater/baseupdater.h \
     form.h \

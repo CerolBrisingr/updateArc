@@ -3,16 +3,9 @@
 UpdateTool::UpdateTool()
     :_settings("settings.ini")
     ,_gw_path(findGwInstall())
-    ,_taco_path(getTacoPath())
     ,_blish_path(getBlishHudPath())
     ,_valid(_gw_path != "error")
 {}
-
-QString UpdateTool::getTacoPath() const noexcept
-{
-    Updater::Config::GithupdateConfig cfg = Updater::Config::getTacoConfig();
-    return _gw_path + "/addons/" + cfg._github_project;
-}
 
 QString UpdateTool::getBlishHudPath() const noexcept
 {
