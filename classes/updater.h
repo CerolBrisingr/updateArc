@@ -39,7 +39,6 @@ private:
     QString findGwInstall() const;
     QStringList loadGW2Arguments();
 
-    QString getTacoPath() const noexcept;
     QString getBlishHudPath() const noexcept;
 };
 

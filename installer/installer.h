@@ -10,7 +10,7 @@ namespace installer {
 class installer
 {
 public:
-    installer(QString gw_path);
+    installer();
     virtual ~installer();
 
     virtual QString prepare(QString temp_prefix) = 0;  // Prepare download folder and return download path. Returns empty string on fail

@@ -13,12 +13,13 @@ struct GithupdateConfig
     QString _github_project;
     QString _tag_prefix = "";
     QString _tag_suffix = "";
+    QString _content_type = "application/x-zip-compressed";
     size_t _version_digits;
     QString _install_datatype = ".zip";
-    QString _verifiction_file;
 };
 
-GithupdateConfig getTacoConfig();
+GithupdateConfig getBoontableConfig();
+GithupdateConfig getKpConfig();
 GithupdateConfig getBlishConfig();
 
 } // namespace Config

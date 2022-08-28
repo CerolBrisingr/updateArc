@@ -129,7 +129,7 @@ QJsonObject GitHupdater::getInstallAsset(QJsonObject& release, int& err)
     for (auto it = assets.begin(); it != assets.end(); ++it) {
         QJsonObject asset = it->toObject();
         QString asset_type = SimpleJson::getString(asset, "content_type", "not_found");
-        if (asset_type.compare("application/x-zip-compressed") != 0) {
+        if (asset_type.compare(_cfg._content_type) != 0) {
             Log::write("    Found asset of type \"" + asset_type + "\". Skipping.\n");
             continue;
         }

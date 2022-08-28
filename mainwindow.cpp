@@ -19,9 +19,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto gw_path = _update_helper->getGwPath();
     _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps, "arcdps"));
+
     std::shared_ptr<installer::installer> blishhud_installer = std::make_shared<installer::install_blishhud>(gw_path);
     _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_blish, ui->toolButton_remove_blish, ui->checkBox_blish, Updater::Config::getBlishConfig(),
                                                     blishhud_installer));
+
+    std::shared_ptr<installer::installer> boontable_installer = std::make_shared<installer::install_boontable>(gw_path);
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_boon, ui->toolButton_remove_boon, ui->checkBox_boon, Updater::Config::getBoontableConfig(),
+                                                    boontable_installer));
+
+    std::shared_ptr<installer::installer> kp_installer = std::make_shared<installer::install_kp>(gw_path);
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_kp, ui->toolButton_remove_kp, ui->checkBox_kp, Updater::Config::getKpConfig(),
+                                                    kp_installer));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
@@ -83,12 +92,7 @@ void MainWindow::init_interface()
     _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autorun, "general/autorun"));
     _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autoclose, "general/autoclose"));
 
-    ui->checkBox_boon->setEnabled(false);
-    ui->pushButton_boon->setEnabled(false);
-    ui->toolButton_remove_boon->setEnabled(false);
-    ui->checkBox_kp->setEnabled(false);
-    ui->pushButton_kp->setEnabled(false);
-    ui->toolButton_remove_kp->setEnabled(false);
+    ui->toolButton_config_arc->setVisible(false);
 }
 
 void MainWindow::set_edit(QLineEdit *edit, QString text)
@@ -130,7 +134,7 @@ bool MainWindow::run_update()
 
     // User should be able to change their mind about closing the window automatically
     if (_settings.getValue("General/autoclose").compare("on") == 0) {
-        this->close();
+        exit(0);
     }
     return true;
 }

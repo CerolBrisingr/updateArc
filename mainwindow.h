@@ -10,6 +10,8 @@
 #include "form.h"
 
 #include <installer/install_blishhud.h>
+#include <installer/install_boontable.h>
+#include <installer/install_kp.h>
 
 #include <QMainWindow>
 #include <iostream>

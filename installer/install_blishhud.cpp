@@ -3,8 +3,10 @@
 namespace installer {
 
 install_blishhud::install_blishhud(QString gw_path)
-    :installer(gw_path)
-{}
+    :installer()
+{
+    _install_path = gw_path + "/addons/Blish-HUD";
+}
 
 install_blishhud::~install_blishhud()
 {}
@@ -35,9 +37,9 @@ int install_blishhud::install()
     }
 
     Log::write("    Moving files to target location\n");
+    fileInteractions::removeFile("", _temp_filename);
     fileInteractions::copyFolderTo(_temp_path, _install_path);
     fileInteractions::removeFolder(_temp_path);
-    fileInteractions::removeFile("", _temp_filename);
 
     return 0;
 }

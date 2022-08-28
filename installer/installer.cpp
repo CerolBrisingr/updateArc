@@ -2,10 +2,8 @@
 
 namespace installer {
 
-installer::installer(QString gw_path)
-{
-    _install_path = gw_path + "/addons/Blish-HUD";
-}
+installer::installer()
+{}
 
 installer::~installer()
 {}
@@ -35,7 +33,9 @@ void installer::cleanUpAfterInstall()
 bool installer::isPrepared()
 {
     // Preparation needs to set up a non-empty project name
-    return !this->_temp_prefix.isEmpty();
+    bool hasPrefix = !_temp_prefix.isEmpty();
+    bool hasInstallPath = !_install_path.isEmpty();
+    return hasPrefix && hasInstallPath;
 }
 
 } // namespace installer
