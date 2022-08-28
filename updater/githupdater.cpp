@@ -3,11 +3,12 @@
 namespace Updater {
 
 GitHupdater::GitHupdater(QString &gw_path, QPushButton *install_button, QToolButton *remove_button,
-                         QCheckBox *checkbox, Updater::Config::GithupdateConfig cfg)
+                         QCheckBox *checkbox, Updater::Config::GithupdateConfig cfg,
+                         const std::shared_ptr<installer::installer> installer)
     :BaseUpdater(gw_path, install_button, remove_button, checkbox, cfg._github_project)
     , _cfg(cfg)
-    , _install_path(gw_path + "/addons/" + cfg._github_project)
     , _version_key("version_installed/" + cfg._github_project)
+    , _installer(installer)
 {}
 
 GitHupdater::~GitHupdater()
@@ -43,9 +44,8 @@ int GitHupdater::update()
 
 int GitHupdater::remove()
 {
-    fileInteractions::removeFolder(_install_path);
     _settings.removeKey(_version_key);
-    Log::write("Removed install folder for <" + _cfg._github_project + ">\n");
+    _installer->uninstall();
     return 0;
 }
 
@@ -147,16 +147,13 @@ QJsonObject GitHupdater::getInstallAsset(QJsonObject& release, int& err)
 
 void GitHupdater::installAsset(QJsonObject& asset, Version& online_version, int& err) {
 
-    QString temp_pathname = _cfg._github_project + "_tmp";
-    QString temp_filename = _cfg._github_project + "_tmp" + _cfg._install_datatype;
     QString install_link = SimpleJson::getString(asset, "browser_download_url", "");
     if (install_link == "") {
         err = 1;
         return;
     }
 
-    // Removing possible remains from previous update
-    fileInteractions::removeFolder(temp_pathname);
+    QString temp_filename = _installer->prepare(_cfg._github_project);
 
     Log::write("    Starting download\n");
     if (0 != downloader::singleDownload(install_link, "", temp_filename)) {
@@ -164,22 +161,10 @@ void GitHupdater::installAsset(QJsonObject& asset, Version& online_version, int&
         err = 1;
         return;
     }
-    Log::write("    Extracting archive\n");
-    if (!fileInteractions::unzipArchive(temp_filename, temp_pathname)) {
-        Log::write("    archive extraction failed\n");
-        err = 1;
-        return;
-    }
-    if (!QDir(temp_pathname).exists(_cfg._verifiction_file)) {
-        Log::write("    archive extraction did not produce expected results. Keeping downloads.\n");
-        err = 1;
-        return;
-    }
 
-    Log::write("    Moving files to target location\n");
-    fileInteractions::copyFolderTo(temp_pathname, _install_path);
-    fileInteractions::removeFolder(temp_pathname);
-    fileInteractions::removeFile("", temp_filename);
+    err = _installer->install();
+    if(err != 0)
+        return;
 
     Log::write("    Registering newly installed version\n");
     _settings.setValue(_version_key, online_version.toString());

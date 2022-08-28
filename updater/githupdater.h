@@ -6,6 +6,8 @@
 #include <classes/simple_json.h>
 #include <version_recognition/version.h>
 #include <updater/config/githup_config.h>
+#include <installer/installer.h>
+#include <installer/install_blishhud.h>
 
 namespace Updater {
 
@@ -13,7 +15,8 @@ class GitHupdater : public BaseUpdater
 {
 public:
     GitHupdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
-                QCheckBox* checkbox, Updater::Config::GithupdateConfig cfg);
+                QCheckBox* checkbox, Updater::Config::GithupdateConfig cfg,
+                const std::shared_ptr<installer::installer> installer);
     ~GitHupdater() override;
 
     int update() override;
@@ -21,8 +24,8 @@ public:
 
 private:
     const Updater::Config::GithupdateConfig _cfg;
-    const QString _install_path;
     const QString _version_key;
+    const std::shared_ptr<installer::installer> _installer;
 
     QJsonArray fetchReleases(int& err);
     QJsonObject extractLatestFullRelease(QJsonArray &releases);

@@ -9,6 +9,8 @@
 #include <updater/githupdater.h>
 #include "form.h"
 
+#include <installer/install_blishhud.h>
+
 #include <QMainWindow>
 #include <iostream>
 #include <QCheckBox>
@@ -19,6 +21,7 @@
 #include <QTime>
 
 #include <vector>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

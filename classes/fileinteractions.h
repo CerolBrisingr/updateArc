@@ -18,6 +18,7 @@ namespace fileInteractions
     void copyFolderTo(QString folderPath, QString targetPath);
     void copyFileTo(QString filePath, QString targetPath);
     void removeFolder(QString folderPath);
+    void createFolder(QString folderPath);
 };
 
 

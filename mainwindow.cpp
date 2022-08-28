@@ -19,7 +19,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto gw_path = _update_helper->getGwPath();
     _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps, "arcdps"));
-    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_blish, ui->toolButton_remove_blish, ui->checkBox_blish, Updater::Config::getBlishConfig()));
+    std::shared_ptr<installer::installer> blishhud_installer = std::make_shared<installer::install_blishhud>(gw_path);
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_blish, ui->toolButton_remove_blish, ui->checkBox_blish, Updater::Config::getBlishConfig(),
+                                                    blishhud_installer));
 
     connect(ui->pushButton_run_manually, SIGNAL(clicked()),
             this, SLOT(run_selected_options()));
@@ -128,7 +130,7 @@ bool MainWindow::run_update()
 
     // User should be able to change their mind about closing the window automatically
     if (_settings.getValue("General/autoclose").compare("on") == 0) {
-        QCoreApplication::quit();
+        this->close();
     }
     return true;
 }
