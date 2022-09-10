@@ -4,20 +4,20 @@
 
 Form::Form(QString arguments, UpdateTool *updater, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::Form),
+    _ui(new Ui::Form),
     _updater(updater)
 {
-    ui->setupUi(this);
-    _commands = new command_list(ui->lineEdit_custom);
-    _commands->add("-bmp", ui->checkBox_bmp);
-    _commands->add("-clientport", ui->checkBox_clientport, ui->comboBox_clientport);
-    _commands->add("-maploadinfo", ui->checkBox_maploadinfo);
-    _commands->add("-autologin", ui->checkBox_autologin);
+    _ui->setupUi(this);
+    _commands = new CommandList(_ui->lineEdit_custom);
+    _commands->add("-bmp", _ui->checkBox_bmp);
+    _commands->add("-clientport", _ui->checkBox_clientport, _ui->comboBox_clientport);
+    _commands->add("-maploadinfo", _ui->checkBox_maploadinfo);
+    _commands->add("-autologin", _ui->checkBox_autologin);
 
-    _commands->import_arguments(arguments);
+    _commands->importArguments(arguments);
 
-    link_interactions();
-    on_interaction();
+    linkInteractions();
+    onInteraction();
 }
 
 void Form::closeEvent(QCloseEvent *event) {
@@ -27,11 +27,11 @@ void Form::closeEvent(QCloseEvent *event) {
 
 Form::~Form()
 {
-    delete ui;
+    delete _ui;
 }
 
 
-command_set::command_set(QString& command, QCheckBox *check, QComboBox *combo)
+CommandSet::CommandSet(QString& command, QCheckBox *check, QComboBox *combo)
     :_command(command)
     ,_check(check)
     ,_combo(combo)
@@ -39,10 +39,10 @@ command_set::command_set(QString& command, QCheckBox *check, QComboBox *combo)
 
 }
 
-command_set::~command_set()
+CommandSet::~CommandSet()
 {}
 
-QString command_set::print_command()
+QString CommandSet::printCommand()
 {
     QString output = _command;
     if (_combo != nullptr) {
@@ -51,12 +51,12 @@ QString command_set::print_command()
     return output;
 }
 
-bool command_set::import(QString argument)
+bool CommandSet::import(QString argument)
 {
     if (argument.contains(_command)) {
         _check->setCheckState(Qt::CheckState::Checked);
         if (_combo != nullptr) {
-            QString value = extract_value(argument);
+            QString value = extractValue(argument);
             int fitting_index = _combo->findText(value);
             if (fitting_index == -1) {
                 fitting_index = 0;
@@ -69,36 +69,36 @@ bool command_set::import(QString argument)
     }
 }
 
-bool command_set::is_in_use()
+bool CommandSet::isInUse()
 {
     return (_check->checkState() == Qt::CheckState::Checked);
 }
 
-QString command_set::extract_value(QString argument)
+QString CommandSet::extractValue(QString argument)
 {
     QString test = argument.remove(0, _command.size() + 1).trimmed();
     return test;
 }
 
-command_list::command_list(QLineEdit *custom_commands)
+CommandList::CommandList(QLineEdit *custom_commands)
     :_custom_commands(custom_commands)
 {
 
 }
 
-command_list::~command_list()
+CommandList::~CommandList()
 {
     for (auto set: _sets) {
         delete(set);
     }
 }
 
-void command_list::add(QString command, QCheckBox *check, QComboBox *combo)
+void CommandList::add(QString command, QCheckBox *check, QComboBox *combo)
 {
-    _sets.push_back(new command_set(command, check, combo));
+    _sets.push_back(new CommandSet(command, check, combo));
 }
 
-void command_list::import_arguments(QString arguments)
+void CommandList::importArguments(QString arguments)
 {
 
     QStringList arguments_split = arguments.split("-", QString::SplitBehavior::SkipEmptyParts);
@@ -125,76 +125,76 @@ void command_list::import_arguments(QString arguments)
     return;
 }
 
-QString command_list::create_command_string()
+QString CommandList::createCommandString()
 {
     QString commands;
     for (auto set: _sets) {
-        if (set->is_in_use()) {
-            commands += set->print_command() + " ";
+        if (set->isInUse()) {
+            commands += set->printCommand() + " ";
         }
     }
     commands += _custom_commands->text();
     return commands.trimmed();
 }
 
-void Form::on_pushButton_image_clicked()
+void Form::onPushButtonImageClicked()
 {
     _updater->startGW2(QStringList("-image"));
 }
 
-void Form::on_pushButton_repair_clicked()
+void Form::onPushButtonRepairClicked()
 {
     _updater->startGW2(QStringList("-repair"));
 }
 
-void Form::on_pushButton_diag_clicked()
+void Form::onPushButtonDiagClicked()
 {
     _updater->startGW2(QStringList("-diag"));
 }
 
-void Form::on_pushButton_verify_clicked()
+void Form::onPushButtonVerifyClicked()
 {
     _updater->startGW2(QStringList("-verify"));
 }
 
-void Form::on_pushButton_cancel_clicked()
+void Form::onPushButtonCancelClicked()
 {
     this->close();
 }
 
-void Form::on_pushButton_apply_clicked()
+void Form::onPushButtonApplyClicked()
 {
-    emit updated(ui->lineEdit_full->text());
+    emit updated(_ui->lineEdit_full->text());
 }
 
-void Form::on_pushButton_ok_clicked()
+void Form::onPushButtonOkClicked()
 {
-    emit updated(ui->lineEdit_full->text());
+    emit updated(_ui->lineEdit_full->text());
     this->close();
 }
 
-void Form::on_interaction()
+void Form::onInteraction()
 {
-    ui->lineEdit_full->setText(_commands->create_command_string());
+    _ui->lineEdit_full->setText(_commands->createCommandString());
 }
 
-void Form::link_interactions()
+void Form::linkInteractions()
 {
     // Check boxes
-    connect(ui->checkBox_autologin, SIGNAL(stateChanged(int)),
-            this, SLOT(on_interaction()));
-    connect(ui->checkBox_bmp, SIGNAL(stateChanged(int)),
-            this, SLOT(on_interaction()));
-    connect(ui->checkBox_clientport, SIGNAL(stateChanged(int)),
-            this, SLOT(on_interaction()));
-    connect(ui->checkBox_maploadinfo, SIGNAL(stateChanged(int)),
-            this, SLOT(on_interaction()));
+    connect(_ui->checkBox_autologin, SIGNAL(stateChanged(int)),
+            this, SLOT(onInteraction()));
+    connect(_ui->checkBox_bmp, SIGNAL(stateChanged(int)),
+            this, SLOT(onInteraction()));
+    connect(_ui->checkBox_clientport, SIGNAL(stateChanged(int)),
+            this, SLOT(onInteraction()));
+    connect(_ui->checkBox_maploadinfo, SIGNAL(stateChanged(int)),
+            this, SLOT(onInteraction()));
 
     // Combo boxes
-    connect(ui->comboBox_clientport, SIGNAL(currentTextChanged(QString)),
-            this, SLOT(on_interaction()));
+    connect(_ui->comboBox_clientport, SIGNAL(currentTextChanged(QString)),
+            this, SLOT(onInteraction()));
 
     // Line edits
-    connect(ui->lineEdit_custom, SIGNAL(textChanged(QString)),
-            this, SLOT(on_interaction()));
+    connect(_ui->lineEdit_custom, SIGNAL(textChanged(QString)),
+            this, SLOT(onInteraction()));
 }

@@ -1,6 +1,6 @@
 #include "downloader.h"
 
-downloader::downloader()
+Downloader::Downloader()
 {
     QSettings setting(_setting_path, QSettings::IniFormat);
     _print_debug = setting.value("debug/downloader", "off").toString() == "on";
@@ -18,73 +18,73 @@ downloader::downloader()
         }
     }
 
-    connect(&netManager, SIGNAL(finished(QNetworkReply*)),
+    connect(&_net_manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(processReply(QNetworkReply*)));
 
     // Errors
-    connect(&netManager, &QNetworkAccessManager::authenticationRequired,
+    connect(&_net_manager, &QNetworkAccessManager::authenticationRequired,
             this, [this]{errorMsg("authenticationRequired");});
     //connect(&netManager, &QNetworkAccessManager::encrypted,
     //        this, [this]{errorMsg("encrypted", false);});
-    connect(&netManager, &QNetworkAccessManager::networkAccessibleChanged,
+    connect(&_net_manager, &QNetworkAccessManager::networkAccessibleChanged,
             this, [this]{errorMsg("networkAccessibleChanged");});
-    connect(&netManager, &QNetworkAccessManager::preSharedKeyAuthenticationRequired,
+    connect(&_net_manager, &QNetworkAccessManager::preSharedKeyAuthenticationRequired,
             this, [this]{errorMsg("preSharedKeyAuthenticationRequired");});
-    connect(&netManager, &QNetworkAccessManager::proxyAuthenticationRequired,
+    connect(&_net_manager, &QNetworkAccessManager::proxyAuthenticationRequired,
             this, [this]{errorMsg("proxyAuthenticationRequired");});
-    connect(&netManager, &QNetworkAccessManager::sslErrors,
+    connect(&_net_manager, &QNetworkAccessManager::sslErrors,
             this, [this]{errorMsg("sslErrors");});
-    connect(&netManager, &QObject::objectNameChanged,
+    connect(&_net_manager, &QObject::objectNameChanged,
             this, [this]{errorMsg("objectNameChanged");});
-    connect(&netManager, &QObject::destroyed,
+    connect(&_net_manager, &QObject::destroyed,
             this, [this]{errorMsg("network manager terminated", false);});
 }
 
-downloader::~downloader()
+Downloader::~Downloader()
 {
     _will_shut_down = true;
 }
 
-int downloader::fetch()
+int Downloader::fetch()
 {
-    for (int i = 0; i < taskList.length(); i++) {
-        QUrl url = QUrl(taskList[i]->getRequestAddress());
+    for (int i = 0; i < _taskList.length(); i++) {
+        QUrl url = QUrl(_taskList[i]->getRequestAddress());
 
         if (_print_debug) {
             Log::write("      Starting request: " + url.url() + "\n");
         }
-        request = QNetworkRequest(url);
+        _request = QNetworkRequest(url);
 
-        request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, taskList[i]->getAllowedForwards() > 0);
-        request.setMaximumRedirectsAllowed(taskList[i]->getAllowedForwards());
+        _request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, _taskList[i]->getAllowedForwards() > 0);
+        _request.setMaximumRedirectsAllowed(_taskList[i]->getAllowedForwards());
 
-        hasError = false;
-        QNetworkReply* reply = netManager.get(request);
+        _hasError = false;
+        QNetworkReply* reply = _net_manager.get(_request);
 
 #if QT_CONFIG(ssl)
         connect(reply, SIGNAL(sslErrors(QList<QSslError>)),
                 SLOT(sslErrors(QList<QSslError>)));
 #endif
 
-        currentDownloads.append(reply);
+        _currentDownloads.append(reply);
     }
 
-    return waitLoop.exec();
+    return _waitLoop.exec();
 }
 
-void downloader::setTargetPath(QString filePath)
+void Downloader::setTargetPath(QString filePath)
 {
     if (filePath.isEmpty()) {
-        this->targetPath = "";
+        _targetPath = "";
         return;
     } else if (!filePath.endsWith('/')) {
         filePath.append('/');
     }
 
-    this->targetPath = filePath;
+    _targetPath = filePath;
 }
 
-void downloader::sslErrors(const QList<QSslError> &sslErrors)
+void Downloader::sslErrors(const QList<QSslError> &sslErrors)
 {
 #if QT_CONFIG(ssl)
     for (const QSslError &error : sslErrors)
@@ -92,24 +92,24 @@ void downloader::sslErrors(const QList<QSslError> &sslErrors)
 #else
     Q_UNUSED(sslErrors);
 #endif
-    waitLoop.exit(1);
+    _waitLoop.exit(1);
 }
 
-void downloader::addRequest(Request *newRequest)
+void Downloader::addRequest(Request *newRequest)
 {
-    receivedFlags.append(false);
-    taskList.append(newRequest);
+    _receivedFlags.append(false);
+    _taskList.append(newRequest);
 }
 
-void downloader::processReply(QNetworkReply* netReply)
+void Downloader::processReply(QNetworkReply* netReply)
 {
     if (_print_debug) {
         Log::write("      Recieved reply from URL: " + netReply->url().toString() + "\n");
     }
     int16_t _err = 0;
 
-    int gotId =  currentDownloads.indexOf(netReply);
-    receivedFlags[gotId] = true;
+    int gotId =  _currentDownloads.indexOf(netReply);
+    _receivedFlags[gotId] = true;
 
     QUrl url = netReply->url();
     if (netReply->error()) {
@@ -120,13 +120,13 @@ void downloader::processReply(QNetworkReply* netReply)
         _err = 1;
     } else {
         // Request successful
-        QString targetFilename =taskList[gotId]->getTargetFilename();
-        if (taskList[gotId]->getRequestType() == type::htmlBody) {
+        QString targetFilename =_taskList[gotId]->getTargetFilename();
+        if (_taskList[gotId]->getRequestType() == RequestType::HTMLBODY) {
             // Write response to QString
             QString _output;
             QTextStream streamer(&_output);
             streamer << netReply->read(netReply->bytesAvailable());
-            taskList[gotId]->setResult(_err, _output);
+            _taskList[gotId]->setResult(_err, _output);
         } else {
             // Write response to file
             if (targetFilename.isEmpty()) {
@@ -137,7 +137,7 @@ void downloader::processReply(QNetworkReply* netReply)
                 _err = 1;
             } else {
                 // Target name not empty
-                QString fullPath = this->targetPath;
+                QString fullPath = _targetPath;
                 fullPath.append(targetFilename);
 
                 QFile file(fullPath);
@@ -157,28 +157,28 @@ void downloader::processReply(QNetworkReply* netReply)
                     _err = 1;
                 }
             }
-            taskList[gotId]->setResult(_err);
+            _taskList[gotId]->setResult(_err);
         }
     }
 
     if (_err != 0) {
-        hasError = true;
+        _hasError = true;
     }
 
     netReply->deleteLater();
 
     if (allDownloadsDone()) {
-        receivedFlags.clear();
-        currentDownloads.clear();
-        taskList.clear();
-        waitLoop.exit(hasError);
+        _receivedFlags.clear();
+        _currentDownloads.clear();
+        _taskList.clear();
+        _waitLoop.exit(_hasError);
     }
 }
 
-bool downloader::allDownloadsDone() {
+bool Downloader::allDownloadsDone() {
     bool flag = true;
-     for(int count=0; count<receivedFlags.length(); count++) {
-         if(!receivedFlags[count]) {
+     for(int count=0; count<_receivedFlags.length(); count++) {
+         if(!_receivedFlags[count]) {
              flag = false;
              break;
          }
@@ -186,13 +186,13 @@ bool downloader::allDownloadsDone() {
      return flag;
 }
 
-Request *downloader::addFileRequest(QString address, QString filename, uint16_t forwards)
+Request *Downloader::addFileRequest(QString address, QString filename, uint16_t forwards)
 {
-    type requestType;
+    RequestType requestType;
     if (filename.isEmpty()) {
-        requestType = type::file;
+        requestType = RequestType::STDFILE;
     } else {
-        requestType = type::fileNamed;
+        requestType = RequestType::NAMEDFILE;
     }
 
     Request* newRequest = new Request(address, requestType, filename, forwards);
@@ -200,33 +200,33 @@ Request *downloader::addFileRequest(QString address, QString filename, uint16_t 
     return newRequest;
 }
 
-Request *downloader::addTextRequest(QString address, uint16_t forwards)
+Request *Downloader::addTextRequest(QString address, uint16_t forwards)
 {
-    type requestType = type::htmlBody;
+    RequestType requestType = RequestType::HTMLBODY;
     Request* newRequest = new Request(address, requestType, "", forwards);
     addRequest(newRequest);
     return newRequest;
 }
 
-void downloader::printRequests()
+void Downloader::printRequests()
 {
-    for (int count = 0; count < taskList.length(); count++) {
-        Log::write(taskList[count]->getRequestString() + "\n");
+    for (int count = 0; count < _taskList.length(); count++) {
+        Log::write(_taskList[count]->getRequestString() + "\n");
     }
 }
 
-void downloader::dropRequests()
+void Downloader::dropRequests()
 {
-    receivedFlags.clear();
-    for (int count = 0; count < taskList.length(); count++) {
-        delete(&taskList[count]);
+    _receivedFlags.clear();
+    for (int count = 0; count < _taskList.length(); count++) {
+        delete(&_taskList[count]);
     }
-    taskList.clear();
+    _taskList.clear();
 }
 
-int16_t downloader::singleDownload(QString address, QString pathname, QString filename, uint16_t forwards)
+int16_t Downloader::singleDownload(QString address, QString pathname, QString filename, uint16_t forwards)
 {
-    downloader netSource;
+    Downloader netSource;
     netSource.setTargetPath(pathname);
     Request* request = netSource.addFileRequest(address, filename, forwards);
     netSource.fetch();
@@ -236,9 +236,9 @@ int16_t downloader::singleDownload(QString address, QString pathname, QString fi
     return error_msg;
 }
 
-int16_t downloader::singleTextRequest(QString &output, QString address, uint16_t forwardings)
+int16_t Downloader::singleTextRequest(QString &output, QString address, uint16_t forwardings)
 {
-    downloader netSource;
+    Downloader netSource;
     Request* request = netSource.addTextRequest(address, forwardings);
     netSource.fetch();
 
@@ -248,60 +248,60 @@ int16_t downloader::singleTextRequest(QString &output, QString address, uint16_t
     return error_msg;
 }
 
-void downloader::error(QNetworkReply::NetworkError err)
+void Downloader::error(QNetworkReply::NetworkError err)
 {
     errorMsg("network error");
     Q_UNUSED(err)
-    waitLoop.exit(1);
+    _waitLoop.exit(1);
 }
 
-void downloader::errorMsg(std::string msg, bool bIsFatal)
+void Downloader::errorMsg(std::string msg, bool bIsFatal)
 {
     if (!_will_shut_down) {
         Log::write(msg + "\n");
     }
     if (bIsFatal) {
-        waitLoop.exit(1);
+        _waitLoop.exit(1);
     }
 }
 
 QString Request::getRequestString()
 {
-    switch(this->_requestType) {
-    case type::file: return "File";
-    case type::fileNamed: return "File with custom name";
-    case type::htmlBody: return "Text";
+    switch(_requestType) {
+    case RequestType::STDFILE: return "File";
+    case RequestType::NAMEDFILE: return "File with custom name";
+    case RequestType::HTMLBODY: return "Text";
     }
     return "";
 }
 
 QString Request::getRequestAddress()
 {
-    return this->_address;
+    return _address;
 }
 
 QString Request::getTargetFilename()
 {
-    switch (this->_requestType) {
-    case type::file:
-        return QFileInfo(this->_address).fileName();
-    case type::fileNamed:
-        return this->_filename;
-    case type::htmlBody:
+    switch (_requestType) {
+    case RequestType::STDFILE:
+        return QFileInfo(_address).fileName();
+    case RequestType::NAMEDFILE:
+        return _filename;
+    case RequestType::HTMLBODY:
         return "";
     }
     return "";
 }
 
-type Request::getRequestType()
+RequestType Request::getRequestType()
 {
-    return this->_requestType;
+    return _requestType;
 }
 
 void Request::setResult(int16_t error, QString output)
 {
-    this->_error = error;
-    this->_output = output;
+    _error = error;
+    _output = output;
 }
 
 QString Request::getResult()
@@ -318,10 +318,10 @@ QString Request::getResult()
 
 int16_t Request::getError()
 {
-    return this->_error;
+    return _error;
 }
 
 uint16_t Request::getAllowedForwards()
 {
-    return this->_forwards_allowed;
+    return _forwards_allowed;
 }

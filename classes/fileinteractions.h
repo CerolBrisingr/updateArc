@@ -6,7 +6,7 @@
 #include <QtCore>
 #include <iostream>
 
-namespace fileInteractions
+namespace FileInteractions
 {
     bool unzipArchive(QString archive, QString targetPath);
     bool executeExternalWaiting(QString executablePath, QString working_directory = "");

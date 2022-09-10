@@ -1,36 +1,36 @@
 #include "installer.h"
 
-namespace installer {
+namespace Installer {
 
-installer::installer()
+Installer::Installer()
 {}
 
-installer::~installer()
+Installer::~Installer()
 {}
 
-void installer::setUpTempPath(QString temp_prefix)
+void Installer::setUpTempPath(QString temp_prefix)
 {
     _temp_prefix = temp_prefix;
     _temp_path = _temp_prefix + "_temp";
 
     // Removing possible remains from previous update
-    fileInteractions::removeFolder(_temp_path);
-    fileInteractions::createFolder(_temp_path);
+    FileInteractions::removeFolder(_temp_path);
+    FileInteractions::createFolder(_temp_path);
     return;
 }
 
-void installer::cleanUpAfterInstall()
+void Installer::cleanUpAfterInstall()
 {
     // Don't do a thing it project is not configured anyway
     if(!isPrepared())
         return;
     // Remove files we don't need any more
-    fileInteractions::removeFolder(_temp_path);
+    FileInteractions::removeFolder(_temp_path);
     _temp_path = "";
     _temp_prefix = "";
 }
 
-bool installer::isPrepared()
+bool Installer::isPrepared()
 {
     // Preparation needs to set up a non-empty project name
     bool hasPrefix = !_temp_prefix.isEmpty();

@@ -3,13 +3,13 @@
 
 #include "installer.h"
 
-namespace installer {
+namespace Installer {
 
-class install_boontable : public installer
+class InstallBoontable : public Installer
 {
 public:
-    install_boontable(QString gw_path);
-    ~install_boontable() override;
+    InstallBoontable(QString gw_path);
+    ~InstallBoontable() override;
 
     QString prepare(QString temp_prefix) override;
     int install() override;

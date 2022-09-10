@@ -1,24 +1,24 @@
 #include "install_boontable.h"
 
-namespace installer {
+namespace Installer {
 
-install_boontable::install_boontable(QString gw_path)
-    :installer()
+InstallBoontable::InstallBoontable(QString gw_path)
+    :Installer()
 {
     _install_path = gw_path + "/bin64";
 }
 
-install_boontable::~install_boontable()
+InstallBoontable::~InstallBoontable()
 {}
 
-QString install_boontable::prepare(QString temp_prefix)
+QString InstallBoontable::prepare(QString temp_prefix)
 {
     setUpTempPath(temp_prefix);
     _temp_filename = _temp_path + "/" + _target_filename;
     return _temp_filename;
 }
 
-int install_boontable::install()
+int InstallBoontable::install()
 {
     if(!isPrepared()) {
         Log::write("    Install is not set up yet!\n");
@@ -31,15 +31,15 @@ int install_boontable::install()
     }
 
     Log::write("    Moving file to target location\n");
-    fileInteractions::copyFileTo(_temp_path + "/" + _target_filename, _install_path + "/" + _target_filename);
-    fileInteractions::removeFolder(_temp_path);
+    FileInteractions::copyFileTo(_temp_path + "/" + _target_filename, _install_path + "/" + _target_filename);
+    FileInteractions::removeFolder(_temp_path);
 
     return 0;
 }
 
-int install_boontable::uninstall()
+int InstallBoontable::uninstall()
 {
-    fileInteractions::removeFile(_install_path, _target_filename);
+    FileInteractions::removeFile(_install_path, _target_filename);
     Log::write("Removed boontable dll\n");
     return 0;
 }

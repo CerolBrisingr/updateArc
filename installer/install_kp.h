@@ -3,13 +3,13 @@
 
 #include "installer.h"
 
-namespace installer {
+namespace Installer {
 
-class install_kp : public installer
+class InstallKp : public Installer
 {
 public:
-    install_kp(QString gw_path);
-    ~install_kp() override;
+    InstallKp(QString gw_path);
+    ~InstallKp() override;
 
     QString prepare(QString temp_prefix) override;
     int install() override;

@@ -16,7 +16,7 @@ class GitHupdater : public BaseUpdater
 public:
     GitHupdater(QString& gw_path, QPushButton* install_button, QToolButton* remove_button,
                 QCheckBox* checkbox, Updater::Config::GithupdateConfig cfg,
-                const std::shared_ptr<installer::installer> installer);
+                const std::shared_ptr<Installer::Installer> installer);
     ~GitHupdater() override;
 
     int update() override;
@@ -25,7 +25,7 @@ public:
 private:
     const Updater::Config::GithupdateConfig _cfg;
     const QString _version_key;
-    const std::shared_ptr<installer::installer> _installer;
+    const std::shared_ptr<Installer::Installer> _installer;
 
     QJsonArray fetchReleases(int& err);
     QJsonObject extractLatestFullRelease(QJsonArray &releases);

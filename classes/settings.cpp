@@ -72,10 +72,10 @@ CheckBoxSetting::CheckBoxSetting(QCheckBox* checkbox, QString key)
 
     // Connect changes to checkbox to update on settings
     connect(_checkbox, SIGNAL(stateChanged(int)),
-            this, SLOT(checkbox_changed(int)));
+            this, SLOT(checkboxChanged(int)));
 }
 
-void CheckBoxSetting::checkbox_changed(int state)
+void CheckBoxSetting::checkboxChanged(int state)
 {
     // Checkbox changed, update corresponding value in settings
     if (state == 2) {
@@ -96,10 +96,10 @@ LineEditSettings::LineEditSettings(QLineEdit *lineedit, QString key, QString def
 
     // Connect changes on lineedit to update on settings
     connect(_lineedit, SIGNAL(textChanged(QString)),
-            this, SLOT(lineedit_changed(QString)));
+            this, SLOT(lineeditChanged(QString)));
 }
 
-void LineEditSettings::lineedit_changed(QString text)
+void LineEditSettings::lineeditChanged(QString text)
 {
     _settings.setValue(_key, text);
 }

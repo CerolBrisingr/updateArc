@@ -37,25 +37,25 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
-    void evaluate_autorun();
+    void evaluateAutorun();
 
 public slots:
     void writeLog(QString logline);
 
 private slots:
-    void run_selected_options();
+    void runSelectedOptions();
 
-    void run_gw2();
-    void run_blish();
+    void runGw2();
+    void runBlish();
 
-    void config_gw2_arguments();
-    void config_gw2_updated(QString config);
-    void config_closed();
+    void configGw2Arguments();
+    void configGw2Updated(QString config);
+    void configClosed();
 
-    void on_toolButton_cancel_clicked();
+    void onToolButtonCancelClicked();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow *_ui;
     Form *_set_args = nullptr;
     bool _has_config = false;
     bool _is_cancelled = false;
@@ -67,10 +67,10 @@ private:
     std::vector<CheckBoxSetting*> _check_box_settings;
     std::vector<LineEditSettings*> _line_edit_settings;
 
-    void init_interface();
-    void set_edit(QLineEdit* edit, QString text);
-    bool run_update();
-    void disable_interface();
+    void initInterface();
+    void setEdit(QLineEdit* edit, QString text);
+    bool runUpdate();
+    void disableInterface();
 
     void delay(int secs);
 

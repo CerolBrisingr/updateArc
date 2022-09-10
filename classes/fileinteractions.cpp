@@ -1,6 +1,6 @@
 #include "fileinteractions.h"
 
-namespace fileInteractions {
+namespace FileInteractions {
 
 bool unzipArchive(QString archive, QString targetPath) {
     QProcess m_agent;
