@@ -5,13 +5,13 @@
 #include "classes/logger.h"
 #include <memory>
 
-namespace installer {
+namespace Installer {
 
-class installer
+class Installer
 {
 public:
-    installer();
-    virtual ~installer();
+    Installer();
+    virtual ~Installer();
 
     virtual QString prepare(QString temp_prefix) = 0;  // Prepare download folder and return download path. Returns empty string on fail
     virtual int install() = 0;          // Verifies basic download completeness and then moves it in place

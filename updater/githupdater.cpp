@@ -4,7 +4,7 @@ namespace Updater {
 
 GitHupdater::GitHupdater(QString &gw_path, QPushButton *install_button, QToolButton *remove_button,
                          QCheckBox *checkbox, Updater::Config::GithupdateConfig cfg,
-                         const std::shared_ptr<installer::installer> installer)
+                         const std::shared_ptr<Installer::Installer> installer)
     :BaseUpdater(gw_path, install_button, remove_button, checkbox, cfg._github_project)
     , _cfg(cfg)
     , _version_key("version_installed/" + cfg._github_project)
@@ -52,7 +52,7 @@ int GitHupdater::remove()
 QJsonArray GitHupdater::fetchReleases(int& err)
 {
     QString answer;
-    if (0 != downloader::singleTextRequest(answer, "https://api.github.com/repos/" + _cfg._github_user + "/" + _cfg._github_project + "/releases")) {
+    if (0 != Downloader::singleTextRequest(answer, "https://api.github.com/repos/" + _cfg._github_user + "/" + _cfg._github_project + "/releases")) {
         Log::write("Failed to request releases from " + _cfg._github_project + " repository\n");
         err = 1;
         return QJsonArray();
@@ -156,7 +156,7 @@ void GitHupdater::installAsset(QJsonObject& asset, Version& online_version, int&
     QString temp_filename = _installer->prepare(_cfg._github_project);
 
     Log::write("    Starting download\n");
-    if (0 != downloader::singleDownload(install_link, "", temp_filename)) {
+    if (0 != Downloader::singleDownload(install_link, "", temp_filename)) {
         Log::write("    Download of new version failed\n");
         err = 1;
         return;

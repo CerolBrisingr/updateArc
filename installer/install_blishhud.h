@@ -3,13 +3,13 @@
 
 #include "installer.h"
 
-namespace installer {
+namespace Installer {
 
-class install_blishhud : public installer
+class InstallBlishhud : public Installer
 {
 public:
-    install_blishhud(QString gw_path);
-    ~install_blishhud() override;
+    InstallBlishhud(QString gw_path);
+    ~InstallBlishhud() override;
 
     QString prepare(QString temp_prefix) override;
     int install() override;

@@ -10,8 +10,8 @@
 namespace Ui {
 class Form;
 }
-class command_set;
-class command_list;
+class CommandSet;
+class CommandList;
 
 
 class Form : public QWidget
@@ -27,35 +27,35 @@ signals:
     void updated(QString);
 
 private slots:
-    void on_pushButton_image_clicked();
-    void on_pushButton_repair_clicked();
-    void on_pushButton_diag_clicked();
-    void on_pushButton_verify_clicked();
-    void on_pushButton_cancel_clicked();
-    void on_pushButton_apply_clicked();
-    void on_pushButton_ok_clicked();
-    void on_interaction();
+    void onPushButtonImageClicked();
+    void onPushButtonRepairClicked();
+    void onPushButtonDiagClicked();
+    void onPushButtonVerifyClicked();
+    void onPushButtonCancelClicked();
+    void onPushButtonApplyClicked();
+    void onPushButtonOkClicked();
+    void onInteraction();
 
 private:
-    Ui::Form *ui;
-    command_list *_commands;
+    Ui::Form *_ui;
+    CommandList *_commands;
     UpdateTool *_updater;
 
-    void link_interactions();
+    void linkInteractions();
     void closeEvent(QCloseEvent *event) override;
 };
 
 
-class command_set
+class CommandSet
 {
 public:
-    command_set(QString& command, QCheckBox* check, QComboBox* combo = nullptr);
-    ~command_set();
+    CommandSet(QString& command, QCheckBox* check, QComboBox* combo = nullptr);
+    ~CommandSet();
 
-    QString print_command();
+    QString printCommand();
     bool import(QString argument);
-    bool is_in_use();
-    QString extract_value(QString argument);
+    bool isInUse();
+    QString extractValue(QString argument);
 
 private:
     QString _command;
@@ -64,19 +64,19 @@ private:
 };
 
 
-class command_list
+class CommandList
 {
 public:
-    command_list(QLineEdit *custom_commands);
-    ~command_list();
+    CommandList(QLineEdit *custom_commands);
+    ~CommandList();
 
     void add(QString command, QCheckBox* check, QComboBox* combo = nullptr);
-    void import_arguments(QString arguments);
-    QString create_command_string();
+    void importArguments(QString arguments);
+    QString createCommandString();
     QLineEdit *_custom_commands;
 
 private:
-    std::vector<command_set*> _sets;
+    std::vector<CommandSet*> _sets;
 };
 
 

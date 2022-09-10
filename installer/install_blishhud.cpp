@@ -1,24 +1,24 @@
 #include "install_blishhud.h"
 
-namespace installer {
+namespace Installer {
 
-install_blishhud::install_blishhud(QString gw_path)
-    :installer()
+InstallBlishhud::InstallBlishhud(QString gw_path)
+    :Installer()
 {
     _install_path = gw_path + "/addons/Blish-HUD";
 }
 
-install_blishhud::~install_blishhud()
+InstallBlishhud::~InstallBlishhud()
 {}
 
-QString install_blishhud::prepare(QString temp_prefix)
+QString InstallBlishhud::prepare(QString temp_prefix)
 {
     setUpTempPath(temp_prefix);
     _temp_filename = _temp_path + "/download.zip";
     return _temp_filename;
 }
 
-int install_blishhud::install()
+int InstallBlishhud::install()
 {
     if(!isPrepared()) {
         Log::write("    Install is not set up yet!\n");
@@ -26,7 +26,7 @@ int install_blishhud::install()
     }
 
     Log::write("    Extracting archive\n");
-    if (!fileInteractions::unzipArchive(_temp_filename, _temp_path)) {
+    if (!FileInteractions::unzipArchive(_temp_filename, _temp_path)) {
         Log::write("    archive extraction failed\n");
         return 1;
     }
@@ -37,16 +37,16 @@ int install_blishhud::install()
     }
 
     Log::write("    Moving files to target location\n");
-    fileInteractions::removeFile("", _temp_filename);
-    fileInteractions::copyFolderTo(_temp_path, _install_path);
-    fileInteractions::removeFolder(_temp_path);
+    FileInteractions::removeFile("", _temp_filename);
+    FileInteractions::copyFolderTo(_temp_path, _install_path);
+    FileInteractions::removeFolder(_temp_path);
 
     return 0;
 }
 
-int install_blishhud::uninstall()
+int InstallBlishhud::uninstall()
 {
-    fileInteractions::removeFolder(_install_path);
+    FileInteractions::removeFolder(_install_path);
     Log::write("Removed install folder for <Blish-HUD>\n");
     return 0;
 }

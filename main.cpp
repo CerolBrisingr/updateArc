@@ -8,6 +8,6 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
-    w.evaluate_autorun();
+    w.evaluateAutorun();
     return a.exec();
 }

@@ -31,7 +31,7 @@ public:
     CheckBoxSetting(QCheckBox* checkbox, QString key);
 
 private slots:
-    void checkbox_changed(int state);
+    void checkboxChanged(int state);
 
 private:
     QCheckBox* _checkbox;
@@ -48,7 +48,7 @@ public:
     LineEditSettings(QLineEdit* lineedit, QString key, QString default_entry = "");
 
 private slots:
-    void lineedit_changed(QString text);
+    void lineeditChanged(QString text);
 
 private:
     QLineEdit* _lineedit;

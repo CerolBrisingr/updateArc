@@ -3,44 +3,44 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , _ui(new Ui::MainWindow)
     , _settings("settings.ini")
 {
-    ui->setupUi(this);
+    _ui->setupUi(this);
     connect(&Log::writer, &Log::Logger::sendText,
             this, &MainWindow::writeLog,
             Qt::ConnectionType::QueuedConnection);
 
-    init_interface();
+    initInterface();
     _update_helper = new UpdateTool();
     if (!_update_helper->isValid()) {
-        disable_interface();
+        disableInterface();
     }
 
     auto gw_path = _update_helper->getGwPath();
-    _updaters.emplace_back(new Updater::ArcUpdater(gw_path, ui->pushButton_arcdps, ui->toolButton_block_arc, ui->checkBox_arcdps, "arcdps"));
+    _updaters.emplace_back(new Updater::ArcUpdater(gw_path, _ui->pushButton_arcdps, _ui->toolButton_block_arc, _ui->checkBox_arcdps, "arcdps"));
 
-    std::shared_ptr<installer::installer> blishhud_installer = std::make_shared<installer::install_blishhud>(gw_path);
-    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_blish, ui->toolButton_remove_blish, ui->checkBox_blish, Updater::Config::getBlishConfig(),
+    std::shared_ptr<Installer::Installer> blishhud_installer = std::make_shared<Installer::InstallBlishhud>(gw_path);
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, _ui->pushButton_blish, _ui->toolButton_remove_blish, _ui->checkBox_blish, Updater::Config::getBlishConfig(),
                                                     blishhud_installer));
 
-    std::shared_ptr<installer::installer> boontable_installer = std::make_shared<installer::install_boontable>(gw_path);
-    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_boon, ui->toolButton_remove_boon, ui->checkBox_boon, Updater::Config::getBoontableConfig(),
+    std::shared_ptr<Installer::Installer> boontable_installer = std::make_shared<Installer::InstallBoontable>(gw_path);
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, _ui->pushButton_boon, _ui->toolButton_remove_boon, _ui->checkBox_boon, Updater::Config::getBoontableConfig(),
                                                     boontable_installer));
 
-    std::shared_ptr<installer::installer> kp_installer = std::make_shared<installer::install_kp>(gw_path);
-    _updaters.emplace_back(new Updater::GitHupdater(gw_path, ui->pushButton_kp, ui->toolButton_remove_kp, ui->checkBox_kp, Updater::Config::getKpConfig(),
+    std::shared_ptr<Installer::Installer> kp_installer = std::make_shared<Installer::InstallKp>(gw_path);
+    _updaters.emplace_back(new Updater::GitHupdater(gw_path, _ui->pushButton_kp, _ui->toolButton_remove_kp, _ui->checkBox_kp, Updater::Config::getKpConfig(),
                                                     kp_installer));
 
-    connect(ui->pushButton_run_manually, SIGNAL(clicked()),
-            this, SLOT(run_selected_options()));
+    connect(_ui->pushButton_run_manually, SIGNAL(clicked()),
+            this, SLOT(runSelectedOptions()));
 
-    connect(ui->pushButton_run_gw2, SIGNAL(clicked()),
-            this, SLOT(run_gw2()));
-    connect(ui->pushButton_run_blishhud, SIGNAL(clicked()),
-            this, SLOT(run_blish()));
-    connect(ui->toolButton_config_run_gw2, SIGNAL(clicked()),
-            this, SLOT(config_gw2_arguments()));
+    connect(_ui->pushButton_run_gw2, SIGNAL(clicked()),
+            this, SLOT(runGw2()));
+    connect(_ui->pushButton_run_blishhud, SIGNAL(clicked()),
+            this, SLOT(runBlish()));
+    connect(_ui->toolButton_config_run_gw2, SIGNAL(clicked()),
+            this, SLOT(configGw2Arguments()));
 
 }
 
@@ -57,16 +57,16 @@ MainWindow::~MainWindow()
     for (auto* check_box_setting: _check_box_settings) {
         delete check_box_setting;
     }
-    delete ui;
+    delete _ui;
 }
 
-void MainWindow::evaluate_autorun() {
+void MainWindow::evaluateAutorun() {
     if (!_update_helper->isValid()) {
         return;
     }
-    if (ui->checkBox_autorun->isChecked()) {
+    if (_ui->checkBox_autorun->isChecked()) {
         Log::write("Autorun active. Starting selected options.\n");
-        run_selected_options();
+        runSelectedOptions();
     } else {
         Log::write("Autorun disabled. Do something already!\n");
     }
@@ -74,33 +74,33 @@ void MainWindow::evaluate_autorun() {
 
 void MainWindow::writeLog(QString logline)
 {
-    ui->eventlog->moveCursor(QTextCursor::End);
-    ui->eventlog->insertPlainText(logline);
-    if (!ui->eventlog->hasFocus()) {
-        QScrollBar* sb = ui->eventlog->verticalScrollBar();
+    _ui->eventlog->moveCursor(QTextCursor::End);
+    _ui->eventlog->insertPlainText(logline);
+    if (!_ui->eventlog->hasFocus()) {
+        QScrollBar* sb = _ui->eventlog->verticalScrollBar();
         sb->setValue(sb->maximum());
     }
 }
 
-void MainWindow::init_interface()
+void MainWindow::initInterface()
 {
-    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_gw2, "starters/gw2_run"));
-    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_run_blishhud, "starters/blish_run"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_run_gw2, "starters/gw2_run"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_run_blishhud, "starters/blish_run"));
 
-    _line_edit_settings.emplace_back(new LineEditSettings(ui->lineEdit_run_gw2, "starters/gw2_arguments", "-maploadinfo"));
+    _line_edit_settings.emplace_back(new LineEditSettings(_ui->lineEdit_run_gw2, "starters/gw2_arguments", "-maploadinfo"));
 
-    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autorun, "general/autorun"));
-    _check_box_settings.emplace_back(new CheckBoxSetting(ui->checkBox_autoclose, "general/autoclose"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_autorun, "general/autorun"));
+    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_autoclose, "general/autoclose"));
 
-    ui->toolButton_config_arc->setVisible(false);
+    _ui->toolButton_config_arc->setVisible(false);
 }
 
-void MainWindow::set_edit(QLineEdit *edit, QString text)
+void MainWindow::setEdit(QLineEdit *edit, QString text)
 {
     edit->setText(text);
 }
 
-bool MainWindow::run_update()
+bool MainWindow::runUpdate()
 {
     bool do_start_gw2 = _settings.getValue("starters/gw2_run").compare("on") == 0;
     bool do_start_blish = _settings.getValue("starters/blish_run").compare("on") == 0;
@@ -113,12 +113,12 @@ bool MainWindow::run_update()
     if (_is_cancelled) return false;
 
     if (do_start_gw2) {
-        run_gw2();
+        runGw2();
     }
     if (_is_cancelled) return false;
 
     if (do_start_blish) {
-        run_blish();
+        runBlish();
     }
 
     if (_settings.getValue("General/autoclose").compare("on") == 0) {
@@ -139,33 +139,33 @@ bool MainWindow::run_update()
     return true;
 }
 
-void MainWindow::disable_interface()
+void MainWindow::disableInterface()
 {
-    ui->checkBox_arcdps->setEnabled(false);
-    ui->checkBox_autoclose->setEnabled(false);
-    ui->checkBox_autorun->setEnabled(false);
-    ui->checkBox_run_gw2->setEnabled(false);
-    ui->checkBox_boon->setEnabled(false);
-    ui->checkBox_kp->setEnabled(false);
-    ui->checkBox_blish->setEnabled(false);
-    ui->checkBox_run_blishhud->setEnabled(false);
+    _ui->checkBox_arcdps->setEnabled(false);
+    _ui->checkBox_autoclose->setEnabled(false);
+    _ui->checkBox_autorun->setEnabled(false);
+    _ui->checkBox_run_gw2->setEnabled(false);
+    _ui->checkBox_boon->setEnabled(false);
+    _ui->checkBox_kp->setEnabled(false);
+    _ui->checkBox_blish->setEnabled(false);
+    _ui->checkBox_run_blishhud->setEnabled(false);
 
-    ui->pushButton_arcdps->setEnabled(false);
-    ui->pushButton_run_gw2->setEnabled(false);
-    ui->pushButton_run_manually->setEnabled(false);
-    ui->pushButton_blish->setEnabled(false);
-    ui->pushButton_boon->setEnabled(false);
-    ui->pushButton_kp->setEnabled(false);
-    ui->pushButton_run_blishhud->setEnabled(false);
+    _ui->pushButton_arcdps->setEnabled(false);
+    _ui->pushButton_run_gw2->setEnabled(false);
+    _ui->pushButton_run_manually->setEnabled(false);
+    _ui->pushButton_blish->setEnabled(false);
+    _ui->pushButton_boon->setEnabled(false);
+    _ui->pushButton_kp->setEnabled(false);
+    _ui->pushButton_run_blishhud->setEnabled(false);
 
-    ui->lineEdit_run_gw2->setEnabled(false);
+    _ui->lineEdit_run_gw2->setEnabled(false);
 
-    ui->toolButton_block_arc->setEnabled(false);
-    ui->toolButton_cancel->setEnabled(false);
-    ui->toolButton_config_run_gw2->setEnabled(false);
-    ui->toolButton_remove_blish->setEnabled(false);
-    ui->toolButton_remove_boon->setEnabled(false);
-    ui->toolButton_remove_kp->setEnabled(false);
+    _ui->toolButton_block_arc->setEnabled(false);
+    _ui->toolButton_cancel->setEnabled(false);
+    _ui->toolButton_config_run_gw2->setEnabled(false);
+    _ui->toolButton_remove_blish->setEnabled(false);
+    _ui->toolButton_remove_boon->setEnabled(false);
+    _ui->toolButton_remove_kp->setEnabled(false);
 }
 
 void MainWindow::delay(int secs)
@@ -177,61 +177,61 @@ void MainWindow::delay(int secs)
     }
 }
 
-void MainWindow::run_selected_options()
+void MainWindow::runSelectedOptions()
 {
-    ui->pushButton_run_manually->setEnabled(false);
-    ui->toolButton_cancel->setEnabled(true);
+    _ui->pushButton_run_manually->setEnabled(false);
+    _ui->toolButton_cancel->setEnabled(true);
 
     _is_cancelled = false;
-    if (!run_update()) {
+    if (!runUpdate()) {
         writeLog("Execution cancelled\n");
     }
 
-    ui->toolButton_cancel->setEnabled(false);
-    ui->pushButton_run_manually->setEnabled(true);
+    _ui->toolButton_cancel->setEnabled(false);
+    _ui->pushButton_run_manually->setEnabled(true);
 }
 
-void MainWindow::run_gw2()
+void MainWindow::runGw2()
 {
-    ui->pushButton_run_gw2->setEnabled(false);
+    _ui->pushButton_run_gw2->setEnabled(false);
     _update_helper->startGW2();
-    ui->pushButton_run_gw2->setEnabled(true);
+    _ui->pushButton_run_gw2->setEnabled(true);
 }
 
-void MainWindow::run_blish()
+void MainWindow::runBlish()
 {
-    ui->pushButton_run_blishhud->setEnabled(false);
+    _ui->pushButton_run_blishhud->setEnabled(false);
     _update_helper->startBlish();
-    ui->pushButton_run_blishhud->setEnabled(true);
+    _ui->pushButton_run_blishhud->setEnabled(true);
 }
 
-void MainWindow::config_gw2_arguments()
+void MainWindow::configGw2Arguments()
 {
     if (!_has_config) {
-        QString arguments = ui->lineEdit_run_gw2->text();
+        QString arguments = _ui->lineEdit_run_gw2->text();
         _set_args = new Form(arguments, _update_helper);
         _has_config = true;
         _set_args->show();
         connect(_set_args, SIGNAL(closed()),
-                this, SLOT(config_closed()));
+                this, SLOT(configClosed()));
         connect(_set_args, SIGNAL(updated(QString)),
-                this, SLOT(config_gw2_updated(QString)));
+                this, SLOT(configGw2Updated(QString)));
     }
 }
 
-void MainWindow::config_gw2_updated(QString config)
+void MainWindow::configGw2Updated(QString config)
 {
-    ui->lineEdit_run_gw2->setText(config);
+    _ui->lineEdit_run_gw2->setText(config);
 }
 
-void MainWindow::config_closed()
+void MainWindow::configClosed()
 {
     _set_args->deleteLater();
     _has_config = false;
     _set_args = nullptr;
 }
 
-void MainWindow::on_toolButton_cancel_clicked()
+void MainWindow::onToolButtonCancelClicked()
 {
     _is_cancelled = true;
 }
