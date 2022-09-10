@@ -121,7 +121,7 @@ void Downloader::processReply(QNetworkReply* netReply)
     } else {
         // Request successful
         QString targetFilename =_taskList[gotId]->getTargetFilename();
-        if (_taskList[gotId]->getRequestType() == RequestType::_htmlBody) {
+        if (_taskList[gotId]->getRequestType() == RequestType::HTMLBODY) {
             // Write response to QString
             QString _output;
             QTextStream streamer(&_output);
@@ -190,9 +190,9 @@ Request *Downloader::addFileRequest(QString address, QString filename, uint16_t 
 {
     RequestType requestType;
     if (filename.isEmpty()) {
-        requestType = RequestType::_file;
+        requestType = RequestType::STDFILE;
     } else {
-        requestType = RequestType::_fileNamed;
+        requestType = RequestType::NAMEDFILE;
     }
 
     Request* newRequest = new Request(address, requestType, filename, forwards);
@@ -202,7 +202,7 @@ Request *Downloader::addFileRequest(QString address, QString filename, uint16_t 
 
 Request *Downloader::addTextRequest(QString address, uint16_t forwards)
 {
-    RequestType requestType = RequestType::_htmlBody;
+    RequestType requestType = RequestType::HTMLBODY;
     Request* newRequest = new Request(address, requestType, "", forwards);
     addRequest(newRequest);
     return newRequest;
@@ -268,9 +268,9 @@ void Downloader::errorMsg(std::string msg, bool bIsFatal)
 QString Request::getRequestString()
 {
     switch(_requestType) {
-    case RequestType::_file: return "File";
-    case RequestType::_fileNamed: return "File with custom name";
-    case RequestType::_htmlBody: return "Text";
+    case RequestType::STDFILE: return "File";
+    case RequestType::NAMEDFILE: return "File with custom name";
+    case RequestType::HTMLBODY: return "Text";
     }
     return "";
 }
@@ -283,11 +283,11 @@ QString Request::getRequestAddress()
 QString Request::getTargetFilename()
 {
     switch (_requestType) {
-    case RequestType::_file:
+    case RequestType::STDFILE:
         return QFileInfo(_address).fileName();
-    case RequestType::_fileNamed:
+    case RequestType::NAMEDFILE:
         return _filename;
-    case RequestType::_htmlBody:
+    case RequestType::HTMLBODY:
         return "";
     }
     return "";

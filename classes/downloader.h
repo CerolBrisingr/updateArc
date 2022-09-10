@@ -17,9 +17,9 @@ class Downloader;
 
 
 enum RequestType {
-    _file,
-    _fileNamed,
-    _htmlBody
+    STDFILE,
+    NAMEDFILE,
+    HTMLBODY
 };
 
 
