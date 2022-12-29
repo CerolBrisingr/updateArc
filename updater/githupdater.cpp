@@ -20,12 +20,12 @@ int GitHupdater::update()
     Log::write("Running updater for \"" + _cfg._github_project + "\"\n");
     QJsonArray releases = fetchReleases(err);
     if (err != 0) {
-        Log::write("Failed to fetch release of " + _cfg._github_project + "\n");
+        Log::write("  Failed to fetch release of " + _cfg._github_project + "\n");
         return err;
     }
     QJsonObject release = extractLatestFullRelease(releases);
     if (release.empty()) {
-        Log::write("Could not locate any full release for " + _cfg._github_project + "\n");
+        Log::write("  Could not locate any full release for " + _cfg._github_project + "\n");
     }
     Version online_version = extractVersion(release);
     Version local_version = readLocalVersion();
@@ -53,7 +53,7 @@ QJsonArray GitHupdater::fetchReleases(int& err)
 {
     QString answer;
     if (0 != Downloader::singleTextRequest(answer, "https://api.github.com/repos/" + _cfg._github_user + "/" + _cfg._github_project + "/releases")) {
-        Log::write("Failed to request releases from " + _cfg._github_project + " repository\n");
+        Log::write("  Failed to request releases from " + _cfg._github_project + " repository\n");
         err = 1;
         return QJsonArray();
     }
@@ -83,7 +83,7 @@ Version GitHupdater::extractVersion(QJsonObject& release)
 {
     const auto tag = SimpleJson::getString(release, "tag_name");
     Version tag_version = Version(tag, _cfg._version_digits, _cfg._tag_prefix, _cfg._tag_suffix);
-    Log::write("Extracted Version \"" + tag_version.toString() + "\" from tag \"" + tag + "\"\n");
+    Log::write("  Extracted Version \"" + tag_version.toString() + "\" from tag \"" + tag + "\"\n");
     return tag_version;
 }
 
@@ -96,18 +96,18 @@ Version GitHupdater::readLocalVersion()
 int GitHupdater::compareVersions(Version& local_version, Version& online_version)
 {
     if (local_version == online_version) {
-        Log::write("Local and online version match: " + local_version.toString() + "\n");
-        Log::write("Not updating " + _cfg._github_project + "\n");
+        Log::write("  Local and online version match: " + local_version.toString() + "\n");
+        Log::write("  Not updating " + _cfg._github_project + "\n");
         return 1;
     }
     Log::write("    Local version:  " + local_version.toString() + "\n");
     Log::write("    Online version: " + online_version.toString() + "\n");
     if (local_version > online_version) {
-        Log::write("Looks like the online version did step back.\n");
-        Log::write("Consider removing the current version. Will not update!\n");
+        Log::write("  Looks like the online version did step back.\n");
+        Log::write("  Consider removing the current version. Will not update!\n");
         return 1;
     }
-    Log::write("New version available for " + _cfg._github_project + ", starting Update!\n");
+    Log::write("  New version available for " + _cfg._github_project + ", starting Update!\n");
     return 0;
 }
 
@@ -125,7 +125,7 @@ void GitHupdater::installUpdate(QJsonObject& release, Version& online_version, i
 QJsonObject GitHupdater::getInstallAsset(QJsonObject& release, int& err)
 {
     QJsonArray assets = SimpleJson::getArray(release, "assets");
-    Log::write("Scanning assets\n");
+    Log::write("    Scanning assets\n");
     for (auto it = assets.begin(); it != assets.end(); ++it) {
         QJsonObject asset = it->toObject();
         QString asset_type = SimpleJson::getString(asset, "content_type", "not_found");

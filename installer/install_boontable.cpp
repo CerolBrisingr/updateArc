@@ -30,6 +30,9 @@ int InstallBoontable::install()
         return 1;
     }
 
+    Log::write("    Removing old files\n");
+    this->uninstall();
+
     Log::write("    Moving file to target location\n");
     FileInteractions::copyFileTo(_temp_path + "/" + _target_filename, _install_path + "/" + _target_filename);
     FileInteractions::removeFolder(_temp_path);
@@ -40,7 +43,7 @@ int InstallBoontable::install()
 int InstallBoontable::uninstall()
 {
     FileInteractions::removeFile(_install_path, _target_filename);
-    Log::write("Removed boontable dll\n");
+    Log::write("  Removed boontable dll\n");
     return 0;
 }
 

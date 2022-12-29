@@ -47,7 +47,7 @@ int InstallBlishhud::install()
 int InstallBlishhud::uninstall()
 {
     FileInteractions::removeFolder(_install_path);
-    Log::write("Removed install folder for <Blish-HUD>\n");
+    Log::write("  Removed install folder for <Blish-HUD>\n");
     return 0;
 }
 

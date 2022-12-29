@@ -13,7 +13,7 @@ void ArcUpdater::removeSlot()
     _remove_button->setEnabled(false);
     if (_settings.hasKey("updaters/block_arcdps")) {
         _settings.removeKey("updaters/block_arcdps");
-        Log::write("Removed blocker for ArcDPS update.\n");
+        Log::write("  Removed blocker for ArcDPS update.\n");
     } else {
         remove();
     }
@@ -25,11 +25,11 @@ int ArcUpdater::remove()
 {
     // ArcDPS still installed? Provide option to install blocker
     if (verifyArcInstallation()) {
-        Log::write("Removing ArcDPS. Will block the current version from being re-installed.\n");
-        Log::write("Click again to remove this blocker.\n");
+        Log::write("  Removing ArcDPS. Will block the current version from being re-installed.\n");
+        Log::write("  Click again to remove this blocker.\n");
 
         QString sLocalHash = FileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
-        Log::write("Blocking installation of version " + sLocalHash + "\n");
+        Log::write("  Blocking installation of version " + sLocalHash + "\n");
         _settings.setValue(_arc_blocker_key, sLocalHash);
     }
 
@@ -121,7 +121,7 @@ QString ArcUpdater::getRemoteHash()
     // Read md5 hash of online version
     QString output;
     if (0 != Downloader::singleTextRequest(output, "https://www.deltaconnected.com/arcdps/x64/d3d11.dll.md5sum")){
-        Log::write("Download failed\n");
+        Log::write("  Download failed\n");
         return "";
     }
     return output;
@@ -151,7 +151,7 @@ bool ArcUpdater::verifyArcInstallation()
 bool ArcUpdater::downloadArc(QString pathname)
 {
     if (0 != Downloader::singleDownload("https://www.deltaconnected.com/arcdps/x64/d3d11.dll", pathname)) {
-        Log::write("Download failed\n");
+        Log::write("  Download failed\n");
         return false;
     }
     return true;

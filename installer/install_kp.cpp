@@ -36,6 +36,9 @@ int InstallKp::install()
         return 1;
     }
 
+    Log::write("    Removing old files\n");
+    this->uninstall();
+
     Log::write("    Moving file to target location\n");
     FileInteractions::copyFileTo(_temp_path + "/" + _target_filename, _install_path + "/" + _target_filename);
     FileInteractions::removeFolder(_temp_path);
@@ -46,7 +49,7 @@ int InstallKp::install()
 int InstallKp::uninstall()
 {
     FileInteractions::removeFile(_install_path, _target_filename);
-    Log::write("Removed ArcDPS/Blish-HUD bridge dll\n");
+    Log::write("  Removed ArcDPS/Blish-HUD bridge dll\n");
     return 0;
 }
 
