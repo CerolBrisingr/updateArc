@@ -231,7 +231,8 @@ void MainWindow::configClosed()
     _set_args = nullptr;
 }
 
-void MainWindow::onToolButtonCancelClicked()
+void MainWindow::on_toolButton_cancel_clicked()
 {
     _is_cancelled = true;
 }
+

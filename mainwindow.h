@@ -52,7 +52,7 @@ private slots:
     void configGw2Updated(QString config);
     void configClosed();
 
-    void onToolButtonCancelClicked();
+    void on_toolButton_cancel_clicked();
 
 private:
     Ui::MainWindow *_ui;
