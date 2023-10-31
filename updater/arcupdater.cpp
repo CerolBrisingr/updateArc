@@ -11,7 +11,8 @@ void ArcUpdater::removeSlot()
 {
     _install_button->setEnabled(false);
     _remove_button->setEnabled(false);
-    if (_settings.hasKey("updaters/block_arcdps")) {
+    bool workingInstall = verifyArcInstallation();
+    if (_settings.hasKey("updaters/block_arcdps") && !workingInstall) {
         _settings.removeKey("updaters/block_arcdps");
         Log::write("  Removed blocker for ArcDPS update.\n");
     } else {
@@ -36,6 +37,13 @@ int ArcUpdater::remove()
     FileInteractions::removeFile(_gw_path + "/bin64", "d3d9.dll");
     FileInteractions::removeFile(_gw_path + "", "d3d11.dll");
     FileInteractions::removeFile(_gw_path + "/bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
+
+    if (verifyArcInstallation()) {
+        Log::write("  ERROR: ArcDPS is still installed!\n");
+        Log::write("         Make sure that the game is not running.\n");
+        Log::write("         Make sure that the launcher is not running.\n");
+        Log::write("         Then try again.\n");
+    }
 
     return 0;
 }
