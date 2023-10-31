@@ -79,7 +79,7 @@ QStringList UpdateTool::loadGW2Arguments() {
 
     QString argument_chain = _settings.getValue("starters/gw2_arguments", "");
     QStringList arguments;
-    QStringList split_by_spaces = argument_chain.split(" ", QString::SplitBehavior::SkipEmptyParts);
+    QStringList split_by_spaces = argument_chain.split(" ", Qt::SkipEmptyParts);
     for (auto& argument: split_by_spaces) {
         arguments.append(argument.trimmed());
     }
