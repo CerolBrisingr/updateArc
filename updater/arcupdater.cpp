@@ -24,6 +24,7 @@ void ArcUpdater::removeSlot()
 
 int ArcUpdater::remove()
 {
+    int err = 0;
     // ArcDPS still installed? Provide option to install blocker
     if (verifyArcInstallation()) {
         Log::write("  Removing ArcDPS. Will block the current version from being re-installed.\n");
@@ -34,6 +35,11 @@ int ArcUpdater::remove()
         _settings.setValue(_arc_blocker_key, sLocalHash);
     }
 
+    fileRemoval(err);
+    return 0;
+}
+
+bool ArcUpdater::fileRemoval(int& err) {
     FileInteractions::removeFile(_gw_path + "/bin64", "d3d9.dll");
     FileInteractions::removeFile(_gw_path + "", "d3d11.dll");
     FileInteractions::removeFile(_gw_path + "/bin64", "d3d9_arcdps_buildtemplates.dll");  // No longer available but purge remains
@@ -43,9 +49,10 @@ int ArcUpdater::remove()
         Log::write("         Make sure that the game is not running.\n");
         Log::write("         Make sure that the launcher is not running.\n");
         Log::write("         Then try again.\n");
+        err = 1;
+        return false;
     }
-
-    return 0;
+    return true;
 }
 
 int ArcUpdater::update()
@@ -61,67 +68,23 @@ int ArcUpdater::update()
     return out;
 }
 
-int ArcUpdater::runArcUpdate() {
-
+int ArcUpdater::runArcUpdate()
+{
     QString sLocalHash;
+    int err = 0;
     QString sRemoteHash = getRemoteHash();
-    if (sRemoteHash.isEmpty()) {
-        Log::write("    Could not read source hash file\n");
-        return 1;
-    }
-    if (isBlockedArcVersion(sRemoteHash)) {
-        Log::write("    Curently available version is blocked. Run with \"-remove\" to remove blocker\n");
-        return 1;
-    } else {
-        // Remove previous blocker, if there is one
-        _settings.removeKey(_arc_blocker_key);
-    }
-    QString targetpath = _gw_path;
 
-    if (verifyArcInstallation()) {
-        Log::write("    ArcDPS is seemingly already installed, looking for updates\n");
-        sLocalHash = FileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
-        if (sLocalHash.isEmpty()) {
-            Log::write("    Could not calculate hash value for ArcDPS library.\n");
-            return 1;
-        }
-        if (sRemoteHash.contains(sLocalHash)) {
-            Log::write("    Match! Already running newest version!\n");
-            return 0;
-        } else {
-            Log::write("    No Match! Downloading new version!\n");
-            if (!downloadArc(targetpath)) {
-                return 1;
-            }
-        }
-    } else {
-        Log::write("    ArcDPS not (fully) installed, fixing that\n");
-        if (!downloadArc(targetpath)) {
-            return 1;
-        }
+    testCanUpdate(err, sRemoteHash);
+    if (err != 0) {
+        return err;
     }
 
-    // Verify correct download
-    sLocalHash = FileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
-    if (sLocalHash.isEmpty()) {
-        Log::write("    Could not calculate hash value for downloaded ArcDPS library.\n");
-        return 1;
+    if (!runningUpdate(err, sRemoteHash, sLocalHash)) {
+        return err;
     }
-    Log::write("     File: " + sLocalHash + "\n");
-    if (!sRemoteHash.contains(sLocalHash)) {
-        Log::write("    Something is wrong, hashes do not match!\n");
-        if (this->remove() == 1) {
-            Log::write("    Removing files somehow went wrong, too! Is Gw2 running?\n");
-        }
-        return 1;
-    } else {
-        Log::write("    Hashes match, update successful!\n");
-        if (_settings.getValueWrite("customize/arcdps_dx9", "off") == "on") {
-            Log::write("    Moving dx9 copy in place.\n");
-            FileInteractions::copyFileTo(_gw_path + "/d3d11.dll", _gw_path + "/bin64/d3d9.dll");
-        }
-    }
-    return 0;
+
+    testUpdatedVersion(err, sRemoteHash, sLocalHash);
+    return err;
 }
 
 QString ArcUpdater::getRemoteHash()
@@ -163,6 +126,82 @@ bool ArcUpdater::downloadArc(QString pathname)
         return false;
     }
     return true;
+}
+
+void ArcUpdater::testCanUpdate(int& err, QString sRemoteHash)
+{
+    if (sRemoteHash.isEmpty()) {
+        Log::write("    Could not read source hash file\n");
+        err = 1;
+        return;
+    }
+    if (isBlockedArcVersion(sRemoteHash)) {
+        Log::write("    Curently available version is blocked. Choose [-] again to remove the blocker!\n");
+        err = 1;
+        return;
+    } else {
+        // Remove previous blocker, if there is one
+        _settings.removeKey(_arc_blocker_key);
+    }
+}
+
+bool ArcUpdater::runningUpdate(int& err, QString sRemoteHash, QString sLocalHash)
+{
+    QString targetpath = _gw_path;
+    bool installed = verifyArcInstallation();
+    if (installed) {
+        Log::write("    ArcDPS is seemingly already installed, looking for updates\n");
+        sLocalHash = FileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
+        if (sLocalHash.isEmpty()) {
+            Log::write("    Could not calculate hash value for ArcDPS library.\n");
+            err = 1;
+            return false;
+        }
+        if (sRemoteHash.contains(sLocalHash)) {
+            Log::write("    Match! Already running newest version!\n");
+            return false;
+        } else {
+            Log::write("    No Match! Downloading new version!\n");
+            if (!downloadArc(targetpath)) {
+                err = 1;
+                return false;
+            }
+        }
+    } else {
+        Log::write("    ArcDPS not (fully) installed, fixing that\n");
+        if (!downloadArc(targetpath)) {
+            err = 1;
+            return false;
+        }
+    }
+    return true;
+}
+
+void ArcUpdater::testUpdatedVersion(int& err, QString sRemoteHash, QString sLocalHash)
+{
+    // Verify correct download
+    sLocalHash = FileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
+    if (sLocalHash.isEmpty()) {
+        Log::write("    Could not calculate hash value for downloaded ArcDPS library.\n");
+        fileRemoval(err);
+        err = 1;
+        return;
+    }
+    Log::write("     File: " + sLocalHash + "\n");
+    if (!sRemoteHash.contains(sLocalHash)) {
+        Log::write("    Something is wrong, hashes do not match!\n");
+        if (!fileRemoval(err)) {
+            Log::write("    Ouch! Now you have a file that does not match the hash and I could not remove it either.\n");
+        }
+        err = 1;
+        return;
+    } else {
+        Log::write("    Hashes match, update successful!\n");
+        if (_settings.getValueWrite("customize/arcdps_dx9", "off") == "on") {
+            Log::write("    Moving dx9 copy in place.\n");
+            FileInteractions::copyFileTo(_gw_path + "/d3d11.dll", _gw_path + "/bin64/d3d9.dll");
+        }
+    }
 }
 
 } // namespace Updater
