@@ -2,6 +2,10 @@
 
 if exist "target" rmdir /s /q "target"
 
+if "%~1"=="" (set BUILD=debug) ELSE (set BUILD=%1)
+set EXEPATH=.\build\%BUILD%\UpdateArc.exe
+
+
 mkdir "target"
 mkdir target\source
 mkdir target\source\classes
@@ -17,5 +21,5 @@ xcopy /y /i ".\form.ui" ".\target\source"
 xcopy /y /i ".\UpdateArc.pro" ".\target\source"
 xcopy /y /i ".\UpdateArc.pro.user" ".\target\source"
 xcopy /y /i ".\classes" ".\target\source\classes"
-xcopy /y /i "..\build\release\UpdateArc.exe" ".\target"
+xcopy /y /i %EXEPATH% ".\target"
 xcopy /y /i ".\publish.bat" ".\target\source"
