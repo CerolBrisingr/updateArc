@@ -53,6 +53,10 @@ FORMS += \
 
 RC_ICONS = resources\arc.ico
 
+VERSION = 6.0.0
+QMAKE_TARGET_DESCRIPTION = "Updater for useful Guild Wars 2 add-ons"
+QMAKE_TARGET_COPYRIGHT = "MIT"
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

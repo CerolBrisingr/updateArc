@@ -10,6 +10,8 @@ mkdir "target"
 mkdir target\source
 mkdir target\source\classes
 
+xcopy /y /i ".\LICENSE" ".\target"
+
 xcopy /y /i ".\resources\*.dll" ".\target"
 xcopy /y /i ".\main.cpp" ".\target\source"
 xcopy /y /i ".\mainwindow.cpp" ".\target\source"
