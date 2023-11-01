@@ -20,11 +20,17 @@ private slots:
 private:
     const QString _arc_blocker_key = "updaters/block_arcdps";
 
+    bool fileRemoval(int& err);
+
     int runArcUpdate();
     QString getRemoteHash();
     bool isBlockedArcVersion(QString sRemoteHash);
     bool verifyArcInstallation();
     bool downloadArc(QString pathname);
+
+    void testCanUpdate(int& err, QString sRemoteHash);
+    bool runningUpdate(int& err, QString sRemoteHash, QString sLocalHash);
+    void testUpdatedVersion(int& err, QString sRemoteHash, QString sLocalHash);
 };
 
 } // namespace Updater

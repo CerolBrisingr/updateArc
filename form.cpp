@@ -101,7 +101,7 @@ void CommandList::add(QString command, QCheckBox *check, QComboBox *combo)
 void CommandList::importArguments(QString arguments)
 {
 
-    QStringList arguments_split = arguments.split("-", QString::SplitBehavior::SkipEmptyParts);
+    QStringList arguments_split = arguments.split("-", Qt::SkipEmptyParts);
     QStringList arguments_remain;
     for (QString& argument: arguments_split) {
         argument = "-" + argument.trimmed();

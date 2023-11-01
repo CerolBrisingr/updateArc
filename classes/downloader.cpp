@@ -24,10 +24,6 @@ Downloader::Downloader()
     // Errors
     connect(&_net_manager, &QNetworkAccessManager::authenticationRequired,
             this, [this]{errorMsg("authenticationRequired");});
-    //connect(&netManager, &QNetworkAccessManager::encrypted,
-    //        this, [this]{errorMsg("encrypted", false);});
-    connect(&_net_manager, &QNetworkAccessManager::networkAccessibleChanged,
-            this, [this]{errorMsg("networkAccessibleChanged");});
     connect(&_net_manager, &QNetworkAccessManager::preSharedKeyAuthenticationRequired,
             this, [this]{errorMsg("preSharedKeyAuthenticationRequired");});
     connect(&_net_manager, &QNetworkAccessManager::proxyAuthenticationRequired,
@@ -55,7 +51,6 @@ int Downloader::fetch()
         }
         _request = QNetworkRequest(url);
 
-        _request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, _taskList[i]->getAllowedForwards() > 0);
         _request.setMaximumRedirectsAllowed(_taskList[i]->getAllowedForwards());
 
         _hasError = false;
