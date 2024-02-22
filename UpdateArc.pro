@@ -53,7 +53,7 @@ FORMS += \
 
 RC_ICONS = resources\arc.ico
 
-VERSION = 6.0.0
+VERSION = 6.0.1
 QMAKE_TARGET_DESCRIPTION = "Updater for useful Guild Wars 2 add-ons"
 QMAKE_TARGET_COPYRIGHT = "MIT"
 
