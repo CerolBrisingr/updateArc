@@ -137,37 +137,37 @@ QString CommandList::createCommandString()
     return commands.trimmed();
 }
 
-void Form::onPushButtonImageClicked()
+void Form::on_pushButton_image_clicked()
 {
     _updater->startGW2(QStringList("-image"));
 }
 
-void Form::onPushButtonRepairClicked()
+void Form::on_pushButton_repair_clicked()
 {
     _updater->startGW2(QStringList("-repair"));
 }
 
-void Form::onPushButtonDiagClicked()
+void Form::on_pushButton_diag_clicked()
 {
     _updater->startGW2(QStringList("-diag"));
 }
 
-void Form::onPushButtonVerifyClicked()
+void Form::on_pushButton_verify_clicked()
 {
     _updater->startGW2(QStringList("-verify"));
 }
 
-void Form::onPushButtonCancelClicked()
+void Form::on_pushButton_cancel_clicked()
 {
     this->close();
 }
 
-void Form::onPushButtonApplyClicked()
+void Form::on_pushButton_apply_clicked()
 {
     emit updated(_ui->lineEdit_full->text());
 }
 
-void Form::onPushButtonOkClicked()
+void Form::on_pushButton_ok_clicked()
 {
     emit updated(_ui->lineEdit_full->text());
     this->close();
