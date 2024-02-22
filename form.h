@@ -27,14 +27,15 @@ signals:
     void updated(QString);
 
 private slots:
-    void onPushButtonImageClicked();
-    void onPushButtonRepairClicked();
-    void onPushButtonDiagClicked();
-    void onPushButtonVerifyClicked();
-    void onPushButtonCancelClicked();
-    void onPushButtonApplyClicked();
-    void onPushButtonOkClicked();
     void onInteraction();
+
+    void on_pushButton_cancel_clicked();
+    void on_pushButton_apply_clicked();
+    void on_pushButton_ok_clicked();
+    void on_pushButton_image_clicked();
+    void on_pushButton_repair_clicked();
+    void on_pushButton_diag_clicked();
+    void on_pushButton_verify_clicked();
 
 private:
     Ui::Form *_ui;

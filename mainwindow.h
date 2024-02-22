@@ -3,7 +3,6 @@
 
 #include "classes/settings.h"
 #include "classes/updater.h"
-#include "classes/logger.h"
 #include <updater/baseupdater.h>
 #include <updater/arcupdater.h>
 #include <updater/githupdater.h>
