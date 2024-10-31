@@ -93,7 +93,7 @@ QRegularExpression Version::buildRegexp(QString prefix, QString suffix)
 
 void Version::setVersion(QString& tag, QString &prefix, QString &suffix)
 {
-    _version_number.empty();
+    _version_number.clear();
     auto re = buildRegexp(prefix, suffix);
     //QRegularExpression re2("v(\\d+)\\.(\\d+)\\.(\\d+)");
     QRegularExpressionMatch match = re.match(tag);
