@@ -4,7 +4,7 @@
 #include <vector>
 #include <QString>
 #include <QRegularExpression>
-#include <classes/logger.h>
+#include "logger.h"
 
 class Version
 {

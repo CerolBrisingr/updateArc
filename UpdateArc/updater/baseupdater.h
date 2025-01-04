@@ -6,9 +6,9 @@
 #include <QToolButton>
 #include <QCheckBox>
 #include <classes/settings.h>
-#include <classes/logger.h>
+#include "logger.h"
 #include <classes/fileinteractions.h>
-#include <classes/downloader.h>
+#include "downloader.h"
 
 namespace Updater {
 

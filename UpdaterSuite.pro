@@ -1,13 +1,16 @@
 TEMPLATE = subdirs
 
 SUBDIRS = \
-    project \
+    UpdateArc \
     firsttest \
+    test_downloader
 
 # where to find the sub projects - give the folders
-project.subdir = project
+UpdateArc.subdir = UpdateArc
 firsttest.subdir = tests/firsttest
+test_downloader.subdir = tests/test_downloader
 
 # what subproject depends on others
-firsttest.depends = project
+firsttest.depends = UpdateArc
+test_downloader.depends = UpdateArc
 

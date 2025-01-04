@@ -66,6 +66,7 @@ private:
 
     void addRequest(Request * newRequest);
     void errorMsg(std::string msg, bool bIsFatal = true);
+    void logDebug(QString msg);
 
 };
 
@@ -81,14 +82,14 @@ public:
     {}
     ~Request() {}
 
-    QString getRequestString();
-    QString getRequestAddress();
-    QString getTargetFilename();
-    RequestType getRequestType();
+    QString getRequestString() const;
+    QString getRequestAddress() const;
+    QString getTargetFilename() const;
+    RequestType getRequestType() const;
     void setResult(int16_t error, QString output = "Success");
-    QString getResult();
-    int16_t getError();
-    uint16_t getAllowedForwards();
+    QString getResult() const;
+    int16_t getError() const;
+    uint16_t getAllowedForwards() const;
 
 private:
     QString _address;

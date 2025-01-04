@@ -5,17 +5,11 @@ Downloader::Downloader()
     QSettings setting(_setting_path, QSettings::IniFormat);
     _print_debug = setting.value("debug/downloader", "off").toString() == "on";
 
-    if (_print_debug) {
-    Log::write(QSslSocket::sslLibraryBuildVersionString() + "\n");
-    }
+    logDebug(QSslSocket::sslLibraryBuildVersionString() + "\n");
     if (QSslSocket::supportsSsl()) {
-        if (_print_debug) {
-            Log::write("      Supporting SSL\n");
-        }
+        logDebug("      Supporting SSL\n");
     } else {
-        if (_print_debug) {
-            Log::write("      No support for SSL!\n");
-        }
+        logDebug("      No support for SSL!\n");
     }
 
     connect(&_net_manager, SIGNAL(finished(QNetworkReply*)),
@@ -41,17 +35,22 @@ Downloader::~Downloader()
     _will_shut_down = true;
 }
 
+void Downloader::logDebug(QString msg)
+{
+    if(_print_debug) {
+        Log::write(msg);
+    }
+}
+
 int Downloader::fetch()
 {
-    for (int i = 0; i < _taskList.length(); i++) {
-        QUrl url = QUrl(_taskList[i]->getRequestAddress());
+    for (const auto* task: _taskList) {
+        QUrl url = QUrl(task->getRequestAddress());
 
-        if (_print_debug) {
-            Log::write("      Starting request: " + url.url() + "\n");
-        }
+        logDebug("      Starting request: " + url.url() + "\n");
         _request = QNetworkRequest(url);
 
-        _request.setMaximumRedirectsAllowed(_taskList[i]->getAllowedForwards());
+        _request.setMaximumRedirectsAllowed(task->getAllowedForwards());
 
         _hasError = false;
         QNetworkReply* reply = _net_manager.get(_request);
@@ -98,12 +97,10 @@ void Downloader::addRequest(Request *newRequest)
 
 void Downloader::processReply(QNetworkReply* netReply)
 {
-    if (_print_debug) {
-        Log::write("      Recieved reply from URL: " + netReply->url().toString() + "\n");
-    }
+    logDebug("      Recieved reply from URL: " + netReply->url().toString() + "\n");
     int16_t _err = 0;
 
-    int gotId =  _currentDownloads.indexOf(netReply);
+    qsizetype gotId = _currentDownloads.indexOf(netReply);
     _receivedFlags[gotId] = true;
 
     QUrl url = netReply->url();
@@ -126,9 +123,7 @@ void Downloader::processReply(QNetworkReply* netReply)
             // Write response to file
             if (targetFilename.isEmpty()) {
                 // Invalid target name
-                if (_print_debug) {
-                    Log::write("      Download requested but filename empty!\n");
-                }
+                logDebug("      Download requested but filename empty!\n");
                 _err = 1;
             } else {
                 // Target name not empty
@@ -136,19 +131,13 @@ void Downloader::processReply(QNetworkReply* netReply)
                 fullPath.append(targetFilename);
 
                 QFile file(fullPath);
-                if (_print_debug) {
-                    Log::write("      Saving file to: " + fullPath + "\n");
-                }
+                logDebug("      Saving file to: " + fullPath + "\n");
                 if (file.open(QFile::WriteOnly)) {
                     file.write(netReply->read(netReply->bytesAvailable()));
                     file.close();
-                    if (_print_debug) {
-                        Log::write("      File saved to: " + fullPath + "\n");
-                    }
+                    logDebug("      File saved to: " + fullPath + "\n");
                 } else {
-                    if (_print_debug) {
-                        Log::write("      Cannot write target file\n");
-                    }
+                    logDebug("      Cannot write target file\n");
                     _err = 1;
                 }
             }
@@ -260,7 +249,7 @@ void Downloader::errorMsg(std::string msg, bool bIsFatal)
     }
 }
 
-QString Request::getRequestString()
+QString Request::getRequestString() const
 {
     switch(_requestType) {
     case RequestType::STDFILE: return "File";
@@ -270,12 +259,12 @@ QString Request::getRequestString()
     return "";
 }
 
-QString Request::getRequestAddress()
+QString Request::getRequestAddress() const
 {
     return _address;
 }
 
-QString Request::getTargetFilename()
+QString Request::getTargetFilename() const
 {
     switch (_requestType) {
     case RequestType::STDFILE:
@@ -288,7 +277,7 @@ QString Request::getTargetFilename()
     return "";
 }
 
-RequestType Request::getRequestType()
+RequestType Request::getRequestType() const
 {
     return _requestType;
 }
@@ -299,7 +288,7 @@ void Request::setResult(int16_t error, QString output)
     _output = output;
 }
 
-QString Request::getResult()
+QString Request::getResult() const
 {
     if (_error == 0) {
         QString retString;
@@ -311,12 +300,12 @@ QString Request::getResult()
     }
 }
 
-int16_t Request::getError()
+int16_t Request::getError() const
 {
     return _error;
 }
 
-uint16_t Request::getAllowedForwards()
+uint16_t Request::getAllowedForwards() const
 {
     return _forwards_allowed;
 }
