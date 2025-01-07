@@ -51,7 +51,7 @@ void Downloader::logDebug(QString msg)
 
 int Downloader::fetch()
 {
-    for (const auto* task: _taskList) {
+    for (const auto& task: _taskList) {
         QUrl url = QUrl(task->getRequestAddress());
 
         logDebug("      Starting request: " + url.url() + "\n");
@@ -96,7 +96,7 @@ void Downloader::sslErrors(const QList<QSslError> &sslErrors)
     _waitLoop.exit(1);
 }
 
-void Downloader::addRequest(Request *newRequest)
+void Downloader::addRequest(std::shared_ptr<Request> newRequest)
 {
     _receivedFlags.append(false);
     _taskList.append(newRequest);
@@ -175,7 +175,7 @@ bool Downloader::allDownloadsDone() {
     return true;
 }
 
-Request *Downloader::addFileRequest(QString address, QString filename, uint16_t forwards)
+std::shared_ptr<Request> Downloader::addFileRequest(QString address, QString filename, uint16_t forwards)
 {
     RequestType requestType;
     if (filename.isEmpty()) {
@@ -184,15 +184,15 @@ Request *Downloader::addFileRequest(QString address, QString filename, uint16_t 
         requestType = RequestType::NAMEDFILE;
     }
 
-    Request* newRequest = new Request(address, requestType, filename, forwards);
+    auto newRequest = std::make_shared<Request>(address, requestType, filename, forwards);
     addRequest(newRequest);
     return newRequest;
 }
 
-Request *Downloader::addTextRequest(QString address, uint16_t forwards)
+std::shared_ptr<Request> Downloader::addTextRequest(QString address, uint16_t forwards)
 {
     RequestType requestType = RequestType::HTMLBODY;
-    Request* newRequest = new Request(address, requestType, "", forwards);
+    auto newRequest = std::make_shared<Request>(address, requestType, "", forwards);
     addRequest(newRequest);
     return newRequest;
 }
@@ -217,23 +217,21 @@ int16_t Downloader::singleDownload(QString address, QString pathname, QString fi
 {
     Downloader netSource;
     netSource.setTargetPath(pathname);
-    Request* request = netSource.addFileRequest(address, filename, forwards);
+    auto request = netSource.addFileRequest(address, filename, forwards);
     netSource.fetch();
 
     int16_t error_msg = request->getError();
-    delete request;
     return error_msg;
 }
 
 int16_t Downloader::singleTextRequest(QString &output, QString address, uint16_t forwardings)
 {
     Downloader netSource;
-    Request* request = netSource.addTextRequest(address, forwardings);
+    auto request = netSource.addTextRequest(address, forwardings);
     netSource.fetch();
 
     output = request->getResult();
     int16_t error_msg = request->getError();
-    delete request;
     return error_msg;
 }
 

@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <QtNetwork>
+#include <memory>
 
 #include "logger.h"
 
@@ -70,8 +71,8 @@ public:
     void setTargetPath(QString filePath);
     bool allDownloadsDone();
 
-    Request *addFileRequest(QString address, QString filename = "", uint16_t forwards = 3);
-    Request *addTextRequest(QString address, uint16_t forwards = 3);
+    std::shared_ptr<Request> addFileRequest(QString address, QString filename = "", uint16_t forwards = 3);
+    std::shared_ptr<Request> addTextRequest(QString address, uint16_t forwards = 3);
     void printRequests();
     void dropRequests();
 
@@ -91,11 +92,11 @@ private:
     bool _hasError;
     bool _will_shut_down = false;
 
-    QVector<Request *> _taskList;
+    QVector<std::shared_ptr<Request>> _taskList;
     QVector<QNetworkReply *> _currentDownloads;
     QVector<bool> _receivedFlags;
 
-    void addRequest(Request * newRequest);
+    void addRequest(std::shared_ptr<Request> newRequest);
     void errorMsg(std::string msg, bool bIsFatal = true);
     void logDebug(QString msg);
 
