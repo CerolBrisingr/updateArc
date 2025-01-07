@@ -4,22 +4,47 @@
 #include <QtCore>
 #include <QtNetwork>
 
-#include <cstdio>
 #include "logger.h"
 
 QT_BEGIN_NAMESPACE
 class QSslError;
 QT_END_NAMESPACE
 
-// forward declarations
-class Request;
-class Downloader;
-
-
+// Differentiate requirements to individual requests
 enum RequestType {
     STDFILE,
     NAMEDFILE,
     HTMLBODY
+};
+
+// Carries all data needed to perform one web interaction
+class Request
+{
+public:
+    Request(const QString address, const RequestType requestType, const QString filename = "", const uint16_t forwards = 3)
+        :_address(address)
+        ,_requestType(requestType)
+        ,_filename(filename)
+        ,_forwards_allowed(forwards)
+    {}
+    ~Request() {}
+
+    QString getRequestString() const;
+    QString getRequestAddress() const;
+    QString getTargetFilename() const;
+    RequestType getRequestType() const;
+    void setResult(const int16_t error, const QString output = "Success");
+    QString getResult() const;
+    int16_t getError() const;
+    uint16_t getAllowedForwards() const;
+
+private:
+    QString _address;
+    RequestType _requestType;
+    QString _output;
+    QString _filename;
+    int16_t _error;
+    uint16_t _forwards_allowed;
 };
 
 
@@ -27,6 +52,11 @@ class Downloader : public QObject
 {
     Q_OBJECT
 public:
+    // Debugging flag access
+    static void setPrintDebug(const bool doDebug);
+    static bool getPrintDebug();
+
+    // Convenient downloads
     static int16_t singleDownload(QString address, QString pathname = "", QString filename = "", uint16_t forwards = 3);
     static int16_t singleTextRequest(QString &output, QString address, uint16_t forwardings = 3);
 
@@ -34,7 +64,7 @@ public:
     Downloader();
     ~Downloader() override;
 
-    bool _print_debug;
+    //bool _print_debug;
 
     int fetch();
     void setTargetPath(QString filePath);
@@ -51,10 +81,11 @@ public slots:
     void sslErrors(const QList<QSslError> &sslErrors);
 
 private:
+    inline static bool _print_debug = false; // Set up debug flag
+
     QNetworkAccessManager _net_manager;
     QNetworkRequest _request;
     QString _targetPath = "";
-    QString _setting_path = "settings.ini";
 
     QEventLoop _waitLoop;
     bool _hasError;
@@ -68,36 +99,6 @@ private:
     void errorMsg(std::string msg, bool bIsFatal = true);
     void logDebug(QString msg);
 
-};
-
-
-class Request
-{
-public:
-    Request(QString address, RequestType requestType, QString filename, uint16_t forwards = 3)
-        :_address(address)
-        ,_requestType(requestType)
-        ,_filename(filename)
-        ,_forwards_allowed(forwards)
-    {}
-    ~Request() {}
-
-    QString getRequestString() const;
-    QString getRequestAddress() const;
-    QString getTargetFilename() const;
-    RequestType getRequestType() const;
-    void setResult(int16_t error, QString output = "Success");
-    QString getResult() const;
-    int16_t getError() const;
-    uint16_t getAllowedForwards() const;
-
-private:
-    QString _address;
-    RequestType _requestType;
-    QString _output;
-    QString _filename;
-    int16_t _error;
-    uint16_t _forwards_allowed;
 };
 
 #endif // DOWNLOADER_H

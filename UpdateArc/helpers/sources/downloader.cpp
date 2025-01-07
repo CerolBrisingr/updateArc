@@ -2,9 +2,6 @@
 
 Downloader::Downloader()
 {
-    QSettings setting(_setting_path, QSettings::IniFormat);
-    _print_debug = setting.value("debug/downloader", "off").toString() == "on";
-
     logDebug(QSslSocket::sslLibraryBuildVersionString() + "\n");
     if (QSslSocket::supportsSsl()) {
         logDebug("      Supporting SSL\n");
@@ -33,6 +30,16 @@ Downloader::Downloader()
 Downloader::~Downloader()
 {
     _will_shut_down = true;
+}
+
+void Downloader::setPrintDebug(const bool doDebug)
+{
+    _print_debug = doDebug;
+}
+
+bool Downloader::getPrintDebug()
+{
+    return _print_debug;
 }
 
 void Downloader::logDebug(QString msg)
@@ -252,9 +259,9 @@ void Downloader::errorMsg(std::string msg, bool bIsFatal)
 QString Request::getRequestString() const
 {
     switch(_requestType) {
-    case RequestType::STDFILE: return "File";
-    case RequestType::NAMEDFILE: return "File with custom name";
-    case RequestType::HTMLBODY: return "Text";
+        case RequestType::STDFILE: return "File";
+        case RequestType::NAMEDFILE: return "File with custom name";
+        case RequestType::HTMLBODY: return "Text";
     }
     return "";
 }
@@ -267,12 +274,12 @@ QString Request::getRequestAddress() const
 QString Request::getTargetFilename() const
 {
     switch (_requestType) {
-    case RequestType::STDFILE:
-        return QFileInfo(_address).fileName();
-    case RequestType::NAMEDFILE:
-        return _filename;
-    case RequestType::HTMLBODY:
-        return "";
+        case RequestType::STDFILE:
+            return QFileInfo(_address).fileName();
+        case RequestType::NAMEDFILE:
+            return _filename;
+        case RequestType::HTMLBODY:
+            return "";
     }
     return "";
 }
@@ -282,7 +289,7 @@ RequestType Request::getRequestType() const
     return _requestType;
 }
 
-void Request::setResult(int16_t error, QString output)
+void Request::setResult(const int16_t error, const QString output)
 {
     _error = error;
     _output = output;
