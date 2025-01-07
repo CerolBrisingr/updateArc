@@ -167,14 +167,12 @@ void Downloader::processReply(QNetworkReply* netReply)
 }
 
 bool Downloader::allDownloadsDone() {
-    bool flag = true;
-     for(int count=0; count<_receivedFlags.length(); count++) {
-         if(!_receivedFlags[count]) {
-             flag = false;
-             break;
-         }
-     }
-     return flag;
+    for(const auto& isReceived: _receivedFlags) {
+        if(!isReceived) {
+         return false;
+        }
+    }
+    return true;
 }
 
 Request *Downloader::addFileRequest(QString address, QString filename, uint16_t forwards)
