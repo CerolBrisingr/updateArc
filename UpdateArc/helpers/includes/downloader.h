@@ -88,8 +88,6 @@ public:
     Downloader();
     ~Downloader() override;
 
-    //bool _print_debug;
-
     int fetch();
     void setTargetPath(QString filePath);
     bool allDownloadsDone();
@@ -114,7 +112,6 @@ private:
     bool _hasError;
     bool _will_shut_down = false;
 
-    //QVector<std::shared_ptr<Request>> _taskList;
     QVector<DownloadContainer> _downloadTasks;
 
     DownloadContainer* findCorrespondingDownload(QNetworkReply* reply);

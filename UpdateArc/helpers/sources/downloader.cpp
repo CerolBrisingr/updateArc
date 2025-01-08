@@ -2,7 +2,9 @@
 
 
 DownloadContainer::~DownloadContainer() {
-    _networkReply->deleteLater();
+    if (_networkReply != nullptr) {
+        _networkReply->deleteLater();
+    }
 }
 
 void DownloadContainer::markReceived() {
@@ -189,8 +191,6 @@ void Downloader::processReply(QNetworkReply* netReply)
     if (_err != 0) {
         _hasError = true;
     }
-
-    netReply->deleteLater();
 
     if (allDownloadsDone()) {
         _downloadTasks.clear();
