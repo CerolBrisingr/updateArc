@@ -49,6 +49,28 @@ private:
 };
 
 
+class ActiveDownload
+{
+public:
+    ActiveDownload(std::shared_ptr<Request>task, QNetworkReply* reply)
+        :_task(task)
+        ,_reply(reply)
+        ,_wasReceived(false)
+    {}
+    ~ActiveDownload();
+
+    bool relatesTo(QNetworkReply* reply) const;
+
+    std::shared_ptr<Request> getTask() const;
+    void received();
+    bool isReceived() const;
+private:
+    std::shared_ptr<Request> _task;
+    QNetworkReply* _reply;
+    bool _wasReceived;
+};
+
+
 class Downloader : public QObject
 {
     Q_OBJECT
@@ -85,7 +107,6 @@ private:
     inline static bool _print_debug = false; // Set up debug flag
 
     QNetworkAccessManager _net_manager;
-    QNetworkRequest _request;
     QString _targetPath = "";
 
     QEventLoop _waitLoop;
@@ -93,9 +114,9 @@ private:
     bool _will_shut_down = false;
 
     QVector<std::shared_ptr<Request>> _taskList;
-    QVector<QNetworkReply *> _currentDownloads;
-    QVector<bool> _receivedFlags;
+    QVector<ActiveDownload> _activeDownloads;
 
+    ActiveDownload* findCorrespondingDownload(QNetworkReply* reply);
     void addRequest(std::shared_ptr<Request> newRequest);
     void errorMsg(std::string msg, bool bIsFatal = true);
     void logDebug(QString msg);
