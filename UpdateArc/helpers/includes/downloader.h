@@ -12,28 +12,28 @@ class QSslError;
 QT_END_NAMESPACE
 
 // Differentiate requirements to individual requests
-enum RequestType {
+enum DownloadType {
     STDFILE,
     NAMEDFILE,
     HTMLBODY
 };
 
 // Carries all data needed to perform one web interaction
-class Request
+class DownloadRequest
 {
 public:
-    Request(const QString address, const RequestType requestType, const QString filename = "", const uint16_t forwards = 3)
+    DownloadRequest(const QString address, const DownloadType requestType, const QString filename = "", const uint16_t forwards = 3)
         :_address(address)
         ,_requestType(requestType)
         ,_filename(filename)
         ,_forwards_allowed(forwards)
     {}
-    ~Request() {}
+    ~DownloadRequest() {}
 
     QString getRequestString() const;
     QString getRequestAddress() const;
     QString getTargetFilename() const;
-    RequestType getRequestType() const;
+    DownloadType getRequestType() const;
     void setResult(const int16_t error, const QString output = "Success");
     QString getResult() const;
     int16_t getError() const;
@@ -41,7 +41,7 @@ public:
 
 private:
     QString _address;
-    RequestType _requestType;
+    DownloadType _requestType;
     QString _output;
     QString _filename;
     int16_t _error;
@@ -49,24 +49,25 @@ private:
 };
 
 
-class ActiveDownload
+class DownloadContainer
 {
 public:
-    ActiveDownload(std::shared_ptr<Request>task, QNetworkReply* reply)
-        :_task(task)
-        ,_reply(reply)
+    DownloadContainer(std::shared_ptr<DownloadRequest>specification)
+        :_specification(specification)
+        ,_networkReply(nullptr)
         ,_wasReceived(false)
     {}
-    ~ActiveDownload();
+    ~DownloadContainer();
 
+    void setNetworkReply(QNetworkReply* reply);
     bool relatesTo(QNetworkReply* reply) const;
 
-    std::shared_ptr<Request> getTask() const;
-    void received();
+    std::shared_ptr<DownloadRequest> getSpecification() const;
+    void markReceived();
     bool isReceived() const;
 private:
-    std::shared_ptr<Request> _task;
-    QNetworkReply* _reply;
+    std::shared_ptr<DownloadRequest> _specification;
+    QNetworkReply* _networkReply;
     bool _wasReceived;
 };
 
@@ -93,8 +94,8 @@ public:
     void setTargetPath(QString filePath);
     bool allDownloadsDone();
 
-    std::shared_ptr<Request> addFileRequest(QString address, QString filename = "", uint16_t forwards = 3);
-    std::shared_ptr<Request> addTextRequest(QString address, uint16_t forwards = 3);
+    std::shared_ptr<DownloadRequest> addFileRequest(QString address, QString filename = "", uint16_t forwards = 3);
+    std::shared_ptr<DownloadRequest> addTextRequest(QString address, uint16_t forwards = 3);
     void printRequests();
     void dropRequests();
 
@@ -113,11 +114,11 @@ private:
     bool _hasError;
     bool _will_shut_down = false;
 
-    QVector<std::shared_ptr<Request>> _taskList;
-    QVector<ActiveDownload> _activeDownloads;
+    //QVector<std::shared_ptr<Request>> _taskList;
+    QVector<DownloadContainer> _downloadTasks;
 
-    ActiveDownload* findCorrespondingDownload(QNetworkReply* reply);
-    void addRequest(std::shared_ptr<Request> newRequest);
+    DownloadContainer* findCorrespondingDownload(QNetworkReply* reply);
+    void addRequest(std::shared_ptr<DownloadRequest> newRequest);
     void errorMsg(std::string msg, bool bIsFatal = true);
     void logDebug(QString msg);
 

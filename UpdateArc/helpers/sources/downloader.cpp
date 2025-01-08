@@ -1,24 +1,28 @@
 #include "downloader.h"
 
 
-ActiveDownload::~ActiveDownload() {
-    _reply->deleteLater();
+DownloadContainer::~DownloadContainer() {
+    _networkReply->deleteLater();
 }
 
-void ActiveDownload::received() {
+void DownloadContainer::markReceived() {
     _wasReceived = true;
 }
 
-bool ActiveDownload::isReceived() const {
+bool DownloadContainer::isReceived() const {
     return _wasReceived;
 }
 
-bool ActiveDownload::relatesTo(QNetworkReply* reply) const {
-    return reply == _reply;
+void DownloadContainer::setNetworkReply(QNetworkReply* reply) {
+    _networkReply = reply;
 }
 
-std::shared_ptr<Request> ActiveDownload::getTask() const {
-    return _task;
+bool DownloadContainer::relatesTo(QNetworkReply* reply) const {
+    return reply == _networkReply;
+}
+
+std::shared_ptr<DownloadRequest> DownloadContainer::getSpecification() const {
+    return _specification;
 }
 
 Downloader::Downloader()
@@ -73,13 +77,14 @@ void Downloader::logDebug(QString msg)
 int Downloader::fetch()
 {
     _hasError = false;
-    for (const auto& task: _taskList) {
-        QUrl url = QUrl(task->getRequestAddress());
+    for (auto& task: _downloadTasks) {
+        const auto& specification = task.getSpecification();
+        QUrl url = QUrl(specification->getRequestAddress());
 
         logDebug("      Starting request: " + url.url() + "\n");
         auto qRequest = QNetworkRequest(url);
 
-        qRequest.setMaximumRedirectsAllowed(task->getAllowedForwards());
+        qRequest.setMaximumRedirectsAllowed(specification->getAllowedForwards());
 
         QNetworkReply* reply = _net_manager.get(qRequest);
 
@@ -87,8 +92,7 @@ int Downloader::fetch()
         connect(reply, SIGNAL(sslErrors(QList<QSslError>)),
                 SLOT(sslErrors(QList<QSslError>)));
 #endif
-
-        _activeDownloads.emplaceBack(task, reply);
+        task.setNetworkReply(reply);
     }
 
     return _waitLoop.exec();
@@ -117,18 +121,18 @@ void Downloader::sslErrors(const QList<QSslError> &sslErrors)
     _waitLoop.exit(1);
 }
 
-ActiveDownload* Downloader::findCorrespondingDownload(QNetworkReply* reply) {
-    for (auto& download: _activeDownloads) {
-        if (download.relatesTo(reply)) {
-            return &download;
+DownloadContainer* Downloader::findCorrespondingDownload(QNetworkReply* reply) {
+    for (auto& task: _downloadTasks) {
+        if (task.relatesTo(reply)) {
+            return &task;
         }
     }
     throw std::invalid_argument("no entry relies to given reply pointer");
 }
 
-void Downloader::addRequest(std::shared_ptr<Request> newRequest)
+void Downloader::addRequest(std::shared_ptr<DownloadRequest> newRequest)
 {
-    _taskList.append(newRequest);
+    _downloadTasks.emplaceBack(newRequest);
 }
 
 void Downloader::processReply(QNetworkReply* netReply)
@@ -137,8 +141,8 @@ void Downloader::processReply(QNetworkReply* netReply)
     int16_t _err = 0;
 
     auto* activeDownload = findCorrespondingDownload(netReply);
-    activeDownload->received();
-    auto task = activeDownload->getTask();
+    activeDownload->markReceived();
+    auto specification = activeDownload->getSpecification();
 
     QUrl url = netReply->url();
     if (netReply->error()) {
@@ -149,14 +153,14 @@ void Downloader::processReply(QNetworkReply* netReply)
         _err = 1;
     } else {
         // Request successful
-        QString targetFilename =task->getTargetFilename();
-        if (task->getRequestType() == RequestType::HTMLBODY) {
+        if (specification->getRequestType() == DownloadType::HTMLBODY) {
             // Write response to QString
             QString _output;
             QTextStream streamer(&_output);
             streamer << netReply->read(netReply->bytesAvailable());
-            task->setResult(_err, _output);
+            specification->setResult(_err, _output);
         } else {
+            QString targetFilename =specification->getTargetFilename();
             // Write response to file
             if (targetFilename.isEmpty()) {
                 // Invalid target name
@@ -178,7 +182,7 @@ void Downloader::processReply(QNetworkReply* netReply)
                     _err = 1;
                 }
             }
-            task->setResult(_err);
+            specification->setResult(_err);
         }
     }
 
@@ -189,14 +193,13 @@ void Downloader::processReply(QNetworkReply* netReply)
     netReply->deleteLater();
 
     if (allDownloadsDone()) {
-        _activeDownloads.clear();
-        _taskList.clear();
+        _downloadTasks.clear();
         _waitLoop.exit(_hasError);
     }
 }
 
 bool Downloader::allDownloadsDone() {
-    for(const auto& activeDownload: _activeDownloads) {
+    for(const auto& activeDownload: _downloadTasks) {
         if(!activeDownload.isReceived()) {
          return false;
         }
@@ -204,38 +207,38 @@ bool Downloader::allDownloadsDone() {
     return true;
 }
 
-std::shared_ptr<Request> Downloader::addFileRequest(QString address, QString filename, uint16_t forwards)
+std::shared_ptr<DownloadRequest> Downloader::addFileRequest(QString address, QString filename, uint16_t forwards)
 {
-    RequestType requestType;
+    DownloadType requestType;
     if (filename.isEmpty()) {
-        requestType = RequestType::STDFILE;
+        requestType = DownloadType::STDFILE;
     } else {
-        requestType = RequestType::NAMEDFILE;
+        requestType = DownloadType::NAMEDFILE;
     }
 
-    auto newRequest = std::make_shared<Request>(address, requestType, filename, forwards);
+    auto newRequest = std::make_shared<DownloadRequest>(address, requestType, filename, forwards);
     addRequest(newRequest);
     return newRequest;
 }
 
-std::shared_ptr<Request> Downloader::addTextRequest(QString address, uint16_t forwards)
+std::shared_ptr<DownloadRequest> Downloader::addTextRequest(QString address, uint16_t forwards)
 {
-    RequestType requestType = RequestType::HTMLBODY;
-    auto newRequest = std::make_shared<Request>(address, requestType, "", forwards);
+    DownloadType requestType = DownloadType::HTMLBODY;
+    auto newRequest = std::make_shared<DownloadRequest>(address, requestType, "", forwards);
     addRequest(newRequest);
     return newRequest;
 }
 
 void Downloader::printRequests()
 {
-    for (const auto& request: _taskList) {
-        Log::write(request->getRequestString() + "\n");
+    for (const auto& download: _downloadTasks) {
+        Log::write(download.getSpecification()->getRequestString() + "\n");
     }
 }
 
 void Downloader::dropRequests()
 {
-    _taskList.clear(); // Shared pointers handle objects
+    _downloadTasks.clear();
 }
 
 int16_t Downloader::singleDownload(QString address, QString pathname, QString filename, uint16_t forwards)
@@ -277,63 +280,63 @@ void Downloader::errorMsg(std::string msg, bool bIsFatal)
     }
 }
 
-QString Request::getRequestString() const
+QString DownloadRequest::getRequestString() const
 {
     switch(_requestType) {
-        case RequestType::STDFILE: return "File";
-        case RequestType::NAMEDFILE: return "File with custom name";
-        case RequestType::HTMLBODY: return "Text";
+        case DownloadType::STDFILE: return "File";
+        case DownloadType::NAMEDFILE: return "File with custom name";
+        case DownloadType::HTMLBODY: return "Text";
     }
     return "";
 }
 
-QString Request::getRequestAddress() const
+QString DownloadRequest::getRequestAddress() const
 {
     return _address;
 }
 
-QString Request::getTargetFilename() const
+QString DownloadRequest::getTargetFilename() const
 {
     switch (_requestType) {
-        case RequestType::STDFILE:
+        case DownloadType::STDFILE:
             return QFileInfo(_address).fileName();
-        case RequestType::NAMEDFILE:
+        case DownloadType::NAMEDFILE:
             return _filename;
-        case RequestType::HTMLBODY:
+        case DownloadType::HTMLBODY:
             return "";
     }
     return "";
 }
 
-RequestType Request::getRequestType() const
+DownloadType DownloadRequest::getRequestType() const
 {
     return _requestType;
 }
 
-void Request::setResult(const int16_t error, const QString output)
+void DownloadRequest::setResult(const int16_t error, const QString output)
 {
     _error = error;
     _output = output;
 }
 
-QString Request::getResult() const
+QString DownloadRequest::getResult() const
 {
     if (_error == 0) {
-        QString retString;
-        QTextStream streamer(&retString);
+        QString returnString;
+        QTextStream streamer(&returnString);
         streamer << _output;
-        return retString;
+        return returnString;
     } else {
         return "Error";
     }
 }
 
-int16_t Request::getError() const
+int16_t DownloadRequest::getError() const
 {
     return _error;
 }
 
-uint16_t Request::getAllowedForwards() const
+uint16_t DownloadRequest::getAllowedForwards() const
 {
     return _forwards_allowed;
 }
