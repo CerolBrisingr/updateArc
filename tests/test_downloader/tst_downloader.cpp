@@ -1,4 +1,5 @@
 #include <QtTest>
+#include "downloader.h"
 
 // add necessary includes here
 
@@ -8,17 +9,23 @@ class downloader : public QObject
 
 public:
     downloader();
-    ~downloader();
+    ~downloader() override;
 
 private slots:
-    void test_case1();
+    void test_request();
 };
 
 downloader::downloader() {}
 
 downloader::~downloader() {}
 
-void downloader::test_case1() {}
+void downloader::test_request() {
+    DownloadRequest test("http://www.prentil.com", DownloadType::HTMLBODY);
+    QCOMPARE(test.getRequestType(), DownloadType::HTMLBODY);
+    QCOMPARE(test.getRequestAddress(), "http://www.prentil.com");
+    QCOMPARE(test.getTargetFilename(), "");
+    QCOMPARE(test.getAllowedForwards(), 3);
+}
 
 QTEST_APPLESS_MAIN(downloader)
 
