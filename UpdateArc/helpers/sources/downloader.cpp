@@ -23,8 +23,8 @@ bool DownloadContainer::relatesTo(QNetworkReply* reply) const {
     return reply == _networkReply;
 }
 
-std::shared_ptr<DownloadRequest> DownloadContainer::getSpecification() const {
-    return _specification;
+std::shared_ptr<DownloadRequest> DownloadContainer::getDownloadRequest() const {
+    return _downloadRequest;
 }
 
 Downloader::Downloader()
@@ -80,13 +80,13 @@ int Downloader::fetch()
 {
     _hasError = false;
     for (auto& task: _downloadTasks) {
-        const auto& specification = task.getSpecification();
-        QUrl url = QUrl(specification->getRequestAddress());
+        const auto& downloadRequest = task.getDownloadRequest();
+        QUrl url = QUrl(downloadRequest->getRequestAddress());
 
         logDebug("      Starting request: " + url.url() + "\n");
         auto qRequest = QNetworkRequest(url);
 
-        qRequest.setMaximumRedirectsAllowed(specification->getAllowedForwards());
+        qRequest.setMaximumRedirectsAllowed(downloadRequest->getAllowedForwards());
 
         QNetworkReply* reply = _net_manager.get(qRequest);
 
@@ -144,7 +144,7 @@ void Downloader::processReply(QNetworkReply* netReply)
 
     auto* activeDownload = findCorrespondingDownload(netReply);
     activeDownload->markReceived();
-    auto specification = activeDownload->getSpecification();
+    auto downloadRequest = activeDownload->getDownloadRequest();
 
     QUrl url = netReply->url();
     if (netReply->error()) {
@@ -155,14 +155,14 @@ void Downloader::processReply(QNetworkReply* netReply)
         _err = 1;
     } else {
         // Request successful
-        if (specification->getRequestType() == DownloadType::HTMLBODY) {
+        if (downloadRequest->getRequestType() == DownloadType::HTMLBODY) {
             // Write response to QString
             QString _output;
             QTextStream streamer(&_output);
             streamer << netReply->read(netReply->bytesAvailable());
-            specification->setResult(_err, _output);
+            downloadRequest->setResult(_err, _output);
         } else {
-            QString targetFilename =specification->getTargetFilename();
+            QString targetFilename =downloadRequest->getTargetFilename();
             // Write response to file
             if (targetFilename.isEmpty()) {
                 // Invalid target name
@@ -184,7 +184,7 @@ void Downloader::processReply(QNetworkReply* netReply)
                     _err = 1;
                 }
             }
-            specification->setResult(_err);
+            downloadRequest->setResult(_err);
         }
     }
 
@@ -232,7 +232,7 @@ std::shared_ptr<DownloadRequest> Downloader::addTextRequest(QString address, uin
 void Downloader::printRequests()
 {
     for (const auto& download: _downloadTasks) {
-        Log::write(download.getSpecification()->getRequestString() + "\n");
+        Log::write(download.getDownloadRequest()->getRequestString() + "\n");
     }
 }
 

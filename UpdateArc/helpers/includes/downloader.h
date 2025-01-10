@@ -34,7 +34,7 @@ public:
     QString getRequestAddress() const;
     QString getTargetFilename() const;
     DownloadType getRequestType() const;
-    void setResult(const int16_t error, const QString output = "Success");
+    void setResult(const int16_t error, const QString output = "Download Completed");
     QString getResult() const;
     int16_t getError() const;
     uint16_t getAllowedForwards() const;
@@ -53,7 +53,7 @@ class DownloadContainer
 {
 public:
     DownloadContainer(std::shared_ptr<DownloadRequest>specification)
-        :_specification(specification)
+        :_downloadRequest(specification)
         ,_networkReply(nullptr)
         ,_wasReceived(false)
     {}
@@ -62,11 +62,11 @@ public:
     void setNetworkReply(QNetworkReply* reply);
     bool relatesTo(QNetworkReply* reply) const;
 
-    std::shared_ptr<DownloadRequest> getSpecification() const;
+    std::shared_ptr<DownloadRequest> getDownloadRequest() const;
     void markReceived();
     bool isReceived() const;
 private:
-    std::shared_ptr<DownloadRequest> _specification;
+    std::shared_ptr<DownloadRequest> _downloadRequest;
     QNetworkReply* _networkReply;
     bool _wasReceived;
 };
