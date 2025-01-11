@@ -35,6 +35,7 @@ public:
     QString getTargetFilename() const;
     DownloadType getRequestType() const;
     void setResult(const int16_t error, const QString output = "Download Completed");
+    void setResult(const int16_t error, QNetworkReply* netReply);
     QString getResult() const;
     int16_t getError() const;
     uint16_t getAllowedForwards() const;
@@ -115,6 +116,7 @@ private:
     QVector<DownloadContainer> _downloadTasks;
 
     DownloadContainer* findCorrespondingDownload(QNetworkReply* reply);
+    void storeReply(int16_t& err, std::shared_ptr<DownloadRequest> downloadRequest, QNetworkReply* reply);
     void addRequest(std::shared_ptr<DownloadRequest> newRequest);
     void errorMsg(std::string msg, bool bIsFatal = true);
     void logDebug(QString msg);

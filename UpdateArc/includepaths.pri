@@ -8,3 +8,7 @@ INCLUDEPATH += \
 
 INCLUDEPATH += \
     $$PWD/classes
+
+
+# Folder spec
+PROJECT = $$PWD

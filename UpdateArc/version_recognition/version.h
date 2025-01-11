@@ -12,7 +12,7 @@ public:
     Version(std::vector<int> version_number);
     Version(QString tag, size_t n_digits, QString prefix="", QString suffix="");
 
-    bool operator ==(Version& compareVersion) const;
+    bool equals(Version& compareVersion) const;
     bool operator <(Version& compareVersion) const;
     bool operator >(Version& compareVersion) const;
     bool operator <=(Version& compareVersion) const;

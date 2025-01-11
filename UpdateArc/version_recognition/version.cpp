@@ -16,7 +16,7 @@ Version::Version(QString tag, size_t n_digits, QString prefix, QString suffix)
     setVersion(tag, prefix, suffix);
 }
 
-bool Version::operator ==(Version &compareVersion) const
+bool Version::equals(Version &compareVersion) const
 {
     const auto& other_version = compareVersion.getVersion();
     if (other_version.size() != _version_number.size()) {
@@ -32,28 +32,28 @@ bool Version::operator ==(Version &compareVersion) const
 
 bool Version::operator <(Version &compareVersion) const
 {
-    if (*this == compareVersion)
+    if (this->equals(compareVersion))
         return false;
     return biggerThan(compareVersion, *this);
 }
 
 bool Version::operator >(Version &compareVersion) const
 {
-    if (*this == compareVersion)
+    if (this->equals(compareVersion))
         return false;
     return biggerThan(*this, compareVersion);
 }
 
 bool Version::operator <=(Version &compareVersion) const
 {
-    if (*this == compareVersion)
+    if (this->equals(compareVersion))
         return true;
     return biggerThan(compareVersion, *this);
 }
 
 bool Version::operator >=(Version &compareVersion) const
 {
-    if (*this == compareVersion)
+    if (this->equals(compareVersion))
         return true;
     return biggerThan(*this, compareVersion);
 }

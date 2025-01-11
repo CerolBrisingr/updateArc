@@ -6,9 +6,7 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-PROJECT = ../../UpdateArc
-
-include($$PROJECT/includepaths.pri)
+include(../../UpdateArc/includepaths.pri)
 
 SOURCES +=  tst_downloader.cpp \
         $$PROJECT/helpers/sources/downloader.cpp \

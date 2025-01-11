@@ -20,9 +20,9 @@ downloader::downloader() {}
 downloader::~downloader() {}
 
 void downloader::test_request() {
-    DownloadRequest test("http://www.prentil.com", DownloadType::HTMLBODY);
+    DownloadRequest test("http://www.neorice.com", DownloadType::HTMLBODY);
     QCOMPARE(test.getRequestType(), DownloadType::HTMLBODY);
-    QCOMPARE(test.getRequestAddress(), "http://www.prentil.com");
+    QCOMPARE(test.getRequestAddress(), "http://www.neorice.com");
     QCOMPARE(test.getTargetFilename(), "");
     QCOMPARE(test.getAllowedForwards(), 3);
 }

@@ -140,7 +140,7 @@ void Downloader::addRequest(std::shared_ptr<DownloadRequest> newRequest)
 void Downloader::processReply(QNetworkReply* netReply)
 {
     logDebug("      Recieved reply from URL: " + netReply->url().toString() + "\n");
-    int16_t _err = 0;
+    int16_t err = 0;
 
     auto* activeDownload = findCorrespondingDownload(netReply);
     activeDownload->markReceived();
@@ -152,49 +152,49 @@ void Downloader::processReply(QNetworkReply* netReply)
         fprintf(stderr, "      Download of %s failed: %s\n",
                 url.toEncoded().constData(),
                 qPrintable(netReply->errorString()));
-        _err = 1;
+        err = 1;
     } else {
-        // Request successful
-        if (downloadRequest->getRequestType() == DownloadType::HTMLBODY) {
-            // Write response to QString
-            QString _output;
-            QTextStream streamer(&_output);
-            streamer << netReply->read(netReply->bytesAvailable());
-            downloadRequest->setResult(_err, _output);
-        } else {
-            QString targetFilename =downloadRequest->getTargetFilename();
-            // Write response to file
-            if (targetFilename.isEmpty()) {
-                // Invalid target name
-                logDebug("      Download requested but filename empty!\n");
-                _err = 1;
-            } else {
-                // Target name not empty
-                QString fullPath = _targetPath;
-                fullPath.append(targetFilename);
-
-                QFile file(fullPath);
-                logDebug("      Saving file to: " + fullPath + "\n");
-                if (file.open(QFile::WriteOnly)) {
-                    file.write(netReply->read(netReply->bytesAvailable()));
-                    file.close();
-                    logDebug("      File saved to: " + fullPath + "\n");
-                } else {
-                    logDebug("      Cannot write target file\n");
-                    _err = 1;
-                }
-            }
-            downloadRequest->setResult(_err);
-        }
+        storeReply(err, downloadRequest, netReply);
     }
 
-    if (_err != 0) {
+    if (err != 0) {
         _hasError = true;
     }
 
     if (allDownloadsDone()) {
         _downloadTasks.clear();
         _waitLoop.exit(_hasError);
+    }
+}
+
+void Downloader::storeReply(int16_t& err, std::shared_ptr<DownloadRequest> downloadRequest, QNetworkReply* netReply) {
+    // Request successful
+    if (downloadRequest->getRequestType() == DownloadType::HTMLBODY) {
+        downloadRequest->setResult(err, netReply);
+    } else {
+        QString targetFilename =downloadRequest->getTargetFilename();
+        // Write response to file
+        if (targetFilename.isEmpty()) {
+            // Invalid target name
+            logDebug("      Download requested but filename empty!\n");
+            err = 1;
+        } else {
+            // Target name not empty
+            QString fullPath = _targetPath;
+            fullPath.append(targetFilename);
+
+            QFile file(fullPath);
+            logDebug("      Saving file to: " + fullPath + "\n");
+            if (file.open(QFile::WriteOnly)) {
+                file.write(netReply->read(netReply->bytesAvailable()));
+                file.close();
+                logDebug("      File saved to: " + fullPath + "\n");
+            } else {
+                logDebug("      Cannot write target file\n");
+                err = 1;
+            }
+        }
+        downloadRequest->setResult(err);
     }
 }
 
@@ -317,6 +317,15 @@ void DownloadRequest::setResult(const int16_t error, const QString output)
 {
     _error = error;
     _output = output;
+}
+
+void DownloadRequest::setResult(const int16_t error, QNetworkReply* netReply)
+{
+    // Write netReply cargo to QString
+    QString _output;
+    QTextStream streamer(&_output);
+    streamer << netReply->read(netReply->bytesAvailable());
+    setResult(error, _output);
 }
 
 QString DownloadRequest::getResult() const
