@@ -95,7 +95,7 @@ Version GitHupdater::readLocalVersion()
 
 int GitHupdater::compareVersions(Version& local_version, Version& online_version)
 {
-    if (local_version.equals(online_version)) {
+    if (local_version == online_version) {
         Log::write("  Local and online version match: " + local_version.toString() + "\n");
         Log::write("  Not updating " + _cfg._github_project + "\n");
         return 1;
