@@ -5,7 +5,12 @@
 #include <QtNetwork>
 #include <memory>
 
-#include "logger.h"
+#if __has_include("logger.h")
+#   define DOWNLOADER_H_LOGGING
+#   include "logger.h"
+#else
+#   include<iostream>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QSslError;
@@ -120,6 +125,8 @@ private:
     void addRequest(std::shared_ptr<DownloadRequest> newRequest);
     void errorMsg(std::string msg, bool bIsFatal = true);
     void logDebug(QString msg);
+    void log(QString msg);
+    void log(const std::string& msg);
 
 };
 

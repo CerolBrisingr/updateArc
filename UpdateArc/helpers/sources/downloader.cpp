@@ -72,8 +72,27 @@ bool Downloader::getPrintDebug()
 void Downloader::logDebug(QString msg)
 {
     if(_print_debug) {
+#ifdef DOWNLOADER_H_LOGGING
         Log::write(msg);
+#else
+    std::cout << msg.toStdString() << std::endl;
+#endif
     }
+}
+
+void Downloader::log(QString msg)
+{
+#ifdef DOWNLOADER_H_LOGGING
+    Log::write(msg);
+#else
+    std::cout << msg.toStdString() << std::endl;
+#endif
+}
+
+void Downloader::log(const std::string& msg)
+{
+    QString text = QString::fromStdString(msg);
+    log(text);
 }
 
 int Downloader::fetch()
@@ -232,7 +251,7 @@ std::shared_ptr<DownloadRequest> Downloader::addTextRequest(QString address, uin
 void Downloader::printRequests()
 {
     for (const auto& download: _downloadTasks) {
-        Log::write(download.getDownloadRequest()->getRequestString() + "\n");
+        log(download.getDownloadRequest()->getRequestString() + "\n");
     }
 }
 
@@ -273,7 +292,7 @@ void Downloader::error(QNetworkReply::NetworkError err)
 void Downloader::errorMsg(std::string msg, bool bIsFatal)
 {
     if (!_will_shut_down) {
-        Log::write(msg + "\n");
+        log(msg + "\n");
     }
     if (bIsFatal) {
         _waitLoop.exit(1);
