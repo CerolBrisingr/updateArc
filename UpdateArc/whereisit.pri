@@ -1,6 +1,7 @@
 SOURCES += \
     helpers/sources/downloader.cpp \
     helpers/sources/logger.cpp \
+    helpers/sources/version.cpp \
     classes/simple_json.cpp \
     installer/install_blishhud.cpp \
     installer/install_boontable.cpp \
@@ -15,12 +16,12 @@ SOURCES += \
     classes/settings.cpp \
     classes/updater.cpp \
     updater/config/githup_config.cpp \
-    updater/githupdater.cpp \
-    version_recognition/version.cpp
+    updater/githupdater.cpp
 
 HEADERS += \
     helpers/includes/downloader.h \
     helpers/includes/logger.h \
+    helpers/includes/version.h \
     classes/simple_json.h \
     installer/install_blishhud.h \
     installer/install_boontable.h \
@@ -34,8 +35,7 @@ HEADERS += \
     classes/settings.h \
     classes/updater.h \
     updater/config/githup_config.h \
-    updater/githupdater.h \
-    version_recognition/version.h
+    updater/githupdater.h
 
 FORMS += \
     commandstring_editor/sources/form.ui \

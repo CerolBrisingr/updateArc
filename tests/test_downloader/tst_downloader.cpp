@@ -1,8 +1,6 @@
 #include <QtTest>
 #include "downloader.h"
 
-// add necessary includes here
-
 class downloader : public QObject
 {
     Q_OBJECT

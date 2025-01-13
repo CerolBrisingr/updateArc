@@ -28,6 +28,10 @@ int GitHupdater::update()
         Log::write("  Could not locate any full release for " + _cfg._github_project + "\n");
     }
     Version online_version = extractVersion(release);
+    if (!online_version.isClean()) {
+        Log::write("Online version structure must have changed, failed to read. Aborting.");
+        return 1;
+    }
     Version local_version = readLocalVersion();
     if (compareVersions(local_version, online_version) != 0) {
         return 1;
