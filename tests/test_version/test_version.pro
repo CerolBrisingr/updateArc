@@ -6,7 +6,7 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-include(../../UpdateArc/includepaths.pri)
+include(../../UpdateArc/common_settings_and_includepaths.pri)
 
 SOURCES +=  tst_version.cpp \
     $$PROJECT/helpers/sources/logger.cpp \

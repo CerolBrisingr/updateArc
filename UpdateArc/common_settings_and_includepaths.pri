@@ -12,3 +12,5 @@ INCLUDEPATH += \
 
 # Folder spec
 PROJECT = $$PWD
+
+CONFIG += c++20

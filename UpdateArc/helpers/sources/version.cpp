@@ -4,6 +4,12 @@ Version::Version(const std::vector<int>& version_number)
     :_version_number(version_number)
     ,_number_digits(version_number.size())
 {
+    assureMinimumLength();
+}
+
+void Version::assureMinimumLength()
+{
+    // Version must be at least 1 major version number
     if (_number_digits < 1) {
         _number_digits = 1;
         _version_number = {0};

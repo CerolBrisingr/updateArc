@@ -8,7 +8,7 @@ CONFIG += c++20
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-include(includepaths.pri)
+include(common_settings_and_includepaths.pri)
 include(whereisit.pri)
 
 RC_ICONS = resources\arc.ico

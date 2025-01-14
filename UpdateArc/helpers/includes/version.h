@@ -29,6 +29,7 @@ private:
 
     QRegularExpression buildRegexp(const QString& prefix="", const QString& suffix="");
     void setVersion(const QString &tag, const QString &prefix, const QString &suffix);
+    void assureMinimumLength();
     static bool biggerThan(const Version& left, const Version& right);
 };
 
