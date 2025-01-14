@@ -1,23 +1,23 @@
 #include <QtTest>
 #include "downloader.h"
 
-class downloader : public QObject
+class TestDownloader : public QObject
 {
     Q_OBJECT
 
 public:
-    downloader();
-    ~downloader() override;
+    TestDownloader();
+    ~TestDownloader() override;
 
 private slots:
     void test_request();
 };
 
-downloader::downloader() {}
+TestDownloader::TestDownloader() {}
 
-downloader::~downloader() {}
+TestDownloader::~TestDownloader() {}
 
-void downloader::test_request() {
+void TestDownloader::test_request() {
     DownloadRequest test("http://www.neorice.com", DownloadType::HTMLBODY);
     QCOMPARE(test.getRequestType(), DownloadType::HTMLBODY);
     QCOMPARE(test.getRequestAddress(), "http://www.neorice.com");
@@ -25,6 +25,6 @@ void downloader::test_request() {
     QCOMPARE(test.getAllowedForwards(), 3);
 }
 
-QTEST_APPLESS_MAIN(downloader)
+QTEST_APPLESS_MAIN(TestDownloader)
 
 #include "tst_downloader.moc"

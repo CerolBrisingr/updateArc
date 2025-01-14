@@ -2,47 +2,54 @@
 #include "version.h"
 #include <vector>
 
-class version : public QObject
+class TestVersion : public QObject
 {
     Q_OBJECT
 
 public:
-    version();
-    ~version() override;
+    TestVersion();
+    ~TestVersion() override;
 
 private slots:
-    void test_vector_constructor1_data();
-    void test_vector_constructor1();
-    void test_vector_constructor2();
+    void test_vector_constructor_data();
+    void test_vector_constructor();
+    void test_vector_constructor_invalid();
 
-    void test_parse_constructor1();
-    void test_parse_constructor2();
-    void test_parse_constructor3();
-    void test_parse_constructor4();
+    void test_parse_constructor_data();
+    void test_parse_constructor();
+    void test_parse_constructor_fail_data();
+    void test_parse_constructor_fail();
 
-    void test_compare_equal1();
-    void test_compare_equal2();
-
-    void test_compare_not_equal1();
-    void test_compare_not_equal2();
-    void test_compare_not_equal3();
+    void test_compare_equal_data();
+    void test_compare_equal();
+    void test_compare_not_equal_data();
+    void test_compare_not_equal();
 };
 
-version::version() {}
+TestVersion::TestVersion() {}
 
-version::~version() {}
+TestVersion::~TestVersion() {}
 
-void version::test_vector_constructor1_data() {
-    QTest::addColumn<std::vector<int>>("values");
-    QTest::addColumn<QString>("string");
+typedef std::vector<int> inData;
 
-    QTest::newRow("0.1.2") << std::vector<int>({0, 1, 2}) << "0.1.2";
-    QTest::newRow("1.2") << std::vector<int>({1, 2}) << "1.2";
-    QTest::newRow("0") << std::vector<int>({0}) << "0";
+size_t s_t(int input)
+{
+    return static_cast<size_t>(input);
 }
 
-void version::test_vector_constructor1() {
-    QFETCH(std::vector<int>, values);
+void TestVersion::test_vector_constructor_data()
+{
+    QTest::addColumn<inData>("values");
+    QTest::addColumn<QString>("string");
+
+    QTest::newRow("0.1.2") << inData({0, 1, 2}) << "0.1.2";
+    QTest::newRow("1.2") << inData({1, 2}) << "1.2";
+    QTest::newRow("0") << inData({0}) << "0";
+}
+
+void TestVersion::test_vector_constructor()
+{
+    QFETCH(inData, values);
     QFETCH(QString, string);
     Version test(values);
     QCOMPARE(test.getVersion(), values);
@@ -50,60 +57,110 @@ void version::test_vector_constructor1() {
     QVERIFY(test.isClean());
 }
 
-void version::test_vector_constructor2() {
-    std::vector<int> values = {};
-    std::vector<int> fallback = {0};
+void TestVersion::test_vector_constructor_invalid()
+{
+    inData values = {};
+    inData fallback = {0};
     Version test(values);
     QCOMPARE(test.getVersion(), fallback);
     QCOMPARE(test.toString(), "0");
     QVERIFY(!test.isClean());
 }
 
-void version::test_parse_constructor1() {
-    Version test("v4.1.0_release", 3, "v", "_release");
-    QCOMPARE(test.toString(), "4.1.0");
+void TestVersion::test_parse_constructor_data()
+{
+    QTest::addColumn<QString>("tag");
+    QTest::addColumn<size_t>("columns");
+    QTest::addColumn<QString>("prefix");
+    QTest::addColumn<QString>("suffix");
+    QTest::addColumn<QString>("output");
+
+    QTest::newRow("v4.1.0_release") << "v4.1.0_release" << s_t(3) << "v" << "_release" << "4.1.0";
+    QTest::newRow("test4.34stuff") << "test4.34stuff" << s_t(2) << "test" << "stuff" << "4.34";
+}
+
+void TestVersion::test_parse_constructor()
+{
+    QFETCH(QString, tag);
+    QFETCH(size_t, columns);
+    QFETCH(QString, prefix);
+    QFETCH(QString, suffix);
+    QFETCH(QString, output);
+
+    Version test(tag, columns, prefix, suffix);
+    QCOMPARE(test.toString(), output);
     QVERIFY(test.isClean());
 }
 
-void version::test_parse_constructor2() {
-    Version test("v4.1.0_buggy", 3, "v", "_realease");
-    QCOMPARE(test.toString(), "0.0.0");
+void TestVersion::test_parse_constructor_fail_data()
+{
+    QTest::addColumn<QString>("tag");
+    QTest::addColumn<size_t>("columns");
+    QTest::addColumn<QString>("prefix");
+    QTest::addColumn<QString>("suffix");
+    QTest::addColumn<QString>("output");
+
+    QTest::newRow("v4.1.0_buggy") << "v4.1.0_buggy" << s_t(3) << "v" << "_release" << "0.0.0";
+    QTest::newRow("v4.1.0_release") << "v4.1.0_release" << s_t(2) << "v" << "_release" << "0.0";
+}
+
+void TestVersion::test_parse_constructor_fail()
+{
+    QFETCH(QString, tag);
+    QFETCH(size_t, columns);
+    QFETCH(QString, prefix);
+    QFETCH(QString, suffix);
+    QFETCH(QString, output);
+
+    Version test(tag, columns, prefix, suffix);
+    QCOMPARE(test.toString(), output);
     QVERIFY(!test.isClean());
 }
 
-void version::test_parse_constructor3() {
-    Version test("v4.1.0_release", 2, "v", "_release");
-    QCOMPARE(test.toString(), "0.0");
-    QVERIFY(!test.isClean());
+void TestVersion::test_compare_equal_data()
+{
+    QTest::addColumn<inData>("values1");
+    QTest::addColumn<inData>("values2");
+    QTest::addColumn<QString>("output");
+
+    QTest::newRow("{1, 2, 3}") << inData({1, 2, 3}) << inData({1, 2, 3}) << "1.2.3";
+    QTest::newRow("{5, 1}") << inData({5, 1}) << inData({5, 1}) << "5.1";
+    QTest::newRow("{0}/{}") << inData({0}) << inData({}) << "0";
 }
 
-void version::test_parse_constructor4() {
-    Version test("test4.34stuff", 2, "test", "stuff");
-    QCOMPARE(test.toString(), "4.34");
-    QVERIFY(test.isClean());
-}
+void TestVersion::test_compare_equal()
+{
+    QFETCH(inData, values1);
+    QFETCH(inData, values2);
+    QFETCH(QString, output);
 
-void version::test_compare_equal1() {
-    Version test1({1, 2, 3});
-    Version test2({1, 2, 3});
+    Version test1(values1);
+    Version test2(values2);
     QVERIFY(test1 == test2);
     QVERIFY(test1 >= test2);
     QVERIFY(test1 <= test2);
     QVERIFY(test2 >= test1);
     QVERIFY(test2 <= test1);
-    QCOMPARE(test1.toString(), "1.2.3");
+    QCOMPARE(test1.toString(), output);
 }
 
-void version::test_compare_equal2() {
-    Version test1({0});
-    Version test2({});
-    QVERIFY(test1 == test2);
-    QCOMPARE(test2.toString(), "0");
+void TestVersion::test_compare_not_equal_data()
+{
+    QTest::addColumn<inData>("values_big");
+    QTest::addColumn<inData>("values_small");
+
+    QTest::addRow("{4, 2, 1}/{4, 1, 1}") << inData({4, 2, 1}) << inData({4, 1, 1});
+    QTest::addRow("{4, 2, 1, 1}/{4, 2, 1}") << inData({4, 2, 1, 1}) << inData({4, 2, 1});
+    QTest::addRow("{4, 3, 1}/{4, 2, 1, 1}") << inData({4, 3, 1}) << inData({4, 2, 1, 1});
 }
 
-void version::test_compare_not_equal1() {
-    Version test1({4, 2, 1});
-    Version test2({4, 1, 1});
+void TestVersion::test_compare_not_equal()
+{
+    QFETCH(inData, values_big);
+    QFETCH(inData, values_small);
+
+    Version test1(values_big);
+    Version test2(values_small);
     QVERIFY(test1 != test2);
     QVERIFY(test1 > test2);
     QVERIFY(test1 >= test2);
@@ -111,27 +168,6 @@ void version::test_compare_not_equal1() {
     QVERIFY(test2 <= test1);
 }
 
-void version::test_compare_not_equal2() {
-    Version test1({4, 2, 1});
-    Version test2({4, 2, 1, 1});
-    QVERIFY(test1 != test2);
-    QVERIFY(test1 < test2);
-    QVERIFY(test1 <= test2);
-    QVERIFY(test2 > test1);
-    QVERIFY(test2 >= test1);
-}
-
-void version::test_compare_not_equal3() {
-    Version test1({4, 3, 1});
-    Version test2({4, 2, 1, 1});
-    QVERIFY(test1 != test2);
-    QVERIFY(test1 > test2);
-    QVERIFY(test1 >= test2);
-    QVERIFY(test2 < test1);
-    QVERIFY(test2 <= test1);
-}
-
-
-QTEST_APPLESS_MAIN(version)
+QTEST_APPLESS_MAIN(TestVersion)
 
 #include "tst_version.moc"
