@@ -12,7 +12,6 @@
 
 #include "fileinteractions.h"
 #include "logger.h"
-#include "downloader.h"
 #include "settings.h"
 #include "updater/config/githup_config.h"
 
