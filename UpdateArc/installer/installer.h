@@ -2,7 +2,7 @@
 #define INSTALLER_H
 
 #include "classes/fileinteractions.h"
-#include "classes/logger.h"
+#include "logger.h"
 #include <memory>
 
 namespace Installer {

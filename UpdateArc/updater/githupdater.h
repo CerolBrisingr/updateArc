@@ -4,7 +4,7 @@
 #include "baseupdater.h"
 #include <QObject>
 #include <classes/simple_json.h>
-#include <version_recognition/version.h>
+#include "version.h"
 #include <updater/config/githup_config.h>
 #include <installer/installer.h>
 #include <installer/install_blishhud.h>
