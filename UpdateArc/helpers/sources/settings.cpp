@@ -1,16 +1,16 @@
 #include "settings.h"
 
-Settings::Settings(QString ini_path)
+Settings::Settings(const QString ini_path)
     :_ini_path(ini_path)
 {};
 
-bool Settings::hasKey(QString key)
+bool Settings::hasKey(const QString key)
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     return setting.contains(key);
 }
 
-bool Settings::readBinary(QString key, QString s_true, QString s_default)
+bool Settings::readBinary(const QString key, const QString s_true, const QString s_default)
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     QString value = getValue(key, s_default);
@@ -18,7 +18,7 @@ bool Settings::readBinary(QString key, QString s_true, QString s_default)
     return (value.compare(s_true) == 0);
 }
 
-bool Settings::readCreateBinary(QString key, QString s_true, QString s_false, QString s_default)
+bool Settings::readCreateBinary(const QString key, const QString s_true, const QString s_false, const QString s_default)
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     QString value = getValueWrite(key, s_default);
@@ -31,13 +31,13 @@ bool Settings::readCreateBinary(QString key, QString s_true, QString s_false, QS
     }
 }
 
-void Settings::setValue(QString key, QString value)
+void Settings::setValue(const QString key, const QString value)
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     setting.setValue(key, value);
 }
 
-QString Settings::getValueWrite(QString key, QString default_value)
+QString Settings::getValueWrite(const QString key, const QString default_value)
 {
     if (!hasKey(key)) {
         setValue(key, default_value);
@@ -47,22 +47,22 @@ QString Settings::getValueWrite(QString key, QString default_value)
     return setting.value(key, default_value).toString();
 }
 
-QString Settings::getValue(QString key, QString default_value)
+QString Settings::getValue(const QString key, const QString default_value)
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     return setting.value(key, default_value).toString();
 }
 
-void Settings::removeKey(QString key)
+void Settings::removeKey(const QString key)
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     setting.remove(key);
     return;
 }
 
-CheckBoxSetting::CheckBoxSetting(QCheckBox* checkbox, QString key)
+CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const QString iniPath)
     :_checkbox(checkbox)
-    ,_settings("settings.ini")
+    ,_settings(iniPath)
     ,_key(key)
 {
     // Read setting for checkbox, create if not available, set to "off" if undefined
@@ -85,9 +85,9 @@ void CheckBoxSetting::checkboxChanged(int state)
     }
 }
 
-LineEditSettings::LineEditSettings(QLineEdit *lineedit, QString key, QString default_entry)
+LineEditSettings::LineEditSettings(QLineEdit *lineedit, const QString key, const QString default_entry, const QString iniPath)
     :_lineedit(lineedit)
-    ,_settings("settings.ini")
+    ,_settings(iniPath)
     ,_key(key)
 {
     // Read setting for lineedit, create if not available

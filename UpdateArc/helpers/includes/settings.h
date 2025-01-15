@@ -9,15 +9,15 @@
 class Settings
 {
 public:
-    Settings(QString ini_path);
+    Settings(const QString ini_path);
 
-    bool hasKey(QString key);
-    bool readBinary(QString key, QString s_true, QString s_default = "");
-    bool readCreateBinary(QString key, QString s_true, QString s_false, QString s_default);
-    QString getValue(QString key, QString default_value = "");
-    QString getValueWrite(QString key, QString default_value = "");
-    void setValue(QString key, QString value);
-    void removeKey(QString key);
+    bool hasKey(const QString key);
+    bool readBinary(const QString key, const QString s_true, const QString s_default = "");
+    bool readCreateBinary(const QString key, const QString s_true, const QString s_false, const QString s_default);
+    QString getValue(const QString key, const QString default_value = "");
+    QString getValueWrite(const QString key, const QString default_value = "");
+    void setValue(const QString key, const QString value);
+    void removeKey(const QString key);
 
 private:
     const QString _ini_path;
@@ -28,7 +28,7 @@ class CheckBoxSetting:  public QObject
 {
     Q_OBJECT
 public:
-    CheckBoxSetting(QCheckBox* checkbox, QString key);
+    CheckBoxSetting(QCheckBox* checkbox, const QString key, const QString iniPath = "settings.ini");
 
 private slots:
     void checkboxChanged(int state);
@@ -45,7 +45,7 @@ class LineEditSettings: public QObject
 {
     Q_OBJECT
 public:
-    LineEditSettings(QLineEdit* lineedit, QString key, QString default_entry = "");
+    LineEditSettings(QLineEdit* lineedit, const QString key, const QString default_entry = "", const QString iniPath = "settings.ini");
 
 private slots:
     void lineeditChanged(QString text);
