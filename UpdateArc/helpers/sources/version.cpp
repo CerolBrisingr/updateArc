@@ -41,15 +41,11 @@ bool Version::operator==(const Version& compareVersion) const
 
 bool Version::operator<(const Version &compareVersion) const
 {
-    if (*this == compareVersion)
-        return false;
     return biggerThan(compareVersion, *this);
 }
 
 bool Version::operator>(const Version &compareVersion) const
 {
-    if (*this == compareVersion)
-        return false;
     return biggerThan(*this, compareVersion);
 }
 
