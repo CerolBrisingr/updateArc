@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QCheckBox>
-#include <classes/settings.h>
+#include <settings.h>
 #include "logger.h"
 #include <classes/fileinteractions.h>
 #include "downloader.h"

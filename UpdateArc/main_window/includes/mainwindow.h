@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "classes/settings.h"
+#include "settings.h"
 #include "classes/updater.h"
 #include <updater/baseupdater.h>
 #include <updater/arcupdater.h>
