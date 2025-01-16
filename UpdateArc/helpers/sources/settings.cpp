@@ -4,13 +4,13 @@ Settings::Settings(const QString ini_path)
     :_ini_path(ini_path)
 {};
 
-bool Settings::hasKey(const QString key)
+bool Settings::hasKey(const QString key) const
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     return setting.contains(key);
 }
 
-bool Settings::readBinary(const QString key, const QString s_true, const QString s_default)
+bool Settings::readBinary(const QString key, const QString s_true, const QString s_default) const
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     QString value = getValue(key, s_default);
@@ -47,7 +47,7 @@ QString Settings::getValueWrite(const QString key, const QString default_value)
     return setting.value(key, default_value).toString();
 }
 
-QString Settings::getValue(const QString key, const QString default_value)
+QString Settings::getValue(const QString key, const QString default_value) const
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
     return setting.value(key, default_value).toString();

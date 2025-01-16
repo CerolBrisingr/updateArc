@@ -11,10 +11,10 @@ class Settings
 public:
     Settings(const QString ini_path);
 
-    bool hasKey(const QString key);
-    bool readBinary(const QString key, const QString s_true, const QString s_default = "");
+    bool hasKey(const QString key) const;
+    bool readBinary(const QString key, const QString s_true, const QString s_default = "") const;
     bool readCreateBinary(const QString key, const QString s_true, const QString s_false, const QString s_default);
-    QString getValue(const QString key, const QString default_value = "");
+    QString getValue(const QString key, const QString default_value = "") const;
     QString getValueWrite(const QString key, const QString default_value = "");
     void setValue(const QString key, const QString value);
     void removeKey(const QString key);

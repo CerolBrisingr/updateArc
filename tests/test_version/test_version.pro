@@ -13,5 +13,5 @@ SOURCES +=  tst_version.cpp \
     $$PROJECT/helpers/sources/version.cpp
 
 HEADERS += \
-        $$PROJECT/helpers/includes/version.h \
-        $$PROJECT/helpers/includes/logger.h
+    $$PROJECT/helpers/includes/version.h \
+    $$PROJECT/helpers/includes/logger.h
