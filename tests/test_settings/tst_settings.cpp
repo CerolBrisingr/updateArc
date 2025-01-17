@@ -5,6 +5,8 @@
 #include "settings.h"
 #include <QString>
 
+// https://doc.qt.io/qt-6/qttestlib-tutorial3-example.html
+// https://stackoverflow.com/questions/16710924/qt-gui-unit-test-must-construct-a-qapplication-before-a-qpaintdevice
 
 class TestSettings : public QObject
 {
