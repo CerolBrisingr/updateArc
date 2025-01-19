@@ -1,0 +1,1 @@
+powershell Compress-Archive ./* UpdateArc.zip

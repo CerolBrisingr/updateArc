@@ -16,6 +16,7 @@ robocopy ".\%PROJECT%" ".\target\source" /s /mt >> robocopy.txt
 robocopy ".\%PROJECT%\resources" ".\target" *.dll >> robocopy.txt
 robocopy %EXEPATH% ".\target" %PROJECT%.exe >> robocopy.txt
 robocopy "." ".\target" publish.bat >> robocopy.txt
+robocopy "." ".\target" release.bat >> robocopy.txt
 
 echo Moving of files to target directory complete. View robocopy.txt if any issues arise.
 
