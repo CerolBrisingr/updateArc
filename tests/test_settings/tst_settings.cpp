@@ -50,6 +50,7 @@ public:
 
 private:
     const QString _ini_path = "test.ini";
+    MainWindow window;
 
 private slots:
     void initTestCase();
@@ -63,7 +64,6 @@ TestSettings::~TestSettings() {}
 
 void TestSettings::initTestCase()
 {
-    MainWindow window;
     window.setWindowTitle("Test settings.cpp");
     window.show();
 
