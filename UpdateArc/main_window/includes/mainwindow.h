@@ -13,7 +13,6 @@
 #include <installer/install_kp.h>
 
 #include <QMainWindow>
-#include <iostream>
 #include <QCheckBox>
 #include <QScrollBar>
 #include <QLineEdit>
@@ -22,7 +21,6 @@
 #include <QTime>
 
 #include <vector>
-#include <memory>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
