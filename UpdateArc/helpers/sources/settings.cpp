@@ -71,17 +71,36 @@ CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const Q
     _checkbox->setCheckState(check_state);  // apply checkbox value
 
     // Connect changes to checkbox to update on settings
-    connect(_checkbox, SIGNAL(stateChanged(int)),
-            this, SLOT(checkboxChanged(int)));
+    connect(_checkbox, &QCheckBox::checkStateChanged,
+            this, &CheckBoxSetting::checkboxChanged);
 }
 
-void CheckBoxSetting::checkboxChanged(int state)
+CheckBoxSetting::~CheckBoxSetting()
+{
+    // Disconnect signal if setting object is deleted
+    disconnect(_checkbox, &QCheckBox::checkStateChanged,
+            this, &CheckBoxSetting::checkboxChanged);
+}
+
+bool CheckBoxSetting::getState() const
+{
+    return _settings.readBinary(_key, "on", "off");
+}
+
+void CheckBoxSetting::checkboxChanged(Qt::CheckState state)
 {
     // Checkbox changed, update corresponding value in settings
-    if (state == 2) {
-        _settings.setValue(_key, "on");
-    } else {
+    switch(state) {
+    case Qt::Unchecked:
         _settings.setValue(_key, "off");
+        break;
+    case Qt::Checked:
+        _settings.setValue(_key, "on");
+        break;
+    default:
+        // If it's not "on", it's "off"
+        _settings.setValue(_key, "off");
+        break;
     }
 }
 
@@ -89,17 +108,30 @@ LineEditSettings::LineEditSettings(QLineEdit *lineedit, const QString key, const
     :_lineedit(lineedit)
     ,_settings(iniPath)
     ,_key(key)
+    ,_defaultEntry(default_entry)
 {
     // Read setting for lineedit, create if not available
-    QString text = _settings.getValueWrite(_key, default_entry);
+    QString text = _settings.getValueWrite(_key, _defaultEntry);
     _lineedit->setText(text);
 
     // Connect changes on lineedit to update on settings
-    connect(_lineedit, SIGNAL(textChanged(QString)),
-            this, SLOT(lineeditChanged(QString)));
+    connect(_lineedit, &QLineEdit::textChanged,
+            this, &LineEditSettings::lineeditChanged);
 }
 
-void LineEditSettings::lineeditChanged(QString text)
+LineEditSettings::~LineEditSettings()
+{
+    // Disconnect signal
+    disconnect(_lineedit, &QLineEdit::textChanged,
+               this, &LineEditSettings::lineeditChanged);
+}
+
+QString LineEditSettings::getValue() const
+{
+    return _settings.getValue(_key, _defaultEntry);
+}
+
+void LineEditSettings::lineeditChanged(const QString &text)
 {
     _settings.setValue(_key, text);
 }

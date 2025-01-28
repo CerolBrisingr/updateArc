@@ -55,7 +55,9 @@ private:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+
     void test_hasKey();
+    void test_checkbox();
 };
 
 TestSettings::TestSettings() {}
@@ -81,6 +83,19 @@ void TestSettings::test_hasKey()
     Settings settings(_ini_path);
     QVERIFY(!settings.hasKey("not_found"));
     QVERIFY(settings.hasKey("key"));
+}
+
+void TestSettings::test_checkbox()
+{
+    const QString checkedProperty = "set_active";
+    Settings settings(_ini_path);
+
+    QVERIFY(!settings.hasKey(checkedProperty));
+
+    CheckBoxSetting(window.ptrCheckBox, checkedProperty, _ini_path);
+    QVERIFY(settings.hasKey(checkedProperty));
+
+
 }
 
 QTEST_MAIN(TestSettings)
