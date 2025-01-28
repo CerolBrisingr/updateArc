@@ -29,7 +29,6 @@ class CheckBoxSetting:  public QObject
     Q_OBJECT
 public:
     CheckBoxSetting(QCheckBox* checkbox, const QString key, const QString iniPath = "settings.ini");
-    ~CheckBoxSetting() override;
 
     bool getState() const;
 
@@ -49,7 +48,6 @@ class LineEditSettings: public QObject
     Q_OBJECT
 public:
     LineEditSettings(QLineEdit* lineedit, const QString key, const QString default_entry = "", const QString iniPath = "settings.ini");
-    ~LineEditSettings() override;
 
     QString getValue() const;
 

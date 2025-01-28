@@ -75,13 +75,6 @@ CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const Q
             this, &CheckBoxSetting::checkboxChanged);
 }
 
-CheckBoxSetting::~CheckBoxSetting()
-{
-    // Disconnect signal if setting object is deleted
-    disconnect(_checkbox, &QCheckBox::checkStateChanged,
-            this, &CheckBoxSetting::checkboxChanged);
-}
-
 bool CheckBoxSetting::getState() const
 {
     return _settings.readBinary(_key, "on", "off");
@@ -117,13 +110,6 @@ LineEditSettings::LineEditSettings(QLineEdit *lineedit, const QString key, const
     // Connect changes on lineedit to update on settings
     connect(_lineedit, &QLineEdit::textChanged,
             this, &LineEditSettings::lineeditChanged);
-}
-
-LineEditSettings::~LineEditSettings()
-{
-    // Disconnect signal
-    disconnect(_lineedit, &QLineEdit::textChanged,
-               this, &LineEditSettings::lineeditChanged);
 }
 
 QString LineEditSettings::getValue() const
