@@ -2,43 +2,15 @@
 #include <QCoreApplication>
 
 #include "fileinteractions.h"
-#include <QSettings>
 #include "settings.h"
+#include "window.h"
+#include <QSettings>
 #include <QString>
-
-#include <QMainWindow>
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QCheckBox>
-#include <QLineEdit>
 
 // https://doc.qt.io/qt-6/qmainwindow.html
 // https://forum.qt.io/topic/84784/qtest-gui-getting-started
 // https://doc.qt.io/qt-6/qttestlib-tutorial3-example.html
 // https://stackoverflow.com/questions/16710924/qt-gui-unit-test-must-construct-a-qapplication-before-a-qpaintdevice
-
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
-
-public:
-    MainWindow() {
-        QWidget *centralWidget = new QWidget(this);
-        QVBoxLayout *mainLayout = new QVBoxLayout();
-
-        ptrLineEdit = new QLineEdit();
-        mainLayout->addWidget(ptrLineEdit);
-        ptrCheckBox = new QCheckBox();
-        mainLayout->addWidget(ptrCheckBox);
-
-        centralWidget->setLayout(mainLayout);
-        setCentralWidget(centralWidget);
-    }
-
-public:
-    QLineEdit *ptrLineEdit;
-    QCheckBox *ptrCheckBox;
-};
 
 class TestSettings : public QObject
 {
@@ -50,7 +22,7 @@ public:
 
 private:
     const QString _ini_path = "test.ini";
-    MainWindow window;
+    MainWindow testWindow;
 
 private slots:
     void initTestCase();
@@ -66,8 +38,8 @@ TestSettings::~TestSettings() {}
 
 void TestSettings::initTestCase()
 {
-    window.setWindowTitle("Test settings.cpp");
-    window.show();
+    testWindow.setWindowTitle("Test settings.cpp");
+    testWindow.show();
 
     QSettings setting(_ini_path, QSettings::IniFormat);
     setting.setValue("key", "value");
@@ -92,10 +64,17 @@ void TestSettings::test_checkbox()
 
     QVERIFY(!settings.hasKey(checkedProperty));
 
-    CheckBoxSetting(window.ptrCheckBox, checkedProperty, _ini_path);
+    CheckBoxSetting(testWindow.ptrCheckBox, checkedProperty, _ini_path);
+    QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Unchecked);
     QVERIFY(settings.hasKey(checkedProperty));
+    QCOMPARE(settings.readBinary(checkedProperty), false);
 
-
+    QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Unchecked);
+    QTest::mouseClick(testWindow.ptrCheckBox, Qt::LeftButton );
+    //window.ptrCheckBox->setChecked(true);
+    QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Checked);
+    QTest::qWait(500);
+    QCOMPARE(settings.readBinary(checkedProperty), true);
 }
 
 QTEST_MAIN(TestSettings)
