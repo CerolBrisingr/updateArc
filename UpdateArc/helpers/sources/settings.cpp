@@ -61,17 +61,21 @@ void Settings::removeKey(const QString key)
 }
 
 CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const QString iniPath)
-    :_checkbox(checkbox)
-    ,_settings(iniPath)
+    :_settings(iniPath)
     ,_key(key)
 {
+    if (checkbox == nullptr) return;
+
     // Read setting for checkbox, create if not available, set to "off" if undefined
     bool value = _settings.readCreateBinary(_key, "on", "off", "off");
-    Qt::CheckState check_state = Qt::CheckState(value * 2);
-    _checkbox->setCheckState(check_state);  // apply checkbox value
+
+    // No support for tristate (half checked) boxes
+    checkbox->setTristate(false);
+    const Qt::CheckState check_state = Qt::CheckState(value * 2);
+    checkbox->setCheckState(check_state);  // apply checkbox value
 
     // Connect changes to checkbox to update on settings
-    connect(_checkbox, &QCheckBox::checkStateChanged,
+    connect(checkbox, &QCheckBox::checkStateChanged,
             this, &CheckBoxSetting::checkboxChanged);
 }
 
@@ -98,18 +102,20 @@ void CheckBoxSetting::checkboxChanged(Qt::CheckState state)
 }
 
 LineEditSettings::LineEditSettings(QLineEdit *lineedit, const QString key, const QString default_entry, const QString iniPath)
-    :_lineedit(lineedit)
-    ,_settings(iniPath)
+    :_settings(iniPath)
     ,_key(key)
     ,_defaultEntry(default_entry)
 {
+    if (lineedit == nullptr) return;
+
     // Read setting for lineedit, create if not available
-    QString text = _settings.getValueWrite(_key, _defaultEntry);
-    _lineedit->setText(text);
+    const QString text = _settings.getValueWrite(_key, _defaultEntry);
+    lineedit->setText(text);
 
     // Connect changes on lineedit to update on settings
-    connect(_lineedit, &QLineEdit::textChanged,
+    connect(lineedit, &QLineEdit::textChanged,
             this, &LineEditSettings::lineeditChanged);
+
 }
 
 QString LineEditSettings::getValue() const

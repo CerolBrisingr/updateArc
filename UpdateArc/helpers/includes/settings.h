@@ -12,7 +12,7 @@ public:
     Settings(const QString ini_path);
 
     bool hasKey(const QString key) const;
-    bool readBinary(const QString key, const QString s_true, const QString s_default = "") const;
+    bool readBinary(const QString key, const QString s_true = "on", const QString s_default = "") const;
     bool readCreateBinary(const QString key, const QString s_true, const QString s_false, const QString s_default);
     QString getValue(const QString key, const QString default_value = "") const;
     QString getValueWrite(const QString key, const QString default_value = "");
@@ -36,7 +36,6 @@ private slots:
     void checkboxChanged(Qt::CheckState state);
 
 private:
-    QCheckBox* _checkbox;
     Settings _settings;
     QString _key;
 
@@ -55,7 +54,6 @@ private slots:
     void lineeditChanged(const QString &text);
 
 private:
-    QLineEdit* _lineedit;
     Settings _settings;
     const QString _key;
     const QString _defaultEntry;
