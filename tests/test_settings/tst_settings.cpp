@@ -1,4 +1,4 @@
-#include <QtTest>
+#include <QTest>
 #include <QCoreApplication>
 
 #include "fileinteractions.h"
@@ -12,6 +12,23 @@
 // https://forum.qt.io/topic/84784/qtest-gui-getting-started
 // https://doc.qt.io/qt-6/qttestlib-tutorial3-example.html
 // https://stackoverflow.com/questions/16710924/qt-gui-unit-test-must-construct-a-qapplication-before-a-qpaintdevice
+
+#include <QStyle>
+#include <QStyleOptionButton>
+
+void clickCheckbox(QCheckBox *box)
+{
+    QStyleOptionButton opt;
+    opt.initFrom(box);
+    QRect checkBoxRect = box->style()->subElementRect(QStyle::SE_CheckBoxIndicator, &opt, box);
+    qDebug() << "checkBoxRect: " << checkBoxRect;
+
+    QPoint checkBoxClickPoint = box->mapTo(box, checkBoxRect.center());
+    qDebug() << "checkBoxClickPoint: " << checkBoxClickPoint;
+    qDebug() << "checkBoxRect.center(): " << checkBoxRect.center();
+
+    QTest::mouseClick(box, Qt::LeftButton, {}, checkBoxRect.center());
+}
 
 class TestSettings : public QObject
 {
@@ -60,30 +77,46 @@ void TestSettings::test_checkbox()
     Settings settings(_ini_path);
 
     MainWindow testWindow;
+    QCheckBox* const box = testWindow.ptrCheckBox;
     testWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&testWindow, 200));
 
     // Spy on the signal we want to connect on, now because our constructor should NOT issue a signal
-    QSignalSpy spy(testWindow.ptrCheckBox, &QCheckBox::checkStateChanged);
+    QSignalSpy spy(box, &QCheckBox::checkStateChanged);
+    QSignalSpy windowSpy(&testWindow, &MainWindow::onMousePressed);
 
     QVERIFY(!settings.hasKey(checkedProperty));
 
-    QVERIFY(testWindow.ptrCheckBox->isVisible());
-    QVERIFY(testWindow.ptrCheckBox->isEnabled());
+    QVERIFY(box->isVisible());
+    QVERIFY(box->isEnabled());
 
-    CheckBoxSetting checkBoxSetting(testWindow.ptrCheckBox, checkedProperty, _ini_path);
-    QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Unchecked);
+    CheckBoxSetting checkBoxSetting(box, checkedProperty, _ini_path);
+    QCOMPARE(box->checkState(), Qt::Unchecked);
     QVERIFY(settings.hasKey(checkedProperty));
     QCOMPARE(settings.readBinary(checkedProperty), false);
 
     QCOMPARE(spy.count(), 0);
-    QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Unchecked);
-    testWindow.ptrCheckBox->setFocus();
-    //QTest::mouseClick(testWindow.ptrCheckBox, Qt::LeftButton, {}, testWindow.ptrCheckBox->rect().center());
+    QCOMPARE(windowSpy.count(), 0);
+    QCOMPARE(box->checkState(), Qt::Unchecked);
+    box->setFocus();
+
+    qDebug() << "Initial checkbox state: " << box->checkState();
+
+    //QTest::mouseClick(box, Qt::LeftButton);
+    clickCheckbox(box);
     //QCoreApplication::processEvents();
-    testWindow.ptrCheckBox->setCheckState(Qt::Checked);
+
+
+    qDebug() << "Checkbox state after click: " << box->checkState();
+    qDebug() << "Checkbox position: " << box->frameGeometry();
+    qDebug() << "Checkbox global position:" << testWindow.ptrCheckBox->mapToGlobal(testWindow.ptrCheckBox->rect().topLeft());
+    qDebug() << "Linedit position: " << testWindow.ptrLineEdit->frameGeometry();
+    qDebug() << "Last position clicked: " << testWindow.getLastPosition();
+
+    box->setCheckState(Qt::Checked);
+    QCOMPARE(windowSpy.count(), 0);
     QCOMPARE(spy.count(), 1);  // We expect the signal to be emitted once
-    QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Checked);
+    QCOMPARE(box->checkState(), Qt::Checked);
     QCOMPARE(settings.readBinary(checkedProperty), true);
     QCOMPARE(checkBoxSetting.getSettingState(), true);
 }

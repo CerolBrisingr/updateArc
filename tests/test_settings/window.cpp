@@ -16,3 +16,14 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() {}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    _lastPosition = event->globalPosition();
+    emit onMousePressed(event);
+}
+
+QPointF MainWindow::getLastPosition() const
+{
+    return _lastPosition;
+}
