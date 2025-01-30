@@ -6,6 +6,7 @@
 #include "window.h"
 #include <QSettings>
 #include <QString>
+#include <QSignalSpy>
 
 // https://doc.qt.io/qt-6/qmainwindow.html
 // https://forum.qt.io/topic/84784/qtest-gui-getting-started
@@ -22,7 +23,6 @@ public:
 
 private:
     const QString _ini_path = "test.ini";
-    MainWindow testWindow;
 
 private slots:
     void initTestCase();
@@ -38,9 +38,6 @@ TestSettings::~TestSettings() {}
 
 void TestSettings::initTestCase()
 {
-    testWindow.setWindowTitle("Test settings.cpp");
-    testWindow.show();
-
     QSettings setting(_ini_path, QSettings::IniFormat);
     setting.setValue("key", "value");
 }
@@ -62,21 +59,34 @@ void TestSettings::test_checkbox()
     const QString checkedProperty = "set_active";
     Settings settings(_ini_path);
 
+    MainWindow testWindow;
+    testWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&testWindow, 200));
+
+    // Spy on the signal we want to connect on, now because our constructor should NOT issue a signal
+    QSignalSpy spy(testWindow.ptrCheckBox, &QCheckBox::checkStateChanged);
+
     QVERIFY(!settings.hasKey(checkedProperty));
 
-    CheckBoxSetting(testWindow.ptrCheckBox, checkedProperty, _ini_path);
+    QVERIFY(testWindow.ptrCheckBox->isVisible());
+    QVERIFY(testWindow.ptrCheckBox->isEnabled());
+
+    CheckBoxSetting checkBoxSetting(testWindow.ptrCheckBox, checkedProperty, _ini_path);
     QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Unchecked);
     QVERIFY(settings.hasKey(checkedProperty));
     QCOMPARE(settings.readBinary(checkedProperty), false);
 
+    QCOMPARE(spy.count(), 0);
     QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Unchecked);
-    QTest::mouseClick(testWindow.ptrCheckBox, Qt::LeftButton );
-    //window.ptrCheckBox->setChecked(true);
+    testWindow.ptrCheckBox->setFocus();
+    //QTest::mouseClick(testWindow.ptrCheckBox, Qt::LeftButton, {}, testWindow.ptrCheckBox->rect().center());
+    //QCoreApplication::processEvents();
+    testWindow.ptrCheckBox->setCheckState(Qt::Checked);
+    QCOMPARE(spy.count(), 1);  // We expect the signal to be emitted once
     QCOMPARE(testWindow.ptrCheckBox->checkState(), Qt::Checked);
-    QTest::qWait(500);
     QCOMPARE(settings.readBinary(checkedProperty), true);
+    QCOMPARE(checkBoxSetting.getSettingState(), true);
 }
 
 QTEST_MAIN(TestSettings)
-
 #include "tst_settings.moc"

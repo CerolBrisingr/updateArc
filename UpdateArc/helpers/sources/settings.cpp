@@ -79,7 +79,7 @@ CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const Q
             this, &CheckBoxSetting::checkboxChanged);
 }
 
-bool CheckBoxSetting::getState() const
+bool CheckBoxSetting::getSettingState() const
 {
     return _settings.readBinary(_key, "on", "off");
 }

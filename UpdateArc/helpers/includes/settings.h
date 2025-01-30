@@ -30,7 +30,7 @@ class CheckBoxSetting:  public QObject
 public:
     CheckBoxSetting(QCheckBox* checkbox, const QString key, const QString iniPath = "settings.ini");
 
-    bool getState() const;
+    bool getSettingState() const;
 
 private slots:
     void checkboxChanged(Qt::CheckState state);
