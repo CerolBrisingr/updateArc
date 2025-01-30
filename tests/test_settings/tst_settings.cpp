@@ -20,13 +20,9 @@ void clickCheckbox(QCheckBox *box)
 {
     QStyleOptionButton opt;
     opt.initFrom(box);
+    // Find interactive checkbox area
     QRect checkBoxRect = box->style()->subElementRect(QStyle::SE_CheckBoxIndicator, &opt, box);
-    qDebug() << "checkBoxRect: " << checkBoxRect;
-
-    QPoint checkBoxClickPoint = box->mapTo(box, checkBoxRect.center());
-    qDebug() << "checkBoxClickPoint: " << checkBoxClickPoint;
-    qDebug() << "checkBoxRect.center(): " << checkBoxRect.center();
-
+    // Click into center of interactive area
     QTest::mouseClick(box, Qt::LeftButton, {}, checkBoxRect.center());
 }
 
@@ -100,18 +96,7 @@ void TestSettings::test_checkbox()
     QCOMPARE(box->checkState(), Qt::Unchecked);
     box->setFocus();
 
-    qDebug() << "Initial checkbox state: " << box->checkState();
-
-    //QTest::mouseClick(box, Qt::LeftButton);
     clickCheckbox(box);
-    //QCoreApplication::processEvents();
-
-
-    qDebug() << "Checkbox state after click: " << box->checkState();
-    qDebug() << "Checkbox position: " << box->frameGeometry();
-    qDebug() << "Checkbox global position:" << testWindow.ptrCheckBox->mapToGlobal(testWindow.ptrCheckBox->rect().topLeft());
-    qDebug() << "Linedit position: " << testWindow.ptrLineEdit->frameGeometry();
-    qDebug() << "Last position clicked: " << testWindow.getLastPosition();
 
     box->setCheckState(Qt::Checked);
     QCOMPARE(windowSpy.count(), 0);
