@@ -36,74 +36,163 @@ public:
 
 private:
     const QString _ini_path = "test.ini";
+    const QString _test_property = "test_property";
 
 private slots:
     void initTestCase();
+    void init();
+    void cleanup();
     void cleanupTestCase();
 
     void test_hasKey();
-    void test_checkbox();
+    void test_binary_property();
+
+    void test_checkbox_clicks();
+    void test_checkbox_set_state();
 };
 
 TestSettings::TestSettings() {}
 
 TestSettings::~TestSettings() {}
 
+// Once before the first test case
 void TestSettings::initTestCase()
 {
-    QSettings setting(_ini_path, QSettings::IniFormat);
-    setting.setValue("key", "value");
+    // Not actually anything in store for this
 }
 
+// Before each test case
+void TestSettings::init()
+{
+    QSettings setting(_ini_path, QSettings::IniFormat);
+    QVERIFY(!setting.contains(_test_property));
+    setting.setValue(_test_property, "initialized");
+}
+
+// After each test case
+void TestSettings::cleanup()
+{
+    QSettings setting(_ini_path, QSettings::IniFormat);
+    setting.remove(_test_property);
+}
+
+// Once after the last test case
 void TestSettings::cleanupTestCase()
 {
+    // Clean up default ini file.
+    // Clean up any other file you use by hand!
     FileInteractions::removeFile("", "test.ini");
 }
 
 void TestSettings::test_hasKey()
 {
     Settings settings(_ini_path);
-    QVERIFY(!settings.hasKey("not_found"));
-    QVERIFY(settings.hasKey("key"));
+    QVERIFY(settings.hasKey(_test_property));
+    QCOMPARE(settings.getValue(_test_property), "initialized");
+
+    settings.setValue(_test_property, "altered");
+    QCOMPARE_NE(settings.getValue(_test_property), "initialized");
+    QCOMPARE(settings.getValue(_test_property), "altered");
+
+
+    const QString key = "another_key";
+    QVERIFY(!settings.hasKey(key));
+
+    settings.setValue(key, "stuff");
+    QCOMPARE(settings.getValue(key), "stuff");
+    QVERIFY(settings.hasKey(key));
+
+    settings.removeKey(key);
+    QVERIFY(!settings.hasKey(key));
 }
 
-void TestSettings::test_checkbox()
+void TestSettings::test_binary_property()
 {
-    const QString checkedProperty = "set_active";
+    Settings settings(_ini_path);
+}
+
+// Info: I'll bundle a few extra things in this test to remind myself of them.
+void TestSettings::test_checkbox_clicks()
+{
     Settings settings(_ini_path);
 
+    // Create test window
     MainWindow testWindow;
     QCheckBox* const box = testWindow.ptrCheckBox;
     testWindow.show();
+
+    // Make sure UI is in working order
     QVERIFY(QTest::qWaitForWindowExposed(&testWindow, 200));
+    QVERIFY(box->isVisible());
+    QVERIFY(box->isEnabled());
 
     // Spy on the signal we want to connect on, now because our constructor should NOT issue a signal
     QSignalSpy spy(box, &QCheckBox::checkStateChanged);
     QSignalSpy windowSpy(&testWindow, &MainWindow::onMousePressed);
 
-    QVERIFY(!settings.hasKey(checkedProperty));
-
-    QVERIFY(box->isVisible());
-    QVERIFY(box->isEnabled());
-
-    CheckBoxSetting checkBoxSetting(box, checkedProperty, _ini_path);
+    // Set up class to test
+    CheckBoxSetting checkBoxSetting(box, _test_property, _ini_path);
     QCOMPARE(box->checkState(), Qt::Unchecked);
-    QVERIFY(settings.hasKey(checkedProperty));
-    QCOMPARE(settings.readBinary(checkedProperty), false);
+    QVERIFY(settings.hasKey(_test_property));
+    QCOMPARE(settings.readBinary(_test_property), false);
 
+    // Check spy status before test, verifying some assumptions in this test
     QCOMPARE(spy.count(), 0);
     QCOMPARE(windowSpy.count(), 0);
-    QCOMPARE(box->checkState(), Qt::Unchecked);
-    box->setFocus();
 
+    // Interact with checkbox
     clickCheckbox(box);
 
-    box->setCheckState(Qt::Checked);
+    // Verify all desired reactions
     QCOMPARE(windowSpy.count(), 0);
     QCOMPARE(spy.count(), 1);  // We expect the signal to be emitted once
     QCOMPARE(box->checkState(), Qt::Checked);
-    QCOMPARE(settings.readBinary(checkedProperty), true);
+    QCOMPARE(settings.readBinary(_test_property), true);
     QCOMPARE(checkBoxSetting.getSettingState(), true);
+
+    // Interact with checkbox again
+    clickCheckbox(box);
+
+    // Verify all desired reactions
+    QCOMPARE(windowSpy.count(), 0);
+    QCOMPARE(spy.count(), 2);  // We expect the signal to be emitted once
+    QCOMPARE(box->checkState(), Qt::Unchecked);
+    QCOMPARE(settings.readBinary(_test_property), false);
+    QCOMPARE(checkBoxSetting.getSettingState(), false);
+}
+
+void TestSettings::test_checkbox_set_state()
+{
+    Settings settings(_ini_path);
+    settings.writeBinary(_test_property, true);
+
+    // Create test window
+    MainWindow testWindow;
+    QCheckBox* const box = testWindow.ptrCheckBox;
+    testWindow.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&testWindow, 200));
+    QSignalSpy spy(box, &QCheckBox::checkStateChanged);
+
+    // Set up class to test
+    CheckBoxSetting checkBoxSetting(box, _test_property, _ini_path);
+    QCOMPARE(box->checkState(), Qt::Checked);
+    QCOMPARE(spy.count(), 1);  // We expect the signal to be emitted on init
+
+    // Verify all desired reactions
+    box->setCheckState(Qt::Checked);
+    QCOMPARE(spy.count(), 1);  // We expect the signal to be not emitted again
+    QCOMPARE(box->checkState(), Qt::Checked);
+    QCOMPARE(settings.readBinary(_test_property), true);
+    QCOMPARE(checkBoxSetting.getSettingState(), true);
+
+    // Verify all desired reactions
+    box->setCheckState(Qt::Unchecked);
+    QCOMPARE(spy.count(), 2);  // We expect the signal to be emitted again
+    QCOMPARE(box->checkState(), Qt::Unchecked);
+    QCOMPARE(settings.readBinary(_test_property), false);
+    QCOMPARE(checkBoxSetting.getSettingState(), false);
+
 }
 
 QTEST_MAIN(TestSettings)

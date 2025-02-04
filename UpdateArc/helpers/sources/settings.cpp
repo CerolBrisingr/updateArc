@@ -10,18 +10,29 @@ bool Settings::hasKey(const QString key) const
     return setting.contains(key);
 }
 
-bool Settings::readBinary(const QString key, const QString s_true, const QString s_default) const
+bool Settings::readBinary(const QString key, const QString s_default, const QString s_true) const
 {
-    QSettings setting(_ini_path, QSettings::IniFormat);
     QString value = getValue(key, s_default);
-
     return (value.compare(s_true) == 0);
 }
 
-bool Settings::readCreateBinary(const QString key, const QString s_true, const QString s_false, const QString s_default)
+void Settings::writeBinary(const QString key, const bool value, const QString s_true, const QString s_false)
 {
-    QSettings setting(_ini_path, QSettings::IniFormat);
-    QString value = getValueWrite(key, s_default);
+    if (value) {
+        setValue(key, s_true);
+    } else {
+        setValue(key, s_false);
+    }
+}
+
+bool Settings::readCreateBinary(const QString key, const bool defaultValue, const QString s_true, const QString s_false)
+{
+    QString value;
+    if (defaultValue) {
+        value = getValueWrite(key, s_true);
+    } else {
+        value = getValueWrite(key, s_false);
+    }
     if (value.compare(s_true) == 0) {
         return true;
     } else {
@@ -67,7 +78,7 @@ CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const Q
     if (checkbox == nullptr) return;
 
     // Read setting for checkbox, create if not available, set to "off" if undefined
-    bool value = _settings.readCreateBinary(_key, "on", "off", "off");
+    bool value = _settings.readCreateBinary(_key);
 
     // No support for tristate (half checked) boxes
     checkbox->setTristate(false);
@@ -81,7 +92,7 @@ CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const Q
 
 bool CheckBoxSetting::getSettingState() const
 {
-    return _settings.readBinary(_key, "on", "off");
+    return _settings.readBinary(_key);
 }
 
 void CheckBoxSetting::checkboxChanged(Qt::CheckState state)
