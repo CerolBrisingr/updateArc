@@ -26,6 +26,12 @@ void clickCheckbox(QCheckBox *box)
     QTest::mouseClick(box, Qt::LeftButton, {}, checkBoxRect.center());
 }
 
+void writeIntoLineEdit(QLineEdit *edit, const QString &text)
+{
+    QTest::mouseDClick(edit, Qt::LeftButton, {}, edit->rect().center());
+    QTest::keyClicks(edit, text);
+}
+
 class TestSettings : public QObject
 {
     Q_OBJECT
@@ -49,6 +55,8 @@ private slots:
 
     void test_checkbox_clicks();
     void test_checkbox_set_state();
+
+    void test_line_edit();
 };
 
 TestSettings::TestSettings() {}
@@ -193,6 +201,30 @@ void TestSettings::test_checkbox_set_state()
     QCOMPARE(settings.readBinary(_test_property), false);
     QCOMPARE(checkBoxSetting.getSettingState(), false);
 
+}
+
+void TestSettings::test_line_edit()
+{
+    Settings settings(_ini_path);
+
+    // Create test window
+    MainWindow testWindow;
+    QLineEdit* const edit = testWindow.ptrLineEdit;
+    testWindow.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&testWindow, 200));
+    QSignalSpy spy(edit, &QLineEdit::textChanged);
+
+    // Set up class to test
+    LineEditSettings lineSettings(edit, _test_property, "missing_value", _ini_path);
+    QCOMPARE(edit->text(), "initialized");
+    QCOMPARE(spy.count(), 1);  // We expect the signal to be emitted on init
+
+    QString text = "some text";
+    writeIntoLineEdit(edit, text);
+    QCOMPARE(edit->text(), text);
+    QCOMPARE(lineSettings.getValue(), text);
+    QCOMPARE(settings.getValue(_test_property), text);
 }
 
 QTEST_MAIN(TestSettings)
