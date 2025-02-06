@@ -109,7 +109,6 @@ void TestSettings::test_hasKey()
     QCOMPARE_NE(settings.getValue(_test_property), "initialized");
     QCOMPARE(settings.getValue(_test_property), "altered");
 
-
     const QString key = "another_key";
     QVERIFY(!settings.hasKey(key));
 
