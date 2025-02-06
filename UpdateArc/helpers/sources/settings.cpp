@@ -71,7 +71,7 @@ void Settings::removeKey(const QString key)
     return;
 }
 
-CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const QString iniPath)
+CheckBoxSettings::CheckBoxSettings(QCheckBox *checkbox, const QString key, const QString iniPath)
     :_settings(iniPath)
     ,_key(key)
 {
@@ -87,15 +87,15 @@ CheckBoxSetting::CheckBoxSetting(QCheckBox *checkbox, const QString key, const Q
 
     // Connect changes to checkbox to update on settings
     connect(checkbox, &QCheckBox::checkStateChanged,
-            this, &CheckBoxSetting::checkboxChanged);
+            this, &CheckBoxSettings::checkboxChanged);
 }
 
-bool CheckBoxSetting::getSettingState() const
+bool CheckBoxSettings::getSettingState() const
 {
     return _settings.readBinary(_key);
 }
 
-void CheckBoxSetting::checkboxChanged(Qt::CheckState state)
+void CheckBoxSettings::checkboxChanged(Qt::CheckState state)
 {
     // Checkbox changed, update corresponding value in settings
     switch(state) {

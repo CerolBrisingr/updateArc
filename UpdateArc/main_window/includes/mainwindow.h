@@ -61,7 +61,7 @@ private:
     UpdateTool* _update_helper;
     std::vector<Updater::BaseUpdater*> _updaters;
 
-    std::vector<CheckBoxSetting*> _check_box_settings;
+    std::vector<CheckBoxSettings*> _check_box_settings;
     std::vector<LineEditSettings*> _line_edit_settings;
 
     void initInterface();

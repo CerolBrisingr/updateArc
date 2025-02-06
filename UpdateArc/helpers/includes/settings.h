@@ -25,11 +25,11 @@ private:
 };
 
 // Fuse checkbox to settings key value
-class CheckBoxSetting:  public QObject
+class CheckBoxSettings:  public QObject
 {
     Q_OBJECT
 public:
-    CheckBoxSetting(QCheckBox* checkbox, const QString key, const QString iniPath = "settings.ini");
+    CheckBoxSettings(QCheckBox* checkbox, const QString key, const QString iniPath = "settings.ini");
 
     bool getSettingState() const;
 

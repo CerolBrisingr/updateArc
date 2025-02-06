@@ -84,13 +84,13 @@ void MainWindow::writeLog(QString logline)
 
 void MainWindow::initInterface()
 {
-    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_run_gw2, "starters/gw2_run"));
-    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_run_blishhud, "starters/blish_run"));
+    _check_box_settings.emplace_back(new CheckBoxSettings(_ui->checkBox_run_gw2, "starters/gw2_run"));
+    _check_box_settings.emplace_back(new CheckBoxSettings(_ui->checkBox_run_blishhud, "starters/blish_run"));
 
     _line_edit_settings.emplace_back(new LineEditSettings(_ui->lineEdit_run_gw2, "starters/gw2_arguments", "-maploadinfo"));
 
-    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_autorun, "general/autorun"));
-    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_autoclose, "general/autoclose"));
+    _check_box_settings.emplace_back(new CheckBoxSettings(_ui->checkBox_autorun, "general/autorun"));
+    _check_box_settings.emplace_back(new CheckBoxSettings(_ui->checkBox_autoclose, "general/autoclose"));
 
     _ui->toolButton_config_arc->setVisible(false);
 }

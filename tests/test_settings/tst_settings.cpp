@@ -188,7 +188,7 @@ void TestSettings::test_checkbox_clicks()
     QSignalSpy windowSpy(&testWindow, &MainWindow::onMousePressed);
 
     // Set up class to test
-    CheckBoxSetting checkBoxSetting(box, _test_property, _ini_path);
+    CheckBoxSettings checkBoxSetting(box, _test_property, _ini_path);
     QCOMPARE(box->checkState(), Qt::Unchecked);
     QVERIFY(settings.hasKey(_test_property));
     QCOMPARE(settings.readBinary(_test_property), false);
@@ -232,7 +232,7 @@ void TestSettings::test_checkbox_set_state()
     QSignalSpy spy(box, &QCheckBox::checkStateChanged);
 
     // Set up class to test
-    CheckBoxSetting checkBoxSetting(box, _test_property, _ini_path);
+    CheckBoxSettings checkBoxSetting(box, _test_property, _ini_path);
     QCOMPARE(box->checkState(), Qt::Checked);
     QCOMPARE(spy.count(), 1);  // We expect the signal to be emitted on init
 
