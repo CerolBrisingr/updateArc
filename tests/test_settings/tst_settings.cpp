@@ -8,11 +8,6 @@
 #include <QString>
 #include <QSignalSpy>
 
-// https://doc.qt.io/qt-6/qmainwindow.html
-// https://forum.qt.io/topic/84784/qtest-gui-getting-started
-// https://doc.qt.io/qt-6/qttestlib-tutorial3-example.html
-// https://stackoverflow.com/questions/16710924/qt-gui-unit-test-must-construct-a-qapplication-before-a-qpaintdevice
-
 #include <QStyle>
 #include <QStyleOptionButton>
 
@@ -30,6 +25,17 @@ void writeIntoLineEdit(QLineEdit *edit, const QString &text)
 {
     QTest::mouseDClick(edit, Qt::LeftButton, {}, edit->rect().center());
     QTest::keyClicks(edit, text);
+}
+
+void addOntoLineEdit(QLineEdit *edit, const QString &text)
+{
+    edit->setFocus();
+    QTest::keyClicks(edit, text);
+}
+
+void clearLineEdit(QLineEdit *edit)
+{
+    edit->clear();
 }
 
 class TestSettings : public QObject
@@ -51,6 +57,7 @@ private slots:
     void cleanupTestCase();
 
     void test_hasKey();
+    void test_values();
     void test_binary_property();
 
     void test_checkbox_clicks();
@@ -112,11 +119,54 @@ void TestSettings::test_hasKey()
 
     settings.removeKey(key);
     QVERIFY(!settings.hasKey(key));
+
+    // Repetition should work without issues
+    settings.removeKey(key);
+    QVERIFY(!settings.hasKey(key));
+}
+
+void TestSettings::test_values()
+{
+    Settings settings(_ini_path);
+    settings.getValueWrite(_test_property, "stuff");
+    QCOMPARE(settings.getValue(_test_property), "initialized");
+
+    settings.removeKey(_test_property);
+    settings.getValueWrite(_test_property, "stuff");
+    QCOMPARE(settings.getValue(_test_property), "stuff");
+
+    settings.setValue(_test_property, "other stuff");
+    QCOMPARE(settings.getValue(_test_property), "other stuff");
 }
 
 void TestSettings::test_binary_property()
 {
     Settings settings(_ini_path);
+    QVERIFY(!settings.readBinary(_test_property));
+    QVERIFY(settings.readBinary(_test_property, "", "initialized"));
+
+    settings.removeKey(_test_property);
+    QVERIFY(!settings.readBinary(_test_property, "", "initialized"));
+
+    settings.readCreateBinary(_test_property, true);
+    QVERIFY(settings.readBinary(_test_property));
+
+    settings.writeBinary(_test_property, false);
+    QVERIFY(!settings.readBinary(_test_property));
+
+    settings.writeBinary(_test_property, true);
+    QVERIFY(settings.readBinary(_test_property));
+
+    settings.removeKey(_test_property);
+    QVERIFY(!settings.readCreateBinary(_test_property, false, "ok", "nope"));
+    QCOMPARE(settings.getValue(_test_property), "nope");
+    QVERIFY(!settings.readCreateBinary(_test_property, true, "ok", "nope"));
+    QCOMPARE(settings.getValue(_test_property), "nope");
+
+    settings.writeBinary(_test_property, true, "ok", "nope");
+    QCOMPARE(settings.getValue(_test_property), "ok");
+    settings.writeBinary(_test_property, false, "ok", "nope");
+    QCOMPARE(settings.getValue(_test_property), "nope");
 }
 
 // Info: I'll bundle a few extra things in this test to remind myself of them.
@@ -200,7 +250,6 @@ void TestSettings::test_checkbox_set_state()
     QCOMPARE(box->checkState(), Qt::Unchecked);
     QCOMPARE(settings.readBinary(_test_property), false);
     QCOMPARE(checkBoxSetting.getSettingState(), false);
-
 }
 
 void TestSettings::test_line_edit()
@@ -222,6 +271,22 @@ void TestSettings::test_line_edit()
 
     QString text = "some text";
     writeIntoLineEdit(edit, text);
+    QCOMPARE(edit->text(), text);
+    QCOMPARE(lineSettings.getValue(), text);
+    QCOMPARE(settings.getValue(_test_property), text);
+
+    QString text2 = " and more";
+    addOntoLineEdit(edit, text2);
+    text2 = text + text2;
+    QCOMPARE(edit->text(), text2);
+    QCOMPARE(lineSettings.getValue(), text2);
+    QCOMPARE(settings.getValue(_test_property), text2);
+
+    // Count number of inputs so far
+    QCOMPARE(spy.count(), text2.length() + 1);  // Include count after init
+
+    text = "";
+    clearLineEdit(edit);
     QCOMPARE(edit->text(), text);
     QCOMPARE(lineSettings.getValue(), text);
     QCOMPARE(settings.getValue(_test_property), text);
