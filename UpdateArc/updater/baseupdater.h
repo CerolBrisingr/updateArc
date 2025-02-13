@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QCheckBox>
-#include <classes/settings.h>
+#include <settings.h>
 #include "logger.h"
 #include <classes/fileinteractions.h>
 #include "downloader.h"
@@ -33,7 +33,7 @@ protected:
     QToolButton* const _remove_button;
     QCheckBox* const _checkbox;
     Settings _settings; // "settings.ini"
-    CheckBoxSetting _box_setting;
+    CheckBoxSettings _box_setting;
 };
 
 } // namespace Updater

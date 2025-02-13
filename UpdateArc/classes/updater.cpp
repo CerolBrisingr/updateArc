@@ -77,7 +77,7 @@ bool UpdateTool::startGW2(QStringList arguments)
 
 QStringList UpdateTool::loadGW2Arguments() {
 
-    QString argument_chain = _settings.getValue("starters/gw2_arguments", "");
+    QString argument_chain = _settings.readValue("starters/gw2_arguments", "");
     QStringList arguments;
     QStringList split_by_spaces = argument_chain.split(" ", Qt::SkipEmptyParts);
     for (auto& argument: split_by_spaces) {

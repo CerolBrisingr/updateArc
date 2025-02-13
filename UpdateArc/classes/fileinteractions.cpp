@@ -7,8 +7,7 @@ bool unzipArchive(QString archive, QString targetPath) {
     QFileInfo source(archive);
     QFileInfo target(targetPath);
     //m_agent.setWorkingDirectory(working_directory);
-    QStringList args = QStringList();
-    args = QStringList({"-Command", QString("Expand-Archive -LiteralPath \"%1\" -DestinationPath \"%2\"").arg(source.absoluteFilePath(), target.absoluteFilePath())});
+    auto args = QStringList({"-Command", QString("Expand-Archive -LiteralPath \"%1\" -DestinationPath \"%2\"").arg(source.absoluteFilePath(), target.absoluteFilePath())});
     m_agent.start("powershell", args);
 
     if (!m_agent.waitForStarted()) {
@@ -28,8 +27,7 @@ bool unzipArchive(QString archive, QString targetPath) {
 bool executeExternalWaiting(QString executablePath, QString working_directory) {
     QProcess m_agent;
     m_agent.setWorkingDirectory(working_directory);
-    QStringList args = QStringList();
-    args = QStringList({"-Command", QString("Start-Process %1 -Verb runAs -Wait").arg(executablePath)});
+    auto args = QStringList({"-Command", QString("Start-Process %1 -Verb runAs -Wait").arg(executablePath)});
     m_agent.start("powershell", args);
 
     if (!m_agent.waitForStarted()) {

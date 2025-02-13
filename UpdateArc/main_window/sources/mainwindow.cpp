@@ -84,13 +84,13 @@ void MainWindow::writeLog(QString logline)
 
 void MainWindow::initInterface()
 {
-    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_run_gw2, "starters/gw2_run"));
-    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_run_blishhud, "starters/blish_run"));
+    _check_box_settings.emplace_back(new CheckBoxSettings(_ui->checkBox_run_gw2, "starters/gw2_run"));
+    _check_box_settings.emplace_back(new CheckBoxSettings(_ui->checkBox_run_blishhud, "starters/blish_run"));
 
     _line_edit_settings.emplace_back(new LineEditSettings(_ui->lineEdit_run_gw2, "starters/gw2_arguments", "-maploadinfo"));
 
-    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_autorun, "general/autorun"));
-    _check_box_settings.emplace_back(new CheckBoxSetting(_ui->checkBox_autoclose, "general/autoclose"));
+    _check_box_settings.emplace_back(new CheckBoxSettings(_ui->checkBox_autorun, "general/autorun"));
+    _check_box_settings.emplace_back(new CheckBoxSettings(_ui->checkBox_autoclose, "general/autoclose"));
 
     _ui->toolButton_config_arc->setVisible(false);
 }
@@ -102,8 +102,8 @@ void MainWindow::setEdit(QLineEdit *edit, QString text)
 
 bool MainWindow::runUpdate()
 {
-    bool do_start_gw2 = _settings.getValue("starters/gw2_run").compare("on") == 0;
-    bool do_start_blish = _settings.getValue("starters/blish_run").compare("on") == 0;
+    bool do_start_gw2 = _settings.readValue("starters/gw2_run").compare("on") == 0;
+    bool do_start_blish = _settings.readValue("starters/blish_run").compare("on") == 0;
 
     // Try to run each updater (don't run if checkbox is not set)
     for (auto* updater: _updaters) {
@@ -121,7 +121,7 @@ bool MainWindow::runUpdate()
         runBlish();
     }
 
-    if (_settings.getValue("General/autoclose").compare("on") == 0) {
+    if (_settings.readValue("General/autoclose").compare("on") == 0) {
         int wait_secs = 20;
         writeLog("Waiting for " + QString::number(wait_secs) + " seconds before we close the updater\n");
         for (int i = 0; i < wait_secs; i += 5) {
@@ -133,7 +133,7 @@ bool MainWindow::runUpdate()
     }
 
     // User should be able to change their mind about closing the window automatically
-    if (_settings.getValue("General/autoclose").compare("on") == 0) {
+    if (_settings.readValue("General/autoclose").compare("on") == 0) {
         exit(0);
     }
     return true;

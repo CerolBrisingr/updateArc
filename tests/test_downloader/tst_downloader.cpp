@@ -17,7 +17,8 @@ TestDownloader::TestDownloader() {}
 
 TestDownloader::~TestDownloader() {}
 
-void TestDownloader::test_request() {
+void TestDownloader::test_request()
+{
     DownloadRequest test("http://www.neorice.com", DownloadType::HTMLBODY);
     QCOMPARE(test.getRequestType(), DownloadType::HTMLBODY);
     QCOMPARE(test.getRequestAddress(), "http://www.neorice.com");
