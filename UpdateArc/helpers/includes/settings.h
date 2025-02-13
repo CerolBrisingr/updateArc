@@ -11,13 +11,16 @@ class Settings
 public:
     Settings(const QString ini_path);
 
+    // Basic key operations
     bool hasKey(const QString key) const;
     void removeKey(const QString key);
 
+    // Working with string values
     void writeValue(const QString key, const QString value);
     QString readValue(const QString key, const QString default_value = "") const;
     QString readCreateValue(const QString key, const QString default_value = "");
 
+    // Simulating binary values
     void writeBinary(const QString key, const bool value, const QString s_true = "on", const QString s_false = "off");
     bool readBinary(const QString key, const QString s_default = "", const QString s_true = "on") const;
     bool readCreateBinary(const QString key, const bool defaultValue = false, const QString s_true = "on", const QString s_false = "off");

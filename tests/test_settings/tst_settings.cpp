@@ -13,6 +13,7 @@
 
 void clickCheckbox(QCheckBox *box)
 {
+    // Export style data
     QStyleOptionButton opt;
     opt.initFrom(box);
     // Find interactive checkbox area
@@ -35,6 +36,7 @@ void addOntoLineEdit(QLineEdit *edit, const QString &text)
 
 void clearLineEdit(QLineEdit *edit)
 {
+    // Cannot find tripple click to select all and it seems to be overkill anyway
     edit->clear();
 }
 
@@ -101,14 +103,17 @@ void TestSettings::cleanupTestCase()
 
 void TestSettings::test_hasKey()
 {
+    // Test with default data
     Settings settings(_ini_path);
     QVERIFY(settings.hasKey(_test_property));
     QCOMPARE(settings.readValue(_test_property), "initialized");
 
+    // Overwrite existing value
     settings.writeValue(_test_property, "altered");
     QCOMPARE_NE(settings.readValue(_test_property), "initialized");
     QCOMPARE(settings.readValue(_test_property), "altered");
 
+    // Create and remove new key
     const QString key = "another_key";
     QVERIFY(!settings.hasKey(key));
 
@@ -126,36 +131,47 @@ void TestSettings::test_hasKey()
 
 void TestSettings::test_values()
 {
+    // readCreate should not overwrite existing data
     Settings settings(_ini_path);
     settings.readCreateValue(_test_property, "stuff");
     QCOMPARE(settings.readValue(_test_property), "initialized");
 
+    // readCreate should write on non-existing key
     settings.removeKey(_test_property);
     settings.readCreateValue(_test_property, "stuff");
     QCOMPARE(settings.readValue(_test_property), "stuff");
 
+    // write should set value independent of previous state
     settings.writeValue(_test_property, "other stuff");
     QCOMPARE(settings.readValue(_test_property), "other stuff");
 }
 
 void TestSettings::test_binary_property()
 {
+    // Test with default data
     Settings settings(_ini_path);
     QVERIFY(!settings.readBinary(_test_property));
     QVERIFY(settings.readBinary(_test_property, "", "initialized"));
 
+    // Don't hallucinate
     settings.removeKey(_test_property);
     QVERIFY(!settings.readBinary(_test_property, "", "initialized"));
 
+    // Set value only if key does not exist
     settings.readCreateBinary(_test_property, true);
     QVERIFY(settings.readBinary(_test_property));
 
+    settings.readCreateBinary(_test_property, false);
+    QVERIFY(settings.readBinary(_test_property));
+
+    // Write value unconditionally
     settings.writeBinary(_test_property, false);
     QVERIFY(!settings.readBinary(_test_property));
 
     settings.writeBinary(_test_property, true);
     QVERIFY(settings.readBinary(_test_property));
 
+    // Customize keywords
     settings.removeKey(_test_property);
     QVERIFY(!settings.readCreateBinary(_test_property, false, "ok", "nope"));
     QCOMPARE(settings.readValue(_test_property), "nope");

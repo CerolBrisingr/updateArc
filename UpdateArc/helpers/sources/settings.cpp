@@ -4,6 +4,7 @@ Settings::Settings(const QString ini_path)
     :_ini_path(ini_path)
 {};
 
+// Basic key operations
 bool Settings::hasKey(const QString key) const
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
@@ -17,7 +18,7 @@ void Settings::removeKey(const QString key)
     return;
 }
 
-
+// Working with string values
 void Settings::writeValue(const QString key, const QString value)
 {
     QSettings setting(_ini_path, QSettings::IniFormat);
@@ -40,7 +41,7 @@ QString Settings::readCreateValue(const QString key, const QString default_value
     return setting.value(key, default_value).toString();
 }
 
-
+// Simulate binary values
 void Settings::writeBinary(const QString key, const bool value, const QString s_true, const QString s_false)
 {
     if (value) {
