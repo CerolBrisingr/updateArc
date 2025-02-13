@@ -93,7 +93,7 @@ Version GitHupdater::extractVersion(QJsonObject& release)
 
 Version GitHupdater::readLocalVersion()
 {
-    QString version_text = _settings.getValue(_version_key, "no_local_install");
+    QString version_text = _settings.readValue(_version_key, "no_local_install");
     return Version(version_text, _cfg._version_digits);
 }
 
@@ -171,7 +171,7 @@ void GitHupdater::installAsset(QJsonObject& asset, Version& online_version, int&
         return;
 
     Log::write("    Registering newly installed version\n");
-    _settings.setValue(_version_key, online_version.toString());
+    _settings.writeValue(_version_key, online_version.toString());
 }
 
 } // namespace Updater

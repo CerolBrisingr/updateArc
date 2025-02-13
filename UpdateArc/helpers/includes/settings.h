@@ -12,13 +12,15 @@ public:
     Settings(const QString ini_path);
 
     bool hasKey(const QString key) const;
-    bool readBinary(const QString key, const QString s_default = "", const QString s_true = "on") const;
-    void writeBinary(const QString key, const bool value, const QString s_true = "on", const QString s_false = "off");
-    bool readCreateBinary(const QString key, const bool defaultValue = false, const QString s_true = "on", const QString s_false = "off");
-    QString getValue(const QString key, const QString default_value = "") const;
-    QString getValueWrite(const QString key, const QString default_value = "");
-    void setValue(const QString key, const QString value);
     void removeKey(const QString key);
+
+    void writeValue(const QString key, const QString value);
+    QString readValue(const QString key, const QString default_value = "") const;
+    QString readCreateValue(const QString key, const QString default_value = "");
+
+    void writeBinary(const QString key, const bool value, const QString s_true = "on", const QString s_false = "off");
+    bool readBinary(const QString key, const QString s_default = "", const QString s_true = "on") const;
+    bool readCreateBinary(const QString key, const bool defaultValue = false, const QString s_true = "on", const QString s_false = "off");
 
 private:
     const QString _ini_path;

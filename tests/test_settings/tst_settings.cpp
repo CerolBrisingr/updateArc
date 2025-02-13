@@ -103,17 +103,17 @@ void TestSettings::test_hasKey()
 {
     Settings settings(_ini_path);
     QVERIFY(settings.hasKey(_test_property));
-    QCOMPARE(settings.getValue(_test_property), "initialized");
+    QCOMPARE(settings.readValue(_test_property), "initialized");
 
-    settings.setValue(_test_property, "altered");
-    QCOMPARE_NE(settings.getValue(_test_property), "initialized");
-    QCOMPARE(settings.getValue(_test_property), "altered");
+    settings.writeValue(_test_property, "altered");
+    QCOMPARE_NE(settings.readValue(_test_property), "initialized");
+    QCOMPARE(settings.readValue(_test_property), "altered");
 
     const QString key = "another_key";
     QVERIFY(!settings.hasKey(key));
 
-    settings.setValue(key, "stuff");
-    QCOMPARE(settings.getValue(key), "stuff");
+    settings.writeValue(key, "stuff");
+    QCOMPARE(settings.readValue(key), "stuff");
     QVERIFY(settings.hasKey(key));
 
     settings.removeKey(key);
@@ -127,15 +127,15 @@ void TestSettings::test_hasKey()
 void TestSettings::test_values()
 {
     Settings settings(_ini_path);
-    settings.getValueWrite(_test_property, "stuff");
-    QCOMPARE(settings.getValue(_test_property), "initialized");
+    settings.readCreateValue(_test_property, "stuff");
+    QCOMPARE(settings.readValue(_test_property), "initialized");
 
     settings.removeKey(_test_property);
-    settings.getValueWrite(_test_property, "stuff");
-    QCOMPARE(settings.getValue(_test_property), "stuff");
+    settings.readCreateValue(_test_property, "stuff");
+    QCOMPARE(settings.readValue(_test_property), "stuff");
 
-    settings.setValue(_test_property, "other stuff");
-    QCOMPARE(settings.getValue(_test_property), "other stuff");
+    settings.writeValue(_test_property, "other stuff");
+    QCOMPARE(settings.readValue(_test_property), "other stuff");
 }
 
 void TestSettings::test_binary_property()
@@ -158,14 +158,14 @@ void TestSettings::test_binary_property()
 
     settings.removeKey(_test_property);
     QVERIFY(!settings.readCreateBinary(_test_property, false, "ok", "nope"));
-    QCOMPARE(settings.getValue(_test_property), "nope");
+    QCOMPARE(settings.readValue(_test_property), "nope");
     QVERIFY(!settings.readCreateBinary(_test_property, true, "ok", "nope"));
-    QCOMPARE(settings.getValue(_test_property), "nope");
+    QCOMPARE(settings.readValue(_test_property), "nope");
 
     settings.writeBinary(_test_property, true, "ok", "nope");
-    QCOMPARE(settings.getValue(_test_property), "ok");
+    QCOMPARE(settings.readValue(_test_property), "ok");
     settings.writeBinary(_test_property, false, "ok", "nope");
-    QCOMPARE(settings.getValue(_test_property), "nope");
+    QCOMPARE(settings.readValue(_test_property), "nope");
 }
 
 // Info: I'll bundle a few extra things in this test to remind myself of them.
@@ -272,14 +272,14 @@ void TestSettings::test_line_edit()
     writeIntoLineEdit(edit, text);
     QCOMPARE(edit->text(), text);
     QCOMPARE(lineSettings.getValue(), text);
-    QCOMPARE(settings.getValue(_test_property), text);
+    QCOMPARE(settings.readValue(_test_property), text);
 
     QString text2 = " and more";
     addOntoLineEdit(edit, text2);
     text2 = text + text2;
     QCOMPARE(edit->text(), text2);
     QCOMPARE(lineSettings.getValue(), text2);
-    QCOMPARE(settings.getValue(_test_property), text2);
+    QCOMPARE(settings.readValue(_test_property), text2);
 
     // Count number of inputs so far
     QCOMPARE(spy.count(), text2.length() + 1);  // Include count after init
@@ -288,7 +288,7 @@ void TestSettings::test_line_edit()
     clearLineEdit(edit);
     QCOMPARE(edit->text(), text);
     QCOMPARE(lineSettings.getValue(), text);
-    QCOMPARE(settings.getValue(_test_property), text);
+    QCOMPARE(settings.readValue(_test_property), text);
 }
 
 QTEST_MAIN(TestSettings)

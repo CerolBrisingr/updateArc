@@ -32,7 +32,7 @@ int ArcUpdater::remove()
 
         QString sLocalHash = FileInteractions::calculateHashFromFile(_gw_path + "/d3d11.dll");
         Log::write("  Blocking installation of version " + sLocalHash + "\n");
-        _settings.setValue(_arc_blocker_key, sLocalHash);
+        _settings.writeValue(_arc_blocker_key, sLocalHash);
     }
 
     fileRemoval(err);
@@ -104,7 +104,7 @@ bool ArcUpdater::isBlockedArcVersion(QString sRemoteHash)
         return false;
     }
 
-    QString blockedHash = _settings.getValue(_arc_blocker_key);
+    QString blockedHash = _settings.readValue(_arc_blocker_key);
     Log::write("    Blocked md5:  " + blockedHash + "\n");
     Log::write("    Received md5: " + sRemoteHash + "\n");
     if (sRemoteHash.contains(blockedHash)) {
@@ -197,7 +197,7 @@ void ArcUpdater::testUpdatedVersion(int& err, QString sRemoteHash, QString sLoca
         return;
     } else {
         Log::write("    Hashes match, update successful!\n");
-        if (_settings.getValueWrite("customize/arcdps_dx9", "off") == "on") {
+        if (_settings.readCreateValue("customize/arcdps_dx9", "off") == "on") {
             Log::write("    Moving dx9 copy in place.\n");
             FileInteractions::copyFileTo(_gw_path + "/d3d11.dll", _gw_path + "/bin64/d3d9.dll");
         }
