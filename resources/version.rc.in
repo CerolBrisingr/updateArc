@@ -19,7 +19,7 @@ BEGIN
     BEGIN
         BLOCK "040704b0" // Deutsch (Deutschland), Unicode
         BEGIN
-            VALUE "CompanyName",      "Dein Projekt"
+            VALUE "CompanyName",      "Heartfelt Productions"
             VALUE "FileDescription",  "UpdateArc Updater"
             VALUE "FileVersion",      "@PROJECT_VERSION@"
             VALUE "InternalName",     "UpdateArc"
