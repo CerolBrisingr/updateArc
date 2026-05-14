@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25) # CMP0079, allow target_link_libraries to access other directories
 cmake_policy(SET CMP0079 NEW)
-project(UpdateArc VERSION 7.0.0 LANGUAGES CXX)
+project(UpdateArc VERSION 8.0.1 LANGUAGES CXX)
 
 # Building
 set(CPACK_PACKAGE_NAME "UpdateArc")
