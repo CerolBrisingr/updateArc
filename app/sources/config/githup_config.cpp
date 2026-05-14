@@ -24,8 +24,8 @@ GithupdateConfig getKpConfig()
     kp_config._github_project = "arcdps-bhud";
     kp_config._tag_prefix = "v";
     kp_config._version_digits = 3;
-    kp_config._content_type = "application/octet-stream";
-    kp_config._install_datatype = "-msvc.zip";
+    kp_config._content_type = "application/x-msdownload";
+    kp_config._install_datatype = "arcdps_bhud.dll";
 
     return kp_config;
 }
@@ -35,6 +35,7 @@ GithupdateConfig getBlishConfig()
     GithupdateConfig blish_config;
     blish_config._github_user = "blish-hud";
     blish_config._github_project = "Blish-HUD";
+    blish_config._content_type = "application/zip";
     blish_config._tag_prefix = "v";
     blish_config._version_digits = 3;
 

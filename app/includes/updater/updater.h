@@ -22,7 +22,6 @@ public:
     UpdateTool();
 
     bool startGW2(QStringList arguments = QStringList());
-    bool startTacO();
     bool startBlish();
 
     bool isValid() const noexcept;

@@ -15,6 +15,7 @@ public:
     int install() override;
     int uninstall() override;
 
+private:
     QString _temp_filename = "";
     QString _target_filename = "arcdps_bhud.dll";
 };

@@ -86,20 +86,6 @@ QStringList UpdateTool::loadGW2Arguments() {
     return arguments;
 }
 
-bool UpdateTool::startTacO()
-{
-    QProcess taco;
-    taco.setWorkingDirectory(_taco_path);
-    taco.setProgram(_taco_path + "/GW2TacO.exe");
-    if (taco.startDetached()) {
-        Log::write("-- started TacO\n");
-        return true;
-    } else {
-        Log::write("-- start of TacO failed\n");
-        return false;
-    }
-}
-
 bool UpdateTool::startBlish()
 {
     QProcess taco;
