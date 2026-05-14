@@ -1,0 +1,130 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "base",
+      "description": "All builds should share this",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}"
+    },
+    {
+      "name": "linux-base",
+      "description": "Basic setup for linux environment",
+      "inherits": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-x64-debug",
+      "displayName": "x64 Debug Linux",
+      "description": "x64 debug builds for linux",
+      "inherits": "linux-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "linux-x64-release",
+      "displayName": "x64 Release Linux",
+      "description": "x64 release builds for Linux",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-base",
+      "description": "Hiermit wird Windows mit der Visual Studio-Entwicklungsumgebung als Ziel verwendet.",
+      "inherits": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_MSVC_WARNING_LEVEL": "Level4"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "x64-debug",
+      "displayName": "x64 Debug",
+      "description": "Hiermit wird Windows (64 Bit) mit der Visual Studio-Entwicklungsumgebung als Ziel verwendet. (Debug)",
+      "inherits": "windows-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "x64-release",
+      "displayName": "x64 Release",
+      "description": "Hiermit wird Windows (64 Bit) mit der Visual Studio-Entwicklungsumgebung als Ziel verwendet. (RelWithDebInfo)",
+      "inherits": "windows-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "x86-debug",
+      "displayName": "x86 Debug",
+      "description": "Hiermit wird Windows (32 Bit) mit der Visual Studio-Entwicklungsumgebung als Ziel verwendet. (Debug)",
+      "inherits": "windows-base",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "x86-release",
+      "displayName": "x86 Release",
+      "description": "Hiermit wird Windows (32 Bit) mit der Visual Studio-Entwicklungsumgebung als Ziel verwendet. (RelWithDebInfo)",
+      "inherits": "x86-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "zip-win-x64",
+      "configurePreset": "x64-release",
+      "generators": [ "ZIP" ],
+      "configurations": [ "Release" ]
+    },
+    {
+      "name": "linux-x64-tar",
+      "displayName": "Linux x64 Tarball",
+      "configurePreset": "linux-x64-release",
+      "generators": [ "TGZ" ],
+      "configurations": [ "Release" ]
+    }
+  ]
+}

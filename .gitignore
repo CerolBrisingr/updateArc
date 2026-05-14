@@ -1,16 +1,6 @@
-d3d9.dll
-d3d9.dll.md5sum
-*.zip
-build/
-buildDebug/
-addons/
-bin64/
-target/
-Gw2-64.exe
+.vs/
+out/
+resources/Gw2-64.exe
+resources/bin64
 
 *.autosave
-
-d3d11.dll
-robocopy.txt
-
-*.pro.user
