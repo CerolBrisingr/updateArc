@@ -1,5 +1,6 @@
+#include "helper/version.h"
+
 #include <QtTest>
-#include "version.h"
 #include <vector>
 
 class TestVersion : public QObject

@@ -15,7 +15,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Options
 option(Updater_BUILD_TESTS "Build unit tests" ON)
 if(Updater_BUILD_TESTS)
-    include(CTest)
 endif()
 
 # Easy setup for compiler flags (avoid using in /libs)
@@ -32,9 +31,13 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/version.rc"
     @ONLY
 )
+
+include(functions.cmake)
 set(VERSION_FILES "${CMAKE_CURRENT_BINARY_DIR}/version.rc")
 add_subdirectory(app)
 
-if(BUILD_TESTING)
-    #add_subdirectory(app/tests) #Does not exist yet
+if(Updater_BUILD_TESTS)
+    include(CTest)
+    enable_testing()
+    add_subdirectory(tests)
 endif()

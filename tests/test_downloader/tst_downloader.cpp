@@ -1,5 +1,5 @@
 #include <QtTest>
-#include "downloader.h"
+#include "helper/downloader.h"
 
 class TestDownloader : public QObject
 {

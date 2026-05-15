@@ -3,11 +3,9 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Network)
 
-qt_standard_project_setup()
+add_library(UpdateArc_Core)
 
-qt_add_executable(UpdateArc)
-
-target_link_libraries(UpdateArc
+target_link_libraries(UpdateArc_Core
     PUBLIC
         project_warnings
         Qt6::Gui
@@ -16,38 +14,15 @@ target_link_libraries(UpdateArc
         Qt6::Network
 )
 
-target_include_directories(UpdateArc
+target_include_directories(UpdateArc_Core
     PUBLIC
-        ${CMAKE_CURRENT_LIST_DIR}/includes)
+        ${CMAKE_CURRENT_LIST_DIR}/includes
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR} # Find ui_*.h files
+    )
 
-set_target_properties(UpdateArc PROPERTIES
-    WIN32_EXECUTABLE ON
-    MACOSX_BUNDLE ON
-)
-
-if (WIN32)
-    # Find windeployqt via location of qmake
-    get_target_property(WINDEPLOYQT_EXECUTABLE Qt6::windeployqt IMPORTED_LOCATION)
-
-    # Run windeployqt after build
-    if(WINDEPLOYQT_EXECUTABLE)
-        add_custom_command(TARGET UpdateArc POST_BUILD
-            COMMAND "${WINDEPLOYQT_EXECUTABLE}"
-                    --no-compiler-runtime
-                    --verbose 1
-                    "$<TARGET_FILE:UpdateArc>"
-            COMMENT "Running windeployqt from ${WINDEPLOYQT_EXECUTABLE}"
-        )
-    else()
-        message(WARNING "windeployqt was not found. Will skip deployment of plugins and DLLs")
-    endif()
-endif()
-
-target_sources(UpdateArc
+target_sources(UpdateArc_Core
     PRIVATE 
-        ${VERSION_FILES}
-
-        sources/main.cpp
 	    sources/helper/downloader.cpp
 		sources/helper/fileinteractions.cpp
 		sources/helper/logger.cpp
@@ -78,6 +53,23 @@ target_sources(UpdateArc
 	    includes/updater/githupdater.h
 	    includes/updater/updater.h
 )
+
+qt_standard_project_setup()
+
+qt_add_executable(UpdateArc
+        sources/main.cpp
+        ${VERSION_FILES})
+
+set_target_properties(UpdateArc PROPERTIES
+    WIN32_EXECUTABLE ON
+    MACOSX_BUNDLE ON
+)
+
+target_link_libraries(UpdateArc
+    PRIVATE
+        UpdateArc_Core)
+
+deploy_qt_target(UpdateArc)
 
 install(TARGETS UpdateArc
     BUNDLE  DESTINATION .

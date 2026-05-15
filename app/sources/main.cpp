@@ -10,7 +10,8 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     // Apply settings
-    QSettings setting("settings.ini", QSettings::IniFormat);
+    QString path = a.applicationDirPath() + "/settings.ini";
+    QSettings setting(path, QSettings::IniFormat);
     Downloader::setPrintDebug(setting.value("debug/downloader", "off").toString() == "on");
 
     w.show();

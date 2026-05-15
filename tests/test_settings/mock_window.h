@@ -9,7 +9,7 @@
 #include <QMouseEvent>
 #include <QPointF>
 
-class MainWindow : public QMainWindow
+class MockWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -17,8 +17,8 @@ signals:
     void onMousePressed(QMouseEvent *event);
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow() override;
+    MockWindow(QWidget *parent = nullptr);
+    ~MockWindow() override;
 
     QPointF getLastPosition() const;
 

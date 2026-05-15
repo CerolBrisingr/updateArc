@@ -1,6 +1,6 @@
-#include "window.h"
+#include "mock_window.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MockWindow::MockWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     QWidget *centralWidget = new QWidget();
@@ -15,15 +15,15 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(centralWidget);
 }
 
-MainWindow::~MainWindow() {}
+MockWindow::~MockWindow() {}
 
-void MainWindow::mousePressEvent(QMouseEvent *event)
+void MockWindow::mousePressEvent(QMouseEvent *event)
 {
     _lastPosition = event->globalPosition();
     emit onMousePressed(event);
 }
 
-QPointF MainWindow::getLastPosition() const
+QPointF MockWindow::getLastPosition() const
 {
     return _lastPosition;
 }

@@ -1,9 +1,9 @@
 #include <QTest>
 #include <QCoreApplication>
 
-#include "fileinteractions.h"
-#include "settings.h"
-#include "window.h"
+#include "helper/fileinteractions.h"
+#include "helper/settings.h"
+#include "mock_window.h"
 #include <QSettings>
 #include <QString>
 #include <QSignalSpy>
@@ -190,7 +190,7 @@ void TestSettings::test_checkbox_clicks()
     Settings settings(_ini_path);
 
     // Create test window
-    MainWindow testWindow;
+    MockWindow testWindow;
     QCheckBox* const box = testWindow.ptrCheckBox;
     testWindow.show();
 
@@ -201,7 +201,7 @@ void TestSettings::test_checkbox_clicks()
 
     // Spy on the signal we want to connect on, now because our constructor should NOT issue a signal
     QSignalSpy spy(box, &QCheckBox::checkStateChanged);
-    QSignalSpy windowSpy(&testWindow, &MainWindow::onMousePressed);
+    QSignalSpy windowSpy(&testWindow, &MockWindow::onMousePressed);
 
     // Set up class to test
     CheckBoxSettings checkBoxSetting(box, _test_property, _ini_path);
@@ -240,7 +240,7 @@ void TestSettings::test_checkbox_set_state()
     settings.writeBinary(_test_property, true);
 
     // Create test window
-    MainWindow testWindow;
+    MockWindow testWindow;
     QCheckBox* const box = testWindow.ptrCheckBox;
     testWindow.show();
 
@@ -272,7 +272,7 @@ void TestSettings::test_line_edit()
     Settings settings(_ini_path);
 
     // Create test window
-    MainWindow testWindow;
+    MockWindow testWindow;
     QLineEdit* const edit = testWindow.ptrLineEdit;
     testWindow.show();
 
